@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1000" viewBox="0 0 720 1000" font-family="Helvetica, Arial, sans-serif">
+  <rect width="720" height="1000" fill="#f2f2f7"/>
+  <rect width="720" height="150" fill="#ffffff"/>
+  <circle cx="360" cy="55" r="34" fill="#a0a4ad"/>
+  <text x="360" y="68" font-size="34" fill="#fff" text-anchor="middle">?</text>
+  <text x="360" y="125" font-size="26" fill="#000" text-anchor="middle">+49 1577 0000 123</text>
+  <text x="360" y="215" font-size="22" fill="#8e8e93" text-anchor="middle">Heute 09:41</text>
+  <rect x="30" y="245" width="560" height="330" rx="34" fill="#e5e5ea"/>
+  <text font-size="30" fill="#000">
+    <tspan x="60" y="300">Hallo Mama, das ist meine neue</tspan>
+    <tspan x="60" y="342">Nummer. Mein Handy ist kaputt.</tspan>
+    <tspan x="60" y="384">Ich muss dringend eine Rechnung</tspan>
+    <tspan x="60" y="426">bezahlen, kannst du mir heute</tspan>
+    <tspan x="60" y="468">1.480 Euro überweisen? Ich gebe</tspan>
+    <tspan x="60" y="510">es dir morgen zurück. Bitte nicht</tspan>
+    <tspan x="60" y="552">anrufen, das Mikro geht nicht.</tspan>
+  </text>
+  <rect x="30" y="600" width="560" height="160" rx="34" fill="#e5e5ea"/>
+  <text font-size="30" fill="#000">
+    <tspan x="60" y="655">IBAN: DE00 1234 5678 9000 0000 00</tspan>
+    <tspan x="60" y="697">Empfänger: M. Schulz</tspan>
+    <tspan x="60" y="739">Schnell bitte!! ❤️</tspan>
+  </text>
+</svg>
