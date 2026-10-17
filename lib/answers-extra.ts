@@ -1,15 +1,18 @@
 "use client";
 
-// Extra actions for the answer history. lib/answers.ts stays untouched.
+import { deleteRemoteAnswers } from "./sync";
+
+// Extra actions for the answer history.
 // Same localStorage key as in lib/answers.ts ("elderwise.answers").
 const KEY = "elderwise.answers";
 
-// Deletes every saved answer, then reloads so the in-memory list starts empty too.
+// Deletes every saved answer (also in the account when signed in),
+// then reloads so the in-memory list starts empty too.
 export function clearEntries() {
   try {
     localStorage.removeItem(KEY);
   } catch {
     // Storage can be blocked (private mode); the reload still clears this visit.
   }
-  window.location.reload();
+  void deleteRemoteAnswers().finally(() => window.location.reload());
 }
