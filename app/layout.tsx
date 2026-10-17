@@ -34,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ProfileRoot />
         <FirstRun />
         {/* On tablets and desktop the app sits in a phone-width column; the background stays full-bleed. */}
-        <div className="mx-auto flex w-full max-w-app flex-1 flex-col">{children}</div>
+        <div data-page className="mx-auto flex w-full max-w-app flex-1 flex-col">
+          {children}
+        </div>
         <LiveBar />
         <BottomNav />
       </body>

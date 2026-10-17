@@ -7,9 +7,11 @@ import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
-import { addEntry } from "@/lib/answers";
+import { addEntry, setPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
+import { haptic } from "@/lib/haptics";
 import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
+import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import { TEXT } from "./copy";
@@ -82,6 +84,7 @@ export default function Talk() {
     busyRef.current = true;
     setAsked({ q, img });
     setPhase("thinking");
+    setPending(true);
     try {
       const answer = await askClaude(q, img, profile);
       addEntry(q || t.inputPlaceholder, answer);
@@ -90,12 +93,13 @@ export default function Talk() {
       setQuestion("");
       setNewPhoto(null);
       // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
-      doneTimer.current = setTimeout(() => router.push("/answers"), 1500);
+      doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1500);
     } catch {
       setPhase("error");
       speak(t.error, profile.lang, profile.speechRate);
     } finally {
       busyRef.current = false;
+      setPending(false);
     }
   }
 
@@ -119,11 +123,12 @@ export default function Talk() {
         lang: profile.lang,
         name: profile.name,
         ask: async (q) => {
-          const answer = await askClaude(q, photoRef.current, profile);
+          setPending(true);
+          const answer = await askClaude(q, photoRef.current, profile).finally(() => setPending(false));
           addEntry(q, answer);
           setNewPhoto(null);
           setPhase("done");
-          doneTimer.current = setTimeout(() => router.push("/answers"), 1600);
+          doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1600);
           return answer;
         },
       });
@@ -198,6 +203,7 @@ export default function Talk() {
 
   function onTalk() {
     unlockSpeech();
+    haptic();
     setPhase("idle");
     if (liveSupported() && !liveFailed.current) startConversation();
     else startPushToTalk();
@@ -205,6 +211,7 @@ export default function Talk() {
 
   function onFinish() {
     unlockSpeech();
+    haptic();
     if (liveOn) {
       stopLive();
       setPhase("idle");

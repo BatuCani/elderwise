@@ -16,6 +16,7 @@ export const CARD_TEXT: Record<
     clearConfirm: string;
     clearYes: string;
     cancel: string;
+    slower: string;
   }
 > = {
   en: {
@@ -31,6 +32,7 @@ export const CARD_TEXT: Record<
     clearConfirm: "Delete all answers?",
     clearYes: "Yes, delete",
     cancel: "Cancel",
+    slower: "Say it again, slower",
   },
   de: {
     addToCalendar: "In den Kalender",
@@ -45,5 +47,6 @@ export const CARD_TEXT: Record<
     clearConfirm: "Alle Antworten löschen?",
     clearYes: "Ja, löschen",
     cancel: "Abbrechen",
+    slower: "Noch mal, langsamer",
   },
 };
