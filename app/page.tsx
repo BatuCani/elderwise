@@ -440,25 +440,15 @@ export default function Talk() {
                 </button>
               </div>
             ) : (
-              <div className="grid w-full max-w-sm grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => (liveOn ? toggleCamera() : setSheetOpen(true))}
-                  className="glass flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] px-2 text-ink transition-transform active:scale-95"
-                >
-                  <CameraIcon className="h-14 w-14" />
-                  {/* Visible words, not just icons: older adults should never have to guess. */}
-                  <span className="text-[19px] font-bold leading-tight">{t.startCamera}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={onFinish}
-                  className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] bg-moss px-2 text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
-                >
-                  <CheckIcon className="h-14 w-14" />
-                  <span className="text-[19px] font-bold leading-tight">{t.finishTalking}</span>
-                </button>
-              </div>
+              // Calm listening: the orb and the glowing voice bar are enough; one small "Done" pill ends the turn.
+              <button
+                type="button"
+                onClick={onFinish}
+                className="glass flex min-h-14 items-center justify-center gap-2 rounded-full px-7 text-[19px] font-bold text-moss transition-transform active:scale-95"
+              >
+                <CheckIcon className="h-6 w-6" />
+                {t.finishTalking}
+              </button>
             )}
           </>
         ) : (
