@@ -117,8 +117,9 @@ export default function Talk() {
         <p className="text-xl text-muted">
           {greeting}, {profile.name}
         </p>
+        <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
 
-        <div className="relative mt-10 flex h-56 w-56 items-center justify-center">
+        <div className="relative mt-10 flex h-44 w-44 items-center justify-center">
           {(listening || thinking) && (
             <span
               aria-hidden
@@ -130,9 +131,9 @@ export default function Talk() {
             onClick={onMic}
             disabled={thinking}
             aria-label={listening ? t.stopMic : t.mic}
-            className="relative flex h-56 w-56 items-center justify-center rounded-full bg-moss text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:opacity-60"
+            className="relative flex h-44 w-44 items-center justify-center rounded-full bg-moss text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:opacity-60"
           >
-            {listening ? <StopIcon className="h-24 w-24" /> : <MicIcon className="h-24 w-24" />}
+            {listening ? <StopIcon className="h-20 w-20" /> : <MicIcon className="h-20 w-20" />}
           </button>
         </div>
 
