@@ -303,7 +303,11 @@ export async function startLive(opts: LiveOptions): Promise<void> {
         console.warn(`Gemini Live ${model} failed:`, err);
       }
     }
-    if (!c.session || c.stopped) throw lastError ?? new Error("stopped");
+    if (c.stopped) {
+      c.session?.close(); // stopLive ran while connecting: drop the session that just opened
+      return;
+    }
+    if (!c.session) throw lastError;
 
     const url = URL.createObjectURL(new Blob([CAPTURE_WORKLET], { type: "text/javascript" }));
     await input.audioWorklet.addModule(url);
