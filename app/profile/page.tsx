@@ -9,7 +9,6 @@ import { CARD, Section } from "@/components/profile/ui";
 import { SkillsCard } from "@/components/SkillsCard";
 import { FamilyLink } from "../family/FamilyLink";
 import { useAnswers } from "@/lib/answers";
-import { useAssistant } from "@/lib/assistant";
 import { updateProfile, useProfile, type FontSize } from "@/lib/profile";
 import { useSkills } from "@/lib/skills";
 import type { Lang } from "@/prompts/elderwise";
@@ -21,8 +20,6 @@ const FONT_ORDER: FontSize[] = ["normal", "large", "xlarge"];
 const SAMPLE_PX: Record<FontSize, number> = { normal: 19, large: 24, xlarge: 30 };
 
 const COPY: Record<Lang, {
-  since: (assistant: string, when: string) => string;
-  today: string;
   asked: string;
   scams: string;
   skills: string;
@@ -31,20 +28,16 @@ const COPY: Record<Lang, {
   message: string;
 }> = {
   en: {
-    since: (a, w) => `Learning with ${a} since ${w}`,
-    today: "today",
-    asked: "Questions asked",
-    scams: "Scams stopped",
+    asked: "Recent questions",
+    scams: "Scams stopped recently",
     skills: "AI skills",
     reading: "Reading & listening",
     preview: "This is how your text will look.",
     message: "Message",
   },
   de: {
-    since: (a, w) => `Lernt mit ${a} seit ${w}`,
-    today: "heute",
-    asked: "Fragen gestellt",
-    scams: "Betrug gestoppt",
+    asked: "Letzte Fragen",
+    scams: "Betrug zuletzt gestoppt",
     skills: "KI gelernt",
     reading: "Lesen & Hören",
     preview: "So groß sieht Ihr Text aus.",
@@ -96,7 +89,6 @@ function Row({ icon, label, value, onClick }: { icon: ReactNode; label: string; 
 // Profile tab: who you are, your assistant, your trusted person, reading settings and your account.
 export default function ProfilePage() {
   const profile = useProfile();
-  const assistant = useAssistant();
   const answers = useAnswers();
   const t = TEXT[profile.lang];
   const c = COPY[profile.lang];
@@ -104,12 +96,6 @@ export default function ProfilePage() {
   const relation = t.relations[profile.trusted.relation] ?? profile.trusted.relation;
   const phone = profile.trusted.phone.replace(/\s/g, "");
 
-  // Answers are newest first, so the last one is when this person started.
-  const first = answers.at(-1)?.at;
-  const since =
-    first && new Date(first).toDateString() !== new Date().toDateString()
-      ? new Date(first).toLocaleDateString(profile.lang === "de" ? "de-DE" : "en-GB", { day: "numeric", month: "long" })
-      : c.today;
   const scams = answers.filter((e) => e.answer.type === "warning").length;
   const skills = useSkills().length;
 
@@ -122,7 +108,6 @@ export default function ProfilePage() {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="break-words font-serif text-display font-medium leading-tight text-ink">{profile.name}</h1>
-            <p className="text-base leading-snug text-muted">{c.since(assistant.name, since)}</p>
           </div>
           <EditButton onClick={() => setEditing("me")} label={`${editLabel(profile.lang)}: ${profile.name}`} />
         </div>
