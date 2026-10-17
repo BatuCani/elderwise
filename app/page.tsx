@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, MicIcon, RetryIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, KeyboardIcon, MicIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
@@ -35,6 +35,8 @@ export default function Talk() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [question, setQuestion] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
+  const [typing, setTyping] = useState(false);
+  const [typed, setTyped] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
   const recRef = useRef<Recognition | null>(null);
@@ -149,11 +151,7 @@ export default function Talk() {
     unlockSpeech();
     if (!getRecognition()) {
       // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
-      const typed = window.prompt(t.inputPlaceholder)?.trim();
-      if (typed) {
-        setQuestion(typed);
-        ask(typed, photoRef.current);
-      }
+      setTyping(true);
       return;
     }
     mic.start();
@@ -165,6 +163,15 @@ export default function Talk() {
     setNewPhoto(null);
     setPhase("listening");
     startRecognition();
+  }
+
+  function onSendTyped() {
+    const q = typed.trim();
+    if (!q) return;
+    unlockSpeech();
+    setTyped("");
+    setTyping(false);
+    ask(q, null);
   }
 
   function onFinish() {
@@ -245,6 +252,47 @@ export default function Talk() {
                 <RetryIcon className="h-7 w-7" />
                 {t.tryAgain}
               </button>
+            )}
+
+            {/* For people who cannot (or would rather not) speak. */}
+            {typing ? (
+              <form
+                className="glass mt-8 flex w-full items-center gap-2 rounded-full p-2 pl-5"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onSendTyped();
+                }}
+              >
+                <input
+                  autoFocus
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  placeholder={t.typeHere}
+                  aria-label={t.typeHere}
+                  enterKeyHint="send"
+                  className="min-h-12 min-w-0 flex-1 bg-transparent text-xl text-ink outline-none placeholder:text-muted"
+                />
+                <button
+                  type="submit"
+                  disabled={!typed.trim() || thinking}
+                  aria-label={t.send}
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
+                >
+                  <SendIcon className="h-7 w-7" />
+                </button>
+              </form>
+            ) : (
+              phase !== "error" && (
+                <button
+                  type="button"
+                  onClick={() => setTyping(true)}
+                  disabled={thinking}
+                  className="mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-xl font-bold text-moss disabled:opacity-40"
+                >
+                  <KeyboardIcon className="h-7 w-7" />
+                  {t.typeInstead}
+                </button>
+              )
             )}
           </>
         )}

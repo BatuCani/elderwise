@@ -67,3 +67,6 @@ export const CheckIcon = ({ className }: P) => (
 export const RetryIcon = ({ className }: P) => (
   <svg {...base} className={className}><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" /></svg>
 );
+export const KeyboardIcon = ({ className }: P) => (
+  <svg {...base} className={className}><rect x="2" y="6" width="20" height="13" rx="2" /><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 15h6" /></svg>
+);
