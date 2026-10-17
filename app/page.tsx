@@ -64,6 +64,7 @@ export default function Home() {
   const recRef = useRef<Recognition | null>(null);
   const heardRef = useRef("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const answerRef = useRef<HTMLElement>(null);
   const t = TEXT[lang];
 
   const canListen = useSyncExternalStore(
@@ -93,6 +94,7 @@ export default function Home() {
       const data: Answer = await res.json();
       setResult(data);
       setPhase("answer");
+      requestAnimationFrame(() => answerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
       speak(data.answer, lang);
     } catch {
       setPhase("error");
@@ -143,7 +145,10 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-10 pt-6">
       <header className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold tracking-tight">Orbs</h1>
+        <h1 className="flex items-center gap-3 text-4xl font-bold tracking-tight">
+          <span aria-hidden className="orb orb-logo inline-block h-10 w-10 rounded-full" />
+          Elderwise
+        </h1>
         <button
           onClick={() => setLang(lang === "de" ? "en" : "de")}
           className="min-h-14 rounded-2xl border-2 border-black px-5 text-xl font-semibold"
@@ -178,7 +183,7 @@ export default function Home() {
         ) : (
           <button
             onClick={() => fileRef.current?.click()}
-            className="min-h-20 rounded-3xl border-4 border-dashed border-black text-2xl font-semibold"
+            className="min-h-20 rounded-3xl border-4 border-dashed border-black px-4 text-xl font-semibold"
           >
             📷 {t.takePhoto}
           </button>
@@ -194,7 +199,7 @@ export default function Home() {
                   setResult(null);
                   setPhase("idle");
                 }}
-                className="min-h-16 rounded-2xl border-2 border-black bg-zinc-100 px-2 text-lg font-semibold leading-tight"
+                className="min-h-16 rounded-2xl border-2 border-black bg-zinc-100 px-1 text-base font-semibold leading-tight [overflow-wrap:anywhere]"
               >
                 {s.label[lang]}
               </button>
@@ -243,7 +248,7 @@ export default function Home() {
       )}
 
       {result && (
-        <section aria-live="polite" className="flex flex-col gap-4">
+        <section ref={answerRef} aria-live="polite" className="flex scroll-mt-4 flex-col gap-4">
           <div className="rounded-3xl bg-black p-6 text-white">
             <p className="text-3xl font-semibold leading-snug">{result.answer}</p>
             <button

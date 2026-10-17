@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { ANSWER_SCHEMA, defaultQuestion, systemPrompt, type Lang } from "@/prompts/orbs";
+import { ANSWER_SCHEMA, defaultQuestion, systemPrompt, type Lang } from "@/prompts/elderwise";
 
 const MODEL = "claude-sonnet-5-5";
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Orbs",
+  title: "Elderwise",
   description: "Zeigen, fragen, verstehen: ein Sprach-Helfer mit KI für ältere Menschen.",
 };
 

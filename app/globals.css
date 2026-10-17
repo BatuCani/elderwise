@@ -43,3 +43,7 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .orb-listening, .orb-thinking { animation: none; }
 }
+
+.orb-logo {
+  box-shadow: 0 4px 12px rgba(37, 70, 214, 0.35);
+}
