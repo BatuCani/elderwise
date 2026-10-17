@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, CloseIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
 import { LiveCamera } from "@/components/LiveCamera";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
@@ -11,7 +11,7 @@ import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
 import { addEntry, setPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
 import { haptic } from "@/lib/haptics";
-import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
+import { liveLevel, liveSupported, markAutoNavigation, startLive, stopLive, useLive } from "@/lib/live";
 import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
@@ -148,7 +148,10 @@ export default function Talk() {
           addEntry(q, answer);
           setNewPhoto(null);
           setPhase("done");
-          doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1600);
+          doneTimer.current = setTimeout(() => {
+            markAutoNavigation();
+            navigate((to) => router.push(to), "/", "/answers");
+          }, 1600);
           return answer;
         },
       });
@@ -429,14 +432,23 @@ export default function Talk() {
           theme="light"
         >
           <form
-            className="glass flex min-h-[4.25rem] items-center gap-2 rounded-full p-2 pl-5"
+            className={`glass flex min-h-[4.25rem] items-center gap-2 rounded-full p-2 ${liveOn ? "" : "pl-5"}`}
             onSubmit={(e) => {
               e.preventDefault();
               onSendTyped();
             }}
           >
             {liveOn ? (
-              <p className="min-h-12 flex-1 pr-3 text-left text-status leading-[3rem] font-bold text-moss">{t.liveActive}</p>
+              <button
+                type="button"
+                onClick={onFinish}
+                className="flex min-h-14 flex-1 items-center justify-center gap-3 rounded-full bg-white/70 text-status font-bold text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-transform active:scale-[0.98]"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-warn/12 text-warn">
+                  <CloseIcon className="h-6 w-6" />
+                </span>
+                {t.endConversation}
+              </button>
             ) : listening ? (
               <div className="flex-1 pr-3">
                 <VoiceBars stream={mic.stream} className="h-12" />
