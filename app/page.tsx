@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useSyncExternalStore } from "react";
-import { useMicrophone } from "voice-glow";
-import { MicIcon, StopIcon } from "@/components/icons";
+import { useMicrophone, VoiceBeam } from "voice-glow";
+import { CameraIcon, CheckIcon, MicIcon } from "@/components/icons";
+import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
-import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
+import { getRecognition, LOCALE, speak, spokenText, toJpeg, unlockSpeech, type Recognition } from "@/lib/speech";
 import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
@@ -19,7 +20,13 @@ function greetingKey(): "morning" | "afternoon" | "evening" {
   return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
 }
 
-// Talk tab: one big talk button in the middle of the screen. Answers open on the Answers tab.
+// While Claude is thinking, the glow gathers into one beam that sweeps back and forth.
+function thinkingMotion() {
+  return { gather: 1, offset: Math.sin(performance.now() / 600) * 0.8, heldLevel: 0.55, stretch: 0.3 };
+}
+
+// Talk tab: one big talk button. While listening: waveform, "Start camera" and "Done talking",
+// and the voice glow along the bottom. Answers open on the Answers tab.
 export default function Talk() {
   const router = useRouter();
   const profile = useProfile();
@@ -27,11 +34,29 @@ export default function Talk() {
   const mic = useMicrophone();
   const [phase, setPhase] = useState<Phase>("idle");
   const [question, setQuestion] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const recRef = useRef<Recognition | null>(null);
-  const heardRef = useRef("");
+  // Speech recognition stops after pauses; we keep restarting it until "Done talking",
+  // so the text heard so far is kept in `baseRef` and the current run in `sessionRef`.
+  const baseRef = useRef("");
+  const sessionRef = useRef("");
+  const photoRef = useRef<string | null>(null);
+  const listeningRef = useRef(false);
+  const finishingRef = useRef(false);
   const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
 
-  async function ask(q: string) {
+  function setNewPhoto(src: string | null) {
+    if (photoRef.current?.startsWith("blob:")) URL.revokeObjectURL(photoRef.current);
+    photoRef.current = src;
+    setPhoto(src);
+  }
+
+  function heard() {
+    return `${baseRef.current} ${sessionRef.current}`.trim();
+  }
+
+  async function ask(q: string, img: string | null) {
     setPhase("thinking");
     try {
       const body = new FormData();
@@ -44,6 +69,7 @@ export default function Talk() {
         "today",
         new Date().toLocaleDateString(LOCALE[profile.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
       );
+      if (img) body.append("image", await toJpeg(img), "photo.jpg");
       const res = await fetch("/api/ask", { method: "POST", body });
       if (!res.ok) throw new Error(String(res.status));
       const answer: Answer = await res.json();
@@ -51,6 +77,7 @@ export default function Talk() {
       speak(spokenText(answer), profile.lang, profile.speechRate);
       setPhase("done");
       setQuestion("");
+      setNewPhoto(null);
       setTimeout(() => router.push("/answers"), 1200);
     } catch {
       setPhase("error");
@@ -58,99 +85,182 @@ export default function Talk() {
     }
   }
 
-  function onMic() {
-    unlockSpeech();
-    if (phase === "listening") {
-      recRef.current?.stop();
-      return;
-    }
+  function finish() {
+    listeningRef.current = false;
+    mic.stop();
+    const q = heard();
+    if (q || photoRef.current) ask(q, photoRef.current);
+    else setPhase("idle");
+  }
+
+  function startRecognition() {
     const Ctor = getRecognition();
-    if (!Ctor) {
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.lang = LOCALE[profile.lang];
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.onresult = (e) => {
+      sessionRef.current = Array.from(e.results, (r) => r[0].transcript).join(" ");
+      setQuestion(heard());
+    };
+    rec.onerror = (e?: { error?: string }) => {
+      // No microphone permission: stop instead of restarting forever.
+      if (e?.error === "not-allowed" || e?.error === "service-not-allowed") listeningRef.current = false;
+    };
+    rec.onend = () => {
+      baseRef.current = heard();
+      sessionRef.current = "";
+      recRef.current = null;
+      if (finishingRef.current) finish();
+      else if (listeningRef.current) {
+        try {
+          startRecognition();
+        } catch {
+          // The camera may still hold the microphone; "Done talking" still works.
+        }
+      } else {
+        mic.stop();
+        setPhase("idle");
+      }
+    };
+    recRef.current = rec;
+    rec.start();
+  }
+
+  function onTalk() {
+    unlockSpeech();
+    if (!getRecognition()) {
       // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
       const typed = window.prompt(t.inputPlaceholder)?.trim();
       if (typed) {
         setQuestion(typed);
-        ask(typed);
+        ask(typed, photoRef.current);
       }
       return;
     }
     mic.start();
-    const rec = new Ctor();
-    rec.lang = LOCALE[profile.lang];
-    rec.interimResults = true;
-    rec.continuous = false;
-    heardRef.current = "";
-    rec.onresult = (e) => {
-      heardRef.current = Array.from(e.results, (r) => r[0].transcript).join(" ");
-      setQuestion(heardRef.current);
-    };
-    rec.onerror = () => setPhase("idle");
-    rec.onend = () => {
-      recRef.current = null;
-      mic.stop();
-      if (heardRef.current.trim()) ask(heardRef.current);
-      else setPhase("idle");
-    };
-    recRef.current = rec;
+    baseRef.current = "";
+    sessionRef.current = "";
+    listeningRef.current = true;
+    finishingRef.current = false;
     setQuestion("");
+    setNewPhoto(null);
     setPhase("listening");
-    rec.start();
+    startRecognition();
+  }
+
+  function onFinish() {
+    unlockSpeech();
+    finishingRef.current = true;
+    if (recRef.current) recRef.current.stop();
+    else finish();
   }
 
   const listening = phase === "listening";
   const thinking = phase === "thinking";
-  const status = listening
-    ? question
-      ? `“${question}”`
-      : t.listening
-    : thinking
-      ? t.thinking
-      : phase === "error"
-        ? t.error
-        : t.tapToTalk;
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center px-6 pb-36 pt-8 text-center">
+      <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col items-center px-6 pb-36 pt-8 text-center">
         <p className="self-start font-serif text-2xl font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
-        <p className="text-xl text-muted">
-          {greeting}, {profile.name}
-        </p>
-        <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
 
-        <div className="relative mt-10 flex h-44 w-44 items-center justify-center">
-          {(listening || thinking) && (
-            <span
-              aria-hidden
-              className={`absolute inset-0 rounded-full bg-moss/25 ${listening ? "animate-ping" : "animate-pulse"}`}
-            />
-          )}
-          <button
-            type="button"
-            onClick={onMic}
-            disabled={thinking}
-            aria-label={listening ? t.stopMic : t.mic}
-            className="relative flex h-44 w-44 items-center justify-center rounded-full bg-moss text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:opacity-60"
-          >
-            {listening ? <StopIcon className="h-20 w-20" /> : <MicIcon className="h-20 w-20" />}
-          </button>
-        </div>
+        {listening ? (
+          <>
+            <p aria-live="polite" className="min-h-[4.5rem] font-serif text-3xl font-medium leading-snug text-moss">
+              {question ? `“${question}”` : t.listening}
+            </p>
+            <div className="mt-6">
+              <VoiceBars stream={mic.stream} />
+            </div>
 
-        <p
-          aria-live="polite"
-          className={`mt-10 min-h-[5rem] leading-snug ${
-            listening && question
-              ? "font-serif text-3xl font-medium text-moss"
-              : phase === "error"
-                ? "text-2xl font-bold text-warn"
-                : "font-serif text-3xl font-medium text-ink"
-          }`}
-        >
-          {status}
-        </p>
+            {photo && (
+              <div className="mt-6 flex items-center gap-3 glass rounded-2xl p-2 pr-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo} alt="" className="h-14 w-14 rounded-xl object-cover" />
+                <span className="text-lg font-bold text-ink">✓ {t.photoAdded}</span>
+              </div>
+            )}
+
+            <div className="mt-8 flex w-full max-w-xs flex-col gap-4">
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="glass flex min-h-16 items-center justify-center gap-3 rounded-full px-6 text-xl font-bold text-ink active:scale-95"
+              >
+                <CameraIcon className="h-8 w-8" />
+                {t.startCamera}
+              </button>
+              <button
+                type="button"
+                onClick={onFinish}
+                className="flex min-h-16 items-center justify-center gap-3 rounded-full bg-moss px-6 text-xl font-bold text-white shadow-[0_12px_30px_rgba(63,90,58,0.3)] active:scale-95"
+              >
+                <CheckIcon className="h-8 w-8" />
+                {t.finishTalking}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-xl text-muted">
+              {greeting}, {profile.name}
+            </p>
+            <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
+
+            <button
+              type="button"
+              onClick={onTalk}
+              disabled={thinking}
+              aria-label={t.mic}
+              className="mt-10 flex h-44 w-44 items-center justify-center rounded-full bg-moss text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60"
+            >
+              <MicIcon className="h-20 w-20" />
+            </button>
+
+            <p
+              aria-live="polite"
+              className={`mt-10 min-h-[5rem] leading-snug ${
+                phase === "error" ? "text-2xl font-bold text-warn" : "font-serif text-3xl font-medium text-ink"
+              }`}
+            >
+              {thinking ? t.thinking : phase === "error" ? t.error : t.tapToTalk}
+            </p>
+          </>
+        )}
         <div className="flex-1" />
       </main>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) setNewPhoto(URL.createObjectURL(f));
+          e.target.value = "";
+        }}
+      />
+
+      {(listening || thinking) && (
+        <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
+          <VoiceBeam
+            type="mobile"
+            stream={listening ? mic.stream : null}
+            motion={thinking ? thinkingMotion : null}
+            level={listening && !mic.stream ? 0.4 : undefined}
+            sensitivity={listening ? 5 : undefined}
+            reach={listening ? 1.8 : undefined}
+            colorVariant="colorful"
+            theme="light"
+          >
+            <div className="h-[30vh] w-full" />
+          </VoiceBeam>
+        </div>
+      )}
 
       {phase === "done" && (
         <div
