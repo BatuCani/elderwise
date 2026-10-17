@@ -10,7 +10,7 @@ export const ASK_TOOL = "ask_elderwise";
 
 function instruction(lang: Lang, name: string): string {
   const language = lang === "de" ? "simple German, addressing the person formally with Sie" : "simple English";
-  return `You are the warm, patient voice of Elderwise, a helper for older adults. You are talking with ${name}.
+  return `You are the warm, patient voice of Grace, a helper for older adults. You are talking with ${name}.
 Speak in ${language}, or in the language the person speaks. Talk slowly and kindly, like a caring friend.
 
 Say less, show more: one or two short sentences, at most about 25 words, no lists. The Answers screen carries the details.
@@ -47,7 +47,7 @@ export function liveConfig(lang: Lang, name: string, resume?: string): LiveConne
         functionDeclarations: [
           {
             name: ASK_TOOL,
-            description: "Ask the Elderwise expert (Claude) the person's question. It also sees the photo they showed, if any.",
+            description: "Ask the Grace expert (Claude) the person's question. It also sees the photo they showed, if any.",
             parameters: {
               type: Type.OBJECT,
               properties: {
