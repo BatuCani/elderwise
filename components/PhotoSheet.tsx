@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import type { Lang } from "@/prompts/elderwise";
 import { BackIcon, CameraIcon, CloseIcon } from "./icons";
@@ -30,6 +31,7 @@ const COPY = {
     camera: "Take a photo",
     library: "Choose from my photos",
     example: "Try an example",
+    scan: "Scan a letter or code",
     back: "Back",
     cancel: "Cancel",
   },
@@ -39,6 +41,7 @@ const COPY = {
     camera: "Foto aufnehmen",
     library: "Aus meinen Fotos wählen",
     example: "Ein Beispiel ausprobieren",
+    scan: "Brief oder Code scannen",
     back: "Zurück",
     cancel: "Abbrechen",
   },
@@ -170,6 +173,10 @@ export function PhotoSheet({ open, lang, onClose, onFile }: Props) {
                     <PhotosIcon className="h-8 w-8 shrink-0 text-moss" />
                     {c.library}
                   </button>
+                  <Link href="/scan" onClick={close} className={bigButton}>
+                    <CameraIcon className="h-8 w-8 shrink-0 text-moss" />
+                    {c.scan}
+                  </Link>
                   <button onClick={() => setShowExamples(true)} className={bigButton}>
                     <SparkIcon className="h-8 w-8 shrink-0 text-moss" />
                     {c.example}

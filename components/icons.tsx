@@ -70,3 +70,6 @@ export const RetryIcon = ({ className }: P) => (
 export const SwitchCameraIcon = ({ className }: P) => (
   <svg {...base} className={className}><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><path d="M9 13a3 3 0 0 1 5.2-2M15 13a3 3 0 0 1-5.2 2M14.5 9.5v1.7h-1.7M9.5 16.5v-1.7h1.7" /></svg>
 );
+export const NextIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M9 5l7 7-7 7" /></svg>
+);

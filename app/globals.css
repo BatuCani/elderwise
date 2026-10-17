@@ -20,6 +20,8 @@
   --text-greeting: clamp(0.9rem, 4.6vw, 1rem);
   --text-display: clamp(1.65rem, 10vw, 2.15rem);
   --text-transcript: clamp(1.5rem, 8.7vw, 1.9rem);
+  /* Live words while talking: already very big at every text size, so px (not rem). */
+  --text-live: clamp(40px, 12vw, 56px);
   --text-asked: clamp(1.25rem, 6.4vw, 1.5rem);
   --text-status: clamp(1rem, 5.1vw, 1.1rem);
   --text-toast: 0.9rem;
@@ -169,8 +171,20 @@ a {
   }
 }
 
+.word-in {
+  animation: word-in 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .thinking-dot,
+  .word-in,
   .toast-in {
     animation: none;
   }
@@ -184,6 +198,17 @@ a {
   a {
     -webkit-tap-highlight-color: transparent;
     transition: transform 120ms ease, background-color 120ms ease;
+    /* A long press on a button must never select its text or open the iOS callout menu. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  canvas,
+  img {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
   button:not(:disabled):active,
@@ -314,6 +339,91 @@ html[data-nav-dir="back"]::view-transition-new(root) {
   }
 }
 
+/* Scan flow (app/scan) motion: a line sweeping over the paper, highlight boxes, ticks and rows arriving. */
+
+.scan-sweep {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background: var(--color-moss);
+  box-shadow: 0 0 18px 6px rgba(63, 90, 58, 0.35);
+  animation: scan-sweep 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes scan-sweep {
+  from {
+    top: 4%;
+  }
+  to {
+    top: 96%;
+  }
+}
+
+.scan-box {
+  position: absolute;
+  border: 3px solid var(--color-moss);
+  border-radius: 10px;
+  background: rgba(63, 90, 58, 0.06);
+  opacity: 0;
+  animation: scan-box 3.6s ease-in-out infinite;
+}
+
+@keyframes scan-box {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  12%,
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scan-tick {
+  opacity: 0;
+  animation: scan-rise 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+
+.scan-row {
+  opacity: 0;
+  animation: scan-rise 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+
+@keyframes scan-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.scan-pop {
+  animation: scan-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+@keyframes scan-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.scan-pulse {
+  animation: scan-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes scan-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .answer-in,
   .row-in,
@@ -337,5 +447,22 @@ html[data-nav-dir="back"]::view-transition-new(root) {
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-sweep,
+  .scan-box,
+  .scan-pulse {
+    animation: none;
+  }
+  .scan-box,
+  .scan-tick,
+  .scan-row {
+    opacity: 1;
+    animation: none;
+  }
+  .scan-pop {
+    animation: none;
   }
 }

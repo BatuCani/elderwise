@@ -1,20 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, CloseIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
 import { LiveCamera } from "@/components/LiveCamera";
+import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
+import { DailyTip } from "@/components/DailyTip";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
-import { addEntry, setPending } from "@/lib/answers";
+import { addEntry, setPending as setAnswerPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
 import { haptic } from "@/lib/haptics";
 import { liveLevel, liveSupported, markAutoNavigation, startLive, stopLive, useLive } from "@/lib/live";
 import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
+import { followUpQuestion, getSolve, setFollowUp, setPending, setStuck, startSolve, useSolve, type Solve } from "@/lib/solve";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
+import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
@@ -52,6 +57,8 @@ export default function Talk() {
   const sessionRef = useRef("");
   const photoRef = useRef<string | null>(null);
   const listeningRef = useRef(false);
+  const micBlocked = useRef(false);
+  const [micHint, setMicHint] = useState(false);
   const finishingRef = useRef(false);
   const busyRef = useRef(false);
   const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -88,6 +95,32 @@ export default function Talk() {
     [],
   );
 
+  // Coming from "Stuck?" on the Steps page: start listening right away. Talk reacts to the flag
+  // changing, because Next may keep Talk alive (hidden) instead of mounting it again.
+  // Leaving Talk without asking drops the "stuck" mode.
+  const stuckRef = useRef(false);
+  const shownRef = useRef(false);
+  const stuckNow = useSolve()?.stuck ?? false;
+  const autoTalk = useEffectEvent(() => {
+    if (shownRef.current) onTalk();
+  });
+  useEffect(() => {
+    if (!stuckNow) return;
+    stuckRef.current = true;
+    setStuck(false);
+    setTimeout(autoTalk, 300);
+  }, [stuckNow]);
+  useEffect(() => {
+    shownRef.current = true;
+    return () => {
+      shownRef.current = false;
+      // Only when Talk is really left (not React's quick dev re-run).
+      setTimeout(() => {
+        if (!shownRef.current) stuckRef.current = false;
+      });
+    };
+  }, []);
+
   function setNewPhoto(src: string | null) {
     if (photoRef.current?.startsWith("blob:")) URL.revokeObjectURL(photoRef.current);
     photoRef.current = src;
@@ -98,28 +131,43 @@ export default function Talk() {
     return `${baseRef.current} ${sessionRef.current}`.trim();
   }
 
-  async function ask(q: string, img: string | null) {
+  // Open the Steps page right away; it shows "Thinking…" until Claude's answer is in.
+  function ask(q: string, img: string | null) {
     if (busyRef.current) return;
-    busyRef.current = true;
     setAsked({ q, img });
-    setPhase("thinking");
-    setPending(true);
+    // When stuck on a step, Claude also gets the problem and the step, so it answers about that.
+    const solve = getSolve();
+    send(q, img, stuckRef.current && solve ? solve : null);
+    stuckRef.current = false;
+    setPhase("idle");
+    setQuestion("");
+    navigate((to) => router.push(to), "/", "/steps");
+  }
+
+  async function send(q: string, img: string | null, followUp: Solve | null) {
+    busyRef.current = true;
+    setAnswerPending(true);
+    setPending({ question: q, status: "thinking", followUp: !!followUp }, () => send(q, img, followUp));
     try {
-      const answer = await askClaude(q, img, profile);
-      addEntry(q || t.inputPlaceholder, answer);
-      speak(spokenText(answer), profile.lang, profile.speechRate);
-      setPhase("done");
-      setQuestion("");
+      const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, img, profile);
+      saveAnswer(q, answer, followUp);
+      setPending(null);
       setNewPhoto(null);
-      // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
-      doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1500);
+      speak(spokenText(answer), profile.lang, profile.speechRate);
     } catch {
-      setPhase("error");
+      setPending({ question: q, status: "error", followUp: !!followUp });
       speak(t.error, profile.lang, profile.speechRate);
     } finally {
       busyRef.current = false;
-      setPending(false);
+      setAnswerPending(false);
     }
+  }
+
+  // Keep the answer for the Steps page (new problem, or help with the step the person is stuck on).
+  function saveAnswer(q: string, answer: Answer, followUp: Solve | null) {
+    if (followUp) setFollowUp(q || t.inputPlaceholder, answer);
+    else startSolve(q, answer);
+    addEntry(q || t.inputPlaceholder, answer);
   }
 
   function retry() {
@@ -142,15 +190,17 @@ export default function Talk() {
         lang: profile.lang,
         name: profile.name,
         ask: async (q) => {
-          setPending(true);
+          const solve = getSolve();
+          const followUp = stuckRef.current && solve ? solve : null;
           const img = (cameraOnRef.current && frameRef.current) || photoRef.current;
-          const answer = await askClaude(q, img, profile).finally(() => setPending(false));
-          addEntry(q, answer);
+          const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, img, profile);
+          stuckRef.current = false;
+          saveAnswer(q, answer, followUp);
           setNewPhoto(null);
           setPhase("done");
           doneTimer.current = setTimeout(() => {
             markAutoNavigation();
-            navigate((to) => router.push(to), "/", "/answers");
+            navigate((to) => router.push(to), "/", "/steps");
           }, 1600);
           return answer;
         },
@@ -176,7 +226,10 @@ export default function Talk() {
     };
     rec.onerror = (e?: { error?: string }) => {
       // No microphone permission: stop instead of restarting forever.
-      if (e?.error === "not-allowed" || e?.error === "service-not-allowed") listeningRef.current = false;
+      if (e?.error === "not-allowed" || e?.error === "service-not-allowed") {
+        listeningRef.current = false;
+        micBlocked.current = true;
+      }
     };
     rec.onend = () => {
       baseRef.current = heard();
@@ -191,6 +244,9 @@ export default function Talk() {
         }
       } else {
         mic.stop();
+        // Blocked microphone: say so and offer "Try again" instead of silently going back to the start.
+        setMicHint(micBlocked.current);
+        micBlocked.current = false;
         setPhase("idle");
       }
     };
@@ -225,6 +281,7 @@ export default function Talk() {
   }
 
   function onTalk() {
+    setMicHint(false);
     unlockSpeech();
     haptic();
     setPhase("idle");
@@ -279,6 +336,8 @@ export default function Talk() {
             ? "listening"
             : "idle";
 
+  const hasWords = Boolean((listening && !liveOn && question.trim()) || (liveOn && live.status === "listening" && liveText));
+
   return (
     <>
       <main
@@ -314,7 +373,8 @@ export default function Talk() {
 
         {listening || liveOn ? (
           <>
-            <div className="mb-6">
+            {/* On short phones the orb steps aside once words show, so the buttons stay clear of the bar. */}
+            <div className={`mb-6 ${hasWords ? "[@media(max-height:720px)]:hidden" : ""}`}>
               <VoiceOrb mood={mood} lang={profile.lang} compact />
             </div>
             {liveOn && (
@@ -322,12 +382,18 @@ export default function Talk() {
                 <p className="text-xl text-muted">
                   {live.status === "connecting" ? t.liveConnecting : live.status === "speaking" ? t.liveSays : live.status === "thinking" ? t.youSaid : t.listening}
                 </p>
-                {liveText && (
+                {/* While you speak: the last 3 words, very big. Elderwise's reply stays as full text. */}
+                {liveText && live.status === "listening" && (
+                  <div className="mt-3">
+                    <LiveWords text={liveText} placeholder={t.listening} />
+                  </div>
+                )}
+                {liveText && live.status !== "listening" && (
                   <p
                     className={`mt-3 font-serif font-medium leading-[1.12] ${
                       cameraOn ? "line-clamp-3 text-[26px] " : ""
                     }${
-                      live.status === "listening" ? (cameraOn ? "text-ink" : "text-[40px] text-ink") : live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
+                      live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
                     }`}
                   >
                     {live.status === "speaking" ? liveText : `“${liveText}”`}
@@ -335,6 +401,8 @@ export default function Talk() {
                 )}
               </div>
             )}
+            {/* Normal speech mode: the last 3 words, very big, for reassurance while talking. */}
+            {listening && !liveOn && <LiveWords text={question} placeholder={t.listening} />}
             {photo && (
               <div className="mb-6 glass rounded-2xl p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -367,34 +435,51 @@ export default function Talk() {
                 <button
                   type="button"
                   onClick={() => (liveOn ? toggleCamera() : setSheetOpen(true))}
-                  aria-label={t.startCamera}
-                  className="glass flex aspect-square items-center justify-center rounded-[32px] text-ink transition-transform active:scale-95"
+                  className="glass flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] px-2 text-ink transition-transform active:scale-95"
                 >
-                  <CameraIcon className="h-16 w-16" />
+                  <CameraIcon className="h-14 w-14" />
+                  {/* Visible words, not just icons: older adults should never have to guess. */}
+                  <span className="text-[19px] font-bold leading-tight">{t.startCamera}</span>
                 </button>
                 <button
                   type="button"
                   onClick={onFinish}
-                  aria-label={t.finishTalking}
-                  className="flex aspect-square items-center justify-center rounded-[32px] bg-moss text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
+                  className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] bg-moss px-2 text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
                 >
-                  <CheckIcon className="h-16 w-16" />
+                  <CheckIcon className="h-14 w-14" />
+                  <span className="text-[19px] font-bold leading-tight">{t.finishTalking}</span>
                 </button>
               </div>
             )}
           </>
         ) : (
           <>
-            <p className="text-greeting text-muted">
+            {/* Short phones: skip the greeting so the talk hint never hides behind the typing bar. */}
+            <p className="text-greeting text-muted [@media(max-height:720px)]:hidden">
               {greeting}, {profile.name}
             </p>
-            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:620px)]:text-[1.4rem]">
-              {t.headline}
-            </h1>
+            {micHint && phase === "idle" ? (
+              // Blocked microphone: the message takes the headline's place, right where the eye already is.
+              <p role="alert" className="mt-3 max-w-sm text-[21px] font-bold leading-snug text-warn">
+                {t.micBlocked}
+              </p>
+            ) : (
+              <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem]">
+                {t.headline}
+              </h1>
+            )}
             {/* The orb is the talk button: tapping it does the same as the mic button did. */}
-            <div className="mt-10 [@media(max-height:620px)]:mt-5">
+            <div className="mt-10 [@media(max-height:720px)]:mt-5">
               <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
             </div>
+            {/* Scan a letter, bill or code: the guided flow in app/scan. */}
+            {!thinking && (
+              <Link href="/scan" className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-status font-bold text-moss [@media(max-height:720px)]:mt-3">
+                <CameraIcon className="h-7 w-7" />
+                {t.scanLetter}
+              </Link>
+            )}
+            {!thinking && <DailyTip lang={profile.lang} onTry={(q) => { unlockSpeech(); ask(q, null); }} />}
             {phase === "error" && (
               <button
                 onClick={retry}

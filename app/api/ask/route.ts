@@ -53,6 +53,8 @@ export async function POST(req: Request) {
     }
     const answer: Answer = JSON.parse(text.text);
     answer.points = answer.points.slice(0, 3);
+    answer.steps = (answer.steps ?? []).slice(0, 5);
+    if (answer.fields) answer.fields = answer.fields.slice(0, 5);
     return Response.json(answer);
   } catch (err) {
     console.error("Claude request failed:", err);
