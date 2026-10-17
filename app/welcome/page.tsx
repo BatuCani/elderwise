@@ -108,7 +108,7 @@ export default function Welcome() {
 
           {accountStep && (
             <>
-              <Orb className="h-20 w-20 self-center" />
+              <Logo className="h-20 w-20 self-center" />
               <div className="glass rounded-[32px] p-6">
                 <h1 className="font-serif text-[36px] font-medium leading-[1.05] text-ink">{w.saveTitle}</h1>
                 <p className="mt-3 text-[22px] leading-snug text-ink">{w.saveBody}</p>
