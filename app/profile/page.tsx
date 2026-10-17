@@ -67,9 +67,9 @@ function EditButton({ onClick, label }: { onClick: () => void; label: string }) 
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div className="glass flex min-w-0 flex-col items-center justify-start gap-1.5 rounded-[20px] px-2 py-3 text-center">
+    <div className="glass flex min-w-0 flex-col items-center justify-start gap-1.5 rounded-[20px] px-1 py-3 text-center">
       <span className="font-serif text-3xl font-medium leading-none text-moss">{value}</span>
-      <span className="hyphens-auto break-words text-base leading-tight text-muted">{label}</span>
+      <span className="break-words text-[17px] leading-tight text-muted">{label}</span>
     </div>
   );
 }
