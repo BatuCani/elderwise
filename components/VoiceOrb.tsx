@@ -118,16 +118,17 @@ export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label }
     );
   }, [mood, reduced]);
 
+  // No disc behind the orb: it sits right on the cream canvas with a soft moss glow.
   const glow =
     mood === "listening" || mood === "speaking"
-      ? "shadow-[0_0_70px_rgba(63,90,58,0.38),inset_0_1px_0_rgba(255,255,255,0.9)]"
-      : "shadow-[0_0_50px_rgba(63,90,58,0.22),inset_0_1px_0_rgba(255,255,255,0.9)]";
+      ? "bg-[radial-gradient(circle,rgba(63,90,58,0.26)_0%,rgba(63,90,58,0.08)_45%,transparent_70%)]"
+      : "bg-[radial-gradient(circle,rgba(63,90,58,0.16)_0%,rgba(63,90,58,0.05)_45%,transparent_70%)]";
   const circle = compact
-    ? "h-[112px] w-[112px] [@media(max-height:620px)]:h-[84px] [@media(max-height:620px)]:w-[84px]"
-    : "h-[200px] w-[200px] [@media(max-height:720px)]:h-[136px] [@media(max-height:720px)]:w-[136px]";
+    ? "h-[128px] w-[128px] [@media(max-height:620px)]:h-[96px] [@media(max-height:620px)]:w-[96px]"
+    : "h-[240px] w-[240px] [@media(max-height:720px)]:h-[160px] [@media(max-height:720px)]:w-[160px]";
   const orb = (
-    <div ref={wrapRef} className={`glass flex items-center justify-center rounded-full transition-shadow duration-300 ${glow} ${circle}`}>
-      <canvas ref={canvasRef} aria-hidden className="h-[80%] w-[80%]" />
+    <div ref={wrapRef} className={`flex items-center justify-center rounded-full ${glow} ${circle}`}>
+      <canvas ref={canvasRef} aria-hidden className="h-[92%] w-[92%]" />
     </div>
   );
 

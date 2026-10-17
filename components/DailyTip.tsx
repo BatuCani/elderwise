@@ -47,16 +47,25 @@ type Props = {
   lang: Lang;
   // Sends the example question, like the typing bar does.
   onTry: (question: string) => void;
+  // Controlled: only the sheet, opened from somewhere else (the Talk tab's "+" menu).
+  open?: boolean;
+  onClose?: () => void;
 };
 
 // Talk tab: one AI skill per day. A one-line pill under the orb; tapping it opens the full tip.
 // Small phones get a lightbulb in the corner; tablets and desktop show the card right away.
-export function DailyTip({ lang, onTry }: Props) {
+export function DailyTip({ lang, onTry, open: openProp, onClose }: Props) {
   const c = COPY[lang];
   const mounted = useSyncExternalStore(noSubscribe, () => true, () => false);
   const hidden = useSyncExternalStore(subscribe, hiddenToday, () => true);
-  const [open, setOpen] = useState(false);
-  if (!mounted || hidden) return null;
+  const [openState, setOpenState] = useState(false);
+  const controlled = onClose !== undefined;
+  const open = controlled ? !!openProp : openState;
+  const setOpen = (o: boolean) => {
+    if (!controlled) setOpenState(o);
+    else if (!o) onClose();
+  };
+  if (!mounted || (hidden && !controlled)) return null;
   const tip = tipOfTheDay(lang);
 
   function tryIt() {
@@ -96,6 +105,8 @@ export function DailyTip({ lang, onTry }: Props) {
 
   return (
     <>
+      {!controlled && (
+        <>
       {/* Small phones (iPhone SE): a lightbulb button in the top corner, next to the app name. */}
       <button
         type="button"
@@ -119,6 +130,8 @@ export function DailyTip({ lang, onTry }: Props) {
       </button>
       {/* Tablets and desktop: the whole card. */}
       <div className="mt-6 hidden w-full justify-center [@media(min-height:1000px)]:flex">{card(false)}</div>
+        </>
+      )}
 
       {open &&
         createPortal(
