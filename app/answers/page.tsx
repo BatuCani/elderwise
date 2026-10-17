@@ -1,6 +1,7 @@
 "use client";
 
 import { AnswerView, TypeIcon } from "@/components/AnswerView";
+import { EmptyAnswers } from "@/components/cards";
 import { SpeakerIcon } from "@/components/icons";
 import { useAnswers } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
@@ -29,10 +30,17 @@ export default function AnswersPage() {
         )}
       </header>
       {!latest ? (
-        <p className="text-xl leading-snug text-muted">{t.noAnswers}</p>
+        <EmptyAnswers t={t} lang={profile.lang} />
       ) : (
         <>
-          <AnswerView answer={latest.answer} t={t} phone={profile.trusted.phone} time={clock(latest.at)} />
+          <AnswerView
+            answer={latest.answer}
+            t={t}
+            phone={profile.trusted.phone}
+            time={clock(latest.at)}
+            lang={profile.lang}
+            at={latest.at}
+          />
           {older.length > 0 && (
             <section className="flex flex-col gap-2">
               <h2 className="text-lg font-bold text-muted">{t.earlier}</h2>

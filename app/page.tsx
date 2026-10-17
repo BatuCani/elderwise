@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, MicIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, MicIcon, RetryIcon } from "@/components/icons";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
@@ -45,6 +45,12 @@ export default function Talk() {
   const photoRef = useRef<string | null>(null);
   const listeningRef = useRef(false);
   const finishingRef = useRef(false);
+  const busyRef = useRef(false);
+  const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [asked, setAsked] = useState<{ q: string; img: string | null }>({ q: "", img: null });
+
+  // Leaving the Talk tab while the toast shows must not pull the person back to Answers later.
+  useEffect(() => () => clearTimeout(doneTimer.current), []);
 
   function setNewPhoto(src: string | null) {
     if (photoRef.current?.startsWith("blob:")) URL.revokeObjectURL(photoRef.current);
@@ -57,6 +63,9 @@ export default function Talk() {
   }
 
   async function ask(q: string, img: string | null) {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setAsked({ q, img });
     setPhase("thinking");
     try {
       const body = new FormData();
@@ -78,11 +87,19 @@ export default function Talk() {
       setPhase("done");
       setQuestion("");
       setNewPhoto(null);
-      setTimeout(() => router.push("/answers"), 1200);
+      // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
+      doneTimer.current = setTimeout(() => router.push("/answers"), 1600);
     } catch {
       setPhase("error");
       speak(t.error, profile.lang, profile.speechRate);
+    } finally {
+      busyRef.current = false;
     }
+  }
+
+  function retry() {
+    unlockSpeech();
+    ask(asked.q, asked.img);
   }
 
   function finish() {
@@ -220,6 +237,15 @@ export default function Talk() {
             >
               <MicIcon className="h-20 w-20" />
             </button>
+            {phase === "error" && (
+              <button
+                onClick={retry}
+                className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-7 text-xl font-bold text-moss"
+              >
+                <RetryIcon className="h-7 w-7" />
+                {t.tryAgain}
+              </button>
+            )}
           </>
         )}
         <div className="flex-1" />
@@ -267,10 +293,12 @@ export default function Talk() {
       {phase === "done" && (
         <div
           role="status"
-          aria-label={t.done}
-          className="fixed inset-x-0 bottom-[calc(40px+5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-moss text-white shadow-lg"
+          className="toast-in glass fixed inset-x-0 bottom-[calc(40px+5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2.5 pl-2.5 pr-6 text-xl font-bold text-ink"
         >
-          <CheckIcon className="h-9 w-9" />
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss text-white">
+            <CheckIcon className="h-6 w-6" />
+          </span>
+          {t.done}
         </div>
       )}
     </>

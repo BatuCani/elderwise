@@ -1,5 +1,6 @@
 import type { Copy } from "@/app/copy";
-import type { Answer, AnswerType } from "@/prompts/elderwise";
+import type { Answer, AnswerType, Lang } from "@/prompts/elderwise";
+import { CardBody } from "./cards";
 import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon, PhoneIcon } from "./icons";
 
 export function TypeIcon({ type, className }: { type: AnswerType; className?: string }) {
@@ -10,16 +11,21 @@ export function TypeIcon({ type, className }: { type: AnswerType; className?: st
   return <InfoIcon className={`${className} text-moss`} />;
 }
 
-type Props = { answer: Answer; t: Copy; phone: string; time: string };
+type Props = { answer: Answer; t: Copy; phone: string; time: string; lang: Lang; at: number };
 
 // One answer as a big visual card, then the "You learned" card.
-export function AnswerView({ answer, t, phone, time }: Props) {
-  const { type, headline, sentence, points, when, action } = answer;
+// Warnings keep the red card below; every other type uses its own card from components/cards.
+export function AnswerView({ answer, t, phone, time, lang, at }: Props) {
+  const { type, headline, sentence, points, action } = answer;
   const warning = type === "warning";
 
   return (
     <section className="flex flex-col gap-3">
       <div className={`rounded-3xl p-6 ${warning ? "bg-warn text-white shadow-[0_16px_40px_rgba(142,36,36,0.35)]" : "bg-white text-ink"}`}>
+        {!warning ? (
+          <CardBody answer={answer} kicker={`${t.kinds[type]} · ${time}`} lang={lang} at={at} />
+        ) : (
+        <>
         <p className={`mb-3 text-base font-bold uppercase tracking-[0.08em] ${warning ? "text-white/85" : "text-muted"}`}>
           {t.kinds[type]} · {time}
         </p>
@@ -27,12 +33,6 @@ export function AnswerView({ answer, t, phone, time }: Props) {
           {warning ? <AlertIcon className="mt-1 h-9 w-9 shrink-0" /> : <TypeIcon type={type} className="mt-1 h-9 w-9 shrink-0" />}
           <h2 className="font-serif text-3xl font-medium leading-tight">{headline}</h2>
         </div>
-        {type === "reminder" && when && (
-          <p className="mt-4 flex items-center gap-2 rounded-2xl bg-paper px-4 py-3 text-xl font-bold text-moss">
-            <CalendarIcon className="h-6 w-6 shrink-0" />
-            {when}
-          </p>
-        )}
         <p className="mt-4 text-xl leading-snug">{sentence}</p>
         {points.length > 0 && (
           <ol className="mt-5 flex flex-col gap-3">
@@ -49,6 +49,8 @@ export function AnswerView({ answer, t, phone, time }: Props) {
               </li>
             ))}
           </ol>
+        )}
+        </>
         )}
         {action && (
           <a
