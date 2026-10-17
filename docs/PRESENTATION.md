@@ -1,7 +1,7 @@
 # Grace: 5-minute finalist presentation
 
 For the finalist round at 16:40 (6 minutes demo + 4 minutes Q&A). The script runs about 5 minutes, which leaves one minute of buffer.
-Roles: **Speaker** (Maike) talks. **Demo** (one teammate) drives the phone, mirrored to the big screen. **Doctor** (a second teammate) reads two lines in demo 2.
+Roles: **Speaker** (any teammate) talks. **Demo** (one teammate) drives the phone, mirrored to the big screen. **Doctor** (a second teammate) reads two lines in demo 2.
 
 ## Summary
 
@@ -22,7 +22,7 @@ Grace is a voice AI companion for people over 65. You talk to it or show it a ph
 |---|---|---|---|
 | 0:00 | Speaker | Grace logo on the Talk screen | "Meet Ingrid. She's 78. She ran a bakery for thirty years and still does the crossword in pen. But lately the world speaks a language she never learned. Letters full of jargon. Apps that time out. And texts like this one." |
 | 0:20 | Demo | Camera → "Add a photo" → example **parcel text message** | "Ingrid isn't alone. In the EU, only 28 percent of people aged 65 to 74 have basic digital skills. One in four people over 60 has disabling hearing loss. And every year, about one in eighteen older adults falls for a scam." |
-| 0:40 | Speaker | Talk screen | "So we built Grace. Not another chatbot, but a companion you simply talk to. It reads the small print with you, and it teaches you a little AI every time you use it. I'm Maike, a psychologist. My work is about why people avoid AI. It's almost never that they can't. It's that nobody showed them, on a problem that matters to them." |
+| 0:40 | Speaker | Talk screen | "So we built Grace. Not another chatbot, but a companion you simply talk to. It reads the small print with you, and it teaches you a little AI every time you use it. Psychology tells us why people avoid AI. It's almost never that they can't. It's that nobody showed them, on a problem that matters to them." |
 | 1:05 | Demo | Tap the big button and ask out loud: **"Grace, is this message real?"** The words appear large while speaking. | "One button. Ingrid just talks, the way she'd ask a person. Her words appear in big letters while she speaks." |
 | 1:25 | Demo | Answers: the deep red **scam alert** card, read aloud | Let Grace read for a few seconds. Then: "One calm card. Deep red means scam. Three plain reasons, read aloud, and slower if she wants." |
 | 1:50 | Demo | Tap **Tell Anna** | "One tap, and her daughter Anna gets a real message. Ingrid stays in charge, and her family stays in the loop." |
