@@ -8,7 +8,7 @@ import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
-import { liveSupported, startLive, stopLive, useLive } from "@/lib/live";
+import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
 import { useProfile } from "@/lib/profile";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import { TEXT } from "./copy";

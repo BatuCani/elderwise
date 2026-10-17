@@ -17,8 +17,6 @@ type Props = {
   listening: boolean;
   thinking: boolean;
   stream: MediaStream | null;
-  // Live conversation: glow level sampled every frame (the person's or Elderwise's voice).
-  level?: () => number;
   t: Copy;
 };
 
@@ -28,7 +26,7 @@ function thinkingMotion() {
 }
 
 // The pill at the bottom of the Talk tab: camera, text field, and the black mic button.
-export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemovePhoto, photo, listening, thinking, stream, level, t }: Props) {
+export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemovePhoto, photo, listening, thinking, stream, t }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const showSend = value.trim().length > 0 && !listening;
 
@@ -47,7 +45,7 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
         type="mobile"
         stream={listening ? stream : null}
         motion={thinking ? thinkingMotion : null}
-        level={level ?? (listening && !stream ? 0.4 : undefined)}
+        level={listening && !stream ? 0.4 : undefined}
         sensitivity={listening ? 5 : undefined}
         reach={listening ? 1.8 : undefined}
         colorVariant="colorful"
@@ -88,7 +86,7 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
             <button
               type="button"
               onClick={onMic}
-              disabled={thinking && !listening}
+              disabled={thinking}
               aria-label={listening ? t.stopMic : t.mic}
               className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
             >
