@@ -8,6 +8,7 @@ import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
+import { DailyTip } from "@/components/DailyTip";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
 import { addEntry, setPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
@@ -335,6 +336,7 @@ export default function Talk() {
                 {t.scanLetter}
               </Link>
             )}
+            {!thinking && <DailyTip lang={profile.lang} onTry={(q) => { unlockSpeech(); ask(q, null); }} />}
             {phase === "error" && (
               <button
                 onClick={retry}
