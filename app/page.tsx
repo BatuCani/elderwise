@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone } from "voice-glow";
 import { ChatInput } from "@/components/ChatInput";
+import { CheckIcon, RetryIcon } from "@/components/icons";
 import { addEntry } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
 import { getRecognition, LOCALE, speak, spokenText, toJpeg, unlockSpeech, type Recognition } from "@/lib/speech";
@@ -30,7 +31,13 @@ export default function Talk() {
   const [photo, setPhoto] = useState<string | null>(null);
   const recRef = useRef<Recognition | null>(null);
   const heardRef = useRef("");
+  const busyRef = useRef(false);
+  const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [asked, setAsked] = useState("");
   const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
+
+  // Leaving the Talk tab while the toast shows must not pull the person back to Answers later.
+  useEffect(() => () => clearTimeout(doneTimer.current), []);
 
   function setNewPhoto(src: string | null) {
     if (photo?.startsWith("blob:")) URL.revokeObjectURL(photo);
@@ -38,6 +45,10 @@ export default function Talk() {
   }
 
   async function ask(q: string) {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setAsked(q);
+    setQuestion("");
     setPhase("thinking");
     try {
       const body = new FormData();
@@ -57,13 +68,20 @@ export default function Talk() {
       addEntry(q || t.inputPlaceholder, answer);
       speak(spokenText(answer), profile.lang, profile.speechRate);
       setPhase("done");
-      setQuestion("");
       setNewPhoto(null);
-      setTimeout(() => router.push("/answers"), 1200);
+      // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
+      doneTimer.current = setTimeout(() => router.push("/answers"), 1600);
     } catch {
       setPhase("error");
       speak(t.error, profile.lang, profile.speechRate);
+    } finally {
+      busyRef.current = false;
     }
+  }
+
+  function retry() {
+    unlockSpeech();
+    ask(asked);
   }
 
   function onMic() {
@@ -101,45 +119,66 @@ export default function Talk() {
     rec.start();
   }
 
-  const status =
-    phase === "listening"
-      ? question || t.listening
-      : phase === "thinking"
-        ? t.thinking
-        : phase === "error"
-          ? t.error
-          : null;
+  const talking = phase === "listening" || phase === "thinking";
 
   return (
     <>
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 pb-56 pt-8">
         <p className="font-serif text-2xl font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
-        <p className="text-xl text-muted">
-          {greeting}, {profile.name}
-        </p>
-        <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
-        <p
-          aria-live="polite"
-          className={`mt-8 min-h-[4.5rem] leading-snug ${
-            phase === "listening"
-              ? "font-serif text-4xl font-medium text-moss"
-              : phase === "error"
-                ? "text-2xl font-bold text-warn"
-                : "text-2xl text-ink"
-          }`}
-        >
-          {status && (phase === "listening" && question ? `“${status}”` : status)}
-        </p>
+        {talking ? (
+          <div aria-live="polite">
+            <p className="text-xl text-muted">{phase === "listening" ? t.listening : asked && t.youSaid}</p>
+            {(phase === "listening" ? question : asked) && (
+              <p
+                className={`mt-3 font-serif font-medium leading-[1.12] text-ink ${
+                  phase === "listening" ? "text-[40px]" : "text-[30px] text-ink/70"
+                }`}
+              >
+                “{phase === "listening" ? question : asked}”
+              </p>
+            )}
+            {phase === "thinking" && (
+              <p className="mt-8 flex items-center gap-3 text-2xl text-moss">
+                <span className="thinking-dot" aria-hidden />
+                {t.thinking}
+              </p>
+            )}
+          </div>
+        ) : (
+          <>
+            <p className="text-xl text-muted">
+              {greeting}, {profile.name}
+            </p>
+            <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
+            <div aria-live="polite" className="mt-8 min-h-[4.5rem]">
+              {phase === "error" && (
+                <>
+                  <p className="text-2xl font-bold leading-snug text-warn">{t.error}</p>
+                  <button
+                    onClick={retry}
+                    className="glass mt-5 flex min-h-14 items-center gap-3 rounded-full px-7 text-xl font-bold text-moss"
+                  >
+                    <RetryIcon className="h-7 w-7" />
+                    {t.tryAgain}
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
         <div className="flex-1" />
       </main>
 
       {phase === "done" && (
         <div
           role="status"
-          className="fixed inset-x-0 bottom-[calc(40px+9rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
+          className="toast-in glass fixed inset-x-0 bottom-[calc(40px+9rem+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2.5 pl-2.5 pr-6 text-xl font-bold text-ink"
         >
-          ✓ {t.done}
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss text-white">
+            <CheckIcon className="h-6 w-6" />
+          </span>
+          {t.done}
         </div>
       )}
 
@@ -149,6 +188,7 @@ export default function Talk() {
             value={phase === "listening" ? "" : question}
             onChange={setQuestion}
             onSubmit={() => {
+              if (!question.trim() && !photo) return;
               unlockSpeech();
               ask(question);
             }}
