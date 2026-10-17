@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { TEXT } from "@/app/copy";
-import { stopLive, useLive } from "@/lib/live";
+import { stopLive, takeAutoNavigation, useLive } from "@/lib/live";
 import { useProfile } from "@/lib/profile";
 
 // While a hands-free conversation runs and the person looks at another tab, a small pill lets them end it.
@@ -10,6 +11,14 @@ export function LiveBar() {
   const path = usePathname();
   const t = TEXT[useProfile().lang];
   const { status } = useLive();
+  // Changing tab ends the conversation, except going back to Talk or the app's own move to Answers.
+  const lastPath = useRef(path);
+  useEffect(() => {
+    if (path === lastPath.current) return;
+    lastPath.current = path;
+    const auto = takeAutoNavigation();
+    if (status !== "idle" && path !== "/" && !auto) stopLive();
+  }, [path, status]);
   if (status === "idle" || path === "/" || path === "/welcome") return null;
 
   return (

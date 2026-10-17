@@ -15,7 +15,9 @@ export const CARD_TEXT: Record<
     clearHistory: string;
     clearConfirm: string;
     clearYes: string;
+    clearFailed: string;
     cancel: string;
+    slower: string;
   }
 > = {
   en: {
@@ -30,7 +32,9 @@ export const CARD_TEXT: Record<
     clearHistory: "Clear history",
     clearConfirm: "Delete all answers?",
     clearYes: "Yes, delete",
+    clearFailed: "Could not clear your saved answers. Please check your internet and try again.",
     cancel: "Cancel",
+    slower: "Say it again, slower",
   },
   de: {
     addToCalendar: "In den Kalender",
@@ -44,6 +48,8 @@ export const CARD_TEXT: Record<
     clearHistory: "Verlauf löschen",
     clearConfirm: "Alle Antworten löschen?",
     clearYes: "Ja, löschen",
+    clearFailed: "Ihre gespeicherten Antworten konnten nicht gelöscht werden. Bitte prüfen Sie Ihr Internet und versuchen Sie es noch einmal.",
     cancel: "Abbrechen",
+    slower: "Noch mal, langsamer",
   },
 };

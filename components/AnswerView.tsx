@@ -2,7 +2,8 @@ import type { Copy } from "@/app/copy";
 import type { Answer, AnswerType, Lang } from "@/prompts/elderwise";
 import { CardBody } from "./cards";
 import { LinkCard, PlaceCard } from "./cards-extra";
-import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon, PhoneIcon } from "./icons";
+import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon } from "./icons";
+import { TellTrustedButton } from "./TellTrustedButton";
 
 // Labels for the two newer card types ("place" and "link"), which app/copy.ts does not list yet.
 const EXTRA_TEXT: Record<Lang, { place: string; link: string; open: string }> = {
@@ -18,11 +19,12 @@ export function TypeIcon({ type, className }: { type: AnswerType; className?: st
   return <InfoIcon className={`${className} text-moss`} />;
 }
 
-type Props = { answer: Answer; t: Copy; phone: string; time: string; lang: Lang; at: number };
+// phone is unused now (TellTrustedButton reads the trusted person from the profile); kept so callers don't change.
+type Props = { answer: Answer; t: Copy; phone?: string; time: string; lang: Lang; at: number };
 
 // One answer as a big visual card, then the "You learned" card.
 // Warnings keep the red card below; every other type uses its own card from components/cards.
-export function AnswerView({ answer, t, phone, time, lang, at }: Props) {
+export function AnswerView({ answer, t, time, lang, at }: Props) {
   const { type, headline, sentence, points, action } = answer;
   const warning = type === "warning";
   const kind = (t.kinds as Record<string, string>)[type] ?? (type === "place" ? EXTRA_TEXT[lang].place : EXTRA_TEXT[lang].link);
@@ -75,17 +77,7 @@ export function AnswerView({ answer, t, phone, time, lang, at }: Props) {
         )}
         </>
         )}
-        {action && (
-          <a
-            href={`tel:${phone.replace(/\s/g, "")}`}
-            className={`mt-6 flex min-h-14 items-center justify-center gap-2 rounded-[28px] px-5 py-3 text-center text-lg font-bold ${
-              warning ? "bg-white text-warn" : "bg-moss text-white"
-            }`}
-          >
-            <PhoneIcon className="h-6 w-6 shrink-0" />
-            {action.label}
-          </a>
-        )}
+        {action && <TellTrustedButton answer={answer} label={action.label} warning={warning} />}
       </div>
 
       <div className="glass-moss rounded-3xl p-5 text-learn">

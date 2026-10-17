@@ -20,7 +20,7 @@ STEP 0 - get your bearings from GitHub (do this first, every time you start):
 - Create a branch: git checkout -b marie/answer-cards
 
 PRODUCT CONTEXT:
-Elderwise is a mobile web app for older adults (65+), English UI, Liquid Glass look (frosted white glass cards over soft moss/peach/periwinkle color blobs, background #F4F1EA, ink #1E2420, muted #5E6660, accent moss #3F5A3A, scam red #8E2424, fonts Fraunces for headlines and Atkinson Hyperlegible for text, min 19px text, min 48px tap targets). Design: https://app.paper.design/file/01M54P2AW7DMM9SRH5B5DKTZ5M (screen "3 Answers"). The red warning card already exists and looks right - keep it as the reference for quality.
+Elderwise is a mobile web app for older adults (65+), English UI, Liquid Glass look (white glass cards with a 1px border on a flat warm cream canvas, background #F4F1EA, ink #1E2420, muted #5E6660, accent moss #3F5A3A, scam red #8E2424, fonts Fraunces for headlines and Atkinson Hyperlegible for text, min 19px text, min 48px tap targets). Design: https://app.paper.design/file/01M54P2AW7DMM9SRH5B5DKTZ5M (screen "3 Answers"). The red warning card already exists and looks right - keep it as the reference for quality.
 
 YOUR TASK:
 Make each answer type its own polished card. Create the folder components/cards/ with:

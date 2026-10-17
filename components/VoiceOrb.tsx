@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { MODE_FRAMES, paintFrame, resolvePreset } from "thinking-orbs/engine";
 import type { OrbState } from "thinking-orbs";
 import type { Lang } from "@/prompts/elderwise";
@@ -17,9 +17,15 @@ const ORB: Record<OrbMood, OrbState> = {
   speaking: "composing",
 };
 
+// Shown while someone holds the orb down: they don't need to hold, just let go and talk.
+const HOLD_HINT: Record<Lang, string> = {
+  en: "Let go, then speak",
+  de: "Loslassen, dann sprechen",
+};
+
 const COPY: Record<Lang, Record<OrbMood, string>> = {
   en: {
-    idle: "Tap and talk",
+    idle: "Tap once, then speak",
     connecting: "Getting ready…",
     listening: "Listening…",
     thinking: "Thinking…",
@@ -27,7 +33,7 @@ const COPY: Record<Lang, Record<OrbMood, string>> = {
     speaking: "Speaking…",
   },
   de: {
-    idle: "Tippen und sprechen",
+    idle: "Einmal tippen, dann sprechen",
     connecting: "Einen Moment…",
     listening: "Ich höre zu…",
     thinking: "Ich denke nach…",
@@ -64,6 +70,9 @@ export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label }
   const wrapRef = useRef<HTMLDivElement>(null);
   const reduced = useSyncExternalStore(subscribeReduced, () => matchMedia(reducedQuery).matches, () => false);
   const state = ORB[mood];
+  const [holding, setHolding] = useState(false);
+  const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const firedByPointer = useRef(false);
 
   // Draw the orb animation; with reduced motion it is one still frame.
   useEffect(() => {
@@ -115,7 +124,7 @@ export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label }
       : "shadow-[0_0_50px_rgba(63,90,58,0.22),inset_0_1px_0_rgba(255,255,255,0.9)]";
   const circle = compact
     ? "h-[112px] w-[112px] [@media(max-height:620px)]:h-[84px] [@media(max-height:620px)]:w-[84px]"
-    : "h-[200px] w-[200px] [@media(max-height:620px)]:h-[112px] [@media(max-height:620px)]:w-[112px]";
+    : "h-[200px] w-[200px] [@media(max-height:720px)]:h-[136px] [@media(max-height:720px)]:w-[136px]";
   const orb = (
     <div ref={wrapRef} className={`glass flex items-center justify-center rounded-full transition-shadow duration-300 ${glow} ${circle}`}>
       <canvas ref={canvasRef} aria-hidden className="h-[80%] w-[80%]" />
@@ -125,19 +134,45 @@ export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label }
   return (
     <div className="flex flex-col items-center">
       {onTap ? (
+        // Starts on release, for a quick tap and a long press alike (release is a user gesture on
+        // every phone, so the mic and voice always unlock). Holding shows "Let go, then speak".
         <button
           type="button"
-          onClick={onTap}
           disabled={disabled}
           aria-label={label ?? COPY[lang].idle}
-          className="rounded-full transition-transform active:scale-95"
+          onPointerDown={() => {
+            clearTimeout(holdTimer.current);
+            holdTimer.current = setTimeout(() => setHolding(true), 350);
+          }}
+          onPointerUp={(e) => {
+            clearTimeout(holdTimer.current);
+            setHolding(false);
+            const r = e.currentTarget.getBoundingClientRect();
+            const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            if (!inside || disabled) return;
+            firedByPointer.current = true;
+            onTap();
+          }}
+          onPointerCancel={() => {
+            clearTimeout(holdTimer.current);
+            setHolding(false);
+          }}
+          onClick={() => {
+            // Keyboard and screen readers only send click; after a touch it was already handled.
+            if (firedByPointer.current) firedByPointer.current = false;
+            else onTap();
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+          className="touch-none rounded-full transition-transform active:scale-95"
         >
           {orb}
         </button>
       ) : (
         orb
       )}
-      <p className={`${compact ? "mt-3" : "mt-5 [@media(max-height:620px)]:mt-2"} text-[18px] font-bold text-moss`}>{COPY[lang][mood]}</p>
+      <p aria-live="polite" className={`${compact ? "mt-3" : "mt-5 [@media(max-height:720px)]:mt-3"} text-[18px] font-bold text-moss`}>
+        {holding ? HOLD_HINT[lang] : COPY[lang][mood]}
+      </p>
     </div>
   );
 }

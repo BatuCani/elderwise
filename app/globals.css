@@ -20,6 +20,8 @@
   --text-greeting: clamp(0.9rem, 4.6vw, 1rem);
   --text-display: clamp(1.65rem, 10vw, 2.15rem);
   --text-transcript: clamp(1.5rem, 8.7vw, 1.9rem);
+  /* Live words while talking: already very big at every text size, so px (not rem). */
+  --text-live: clamp(40px, 12vw, 56px);
   --text-asked: clamp(1.25rem, 6.4vw, 1.5rem);
   --text-status: clamp(1rem, 5.1vw, 1.1rem);
   --text-toast: 0.9rem;
@@ -42,52 +44,37 @@ body {
   min-height: 100dvh;
   overflow-x: clip;
   color: var(--color-ink);
+  /* Flat warm cream canvas: calm and clean, glass cards sit on it without colour blobs. */
+  background: var(--color-paper);
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
 }
 
-/* Soft color blobs behind the glass surfaces (iOS 26 "Liquid Glass" look). A fixed full-screen
-   layer instead of background-attachment: fixed, which iOS Safari ignores. 100lvh keeps it
-   covering the screen while Safari's toolbars collapse and expand. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  height: 100vh;
-  height: 100lvh;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 8% 4%, rgba(170, 196, 150, 0.55), transparent 42%),
-    radial-gradient(circle at 100% 45%, rgba(255, 196, 160, 0.45), transparent 40%),
-    radial-gradient(circle at 0% 96%, rgba(160, 180, 255, 0.4), transparent 45%);
-}
-
 .glass {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.82);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(30, 36, 32, 0.08);
   box-shadow:
-    0 8px 24px rgba(30, 36, 32, 0.08),
+    0 6px 20px rgba(30, 36, 32, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .glass-moss {
-  background: rgba(228, 235, 221, 0.6);
+  background: rgba(228, 235, 221, 0.85);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(63, 90, 58, 0.12);
   box-shadow:
     0 8px 24px rgba(30, 36, 32, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.72);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(30, 36, 32, 0.08);
   box-shadow:
     0 10px 30px rgba(30, 36, 32, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -169,9 +156,315 @@ a {
   }
 }
 
+.word-in {
+  animation: word-in 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+}
+
+/* New AI skill toast: the sparkle turns once and glows. */
+.skill-spark {
+  animation: skill-spark 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes skill-spark {
+  0% {
+    transform: scale(0.6) rotate(-40deg);
+    box-shadow: 0 0 0 0 rgba(63, 90, 58, 0.5);
+  }
+  60% {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 0 0 10px rgba(63, 90, 58, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .skill-spark,
   .thinking-dot,
+  .word-in,
   .toast-in {
+    animation: none;
+  }
+}
+
+/* ---- Motion: native iOS feel. Only transform and opacity animate, so Safari stays on the GPU. ---- */
+
+/* Every button and link gives a little when pressed. Utilities like active:scale-95 still win. */
+@layer base {
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 120ms ease, background-color 120ms ease;
+    /* A long press on a button must never select its text or open the iOS callout menu. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  canvas,
+  img {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  button:not(:disabled):active,
+  a:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Glass buttons catch a brighter highlight while pressed. */
+button.glass:not(:disabled):active,
+a.glass:active {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+/* Tab bar pill: a soft lit glass lozenge without its own blur, so no extra backdrop-filter layer. */
+.tab-pill {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 4px 14px rgba(30, 36, 32, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transition: transform 380ms cubic-bezier(0.3, 1.25, 0.5, 1);
+  view-transition-name: tab-pill;
+}
+
+.tab-bar {
+  view-transition-name: tab-bar;
+}
+
+/* During a view transition the pill glides as its own layer; the live element must not move twice. */
+html[data-nav-dir] .tab-pill {
+  transition: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+html[data-nav-dir="forward"]::view-transition-old(root) {
+  animation-name: screen-out-left;
+}
+html[data-nav-dir="forward"]::view-transition-new(root) {
+  animation-name: screen-in-right;
+}
+html[data-nav-dir="back"]::view-transition-old(root) {
+  animation-name: screen-out-right;
+}
+html[data-nav-dir="back"]::view-transition-new(root) {
+  animation-name: screen-in-left;
+}
+
+::view-transition-group(tab-pill) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.3, 1.25, 0.5, 1);
+}
+
+::view-transition-group(tab-bar),
+::view-transition-old(tab-bar),
+::view-transition-new(tab-bar) {
+  animation-duration: 200ms;
+}
+
+@keyframes screen-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@keyframes screen-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes screen-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes screen-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+
+/* Newest answer (and the thinking card) fade in with a gentle rise; older rows follow one by one. */
+.answer-in {
+  animation: rise-in 250ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.row-in {
+  animation: rise-in 280ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* An older answer opens like an iOS sheet. */
+.sheet-in {
+  animation: sheet-in 320ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}
+
+/* Placeholder lines in the thinking card: a slow opacity pulse (cheaper than a moving gradient). */
+.skeleton-line {
+  border-radius: 12px;
+  background: rgba(30, 36, 32, 0.08);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Scan flow (app/scan) motion: a line sweeping over the paper, highlight boxes, ticks and rows arriving. */
+
+.scan-sweep {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background: var(--color-moss);
+  box-shadow: 0 0 18px 6px rgba(63, 90, 58, 0.35);
+  animation: scan-sweep 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes scan-sweep {
+  from {
+    top: 4%;
+  }
+  to {
+    top: 96%;
+  }
+}
+
+.scan-box {
+  position: absolute;
+  border: 3px solid var(--color-moss);
+  border-radius: 10px;
+  background: rgba(63, 90, 58, 0.06);
+  opacity: 0;
+  animation: scan-box 3.6s ease-in-out infinite;
+}
+
+@keyframes scan-box {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  12%,
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scan-tick {
+  opacity: 0;
+  animation: scan-rise 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+
+.scan-row {
+  opacity: 0;
+  animation: scan-rise 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+}
+
+@keyframes scan-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.scan-pop {
+  animation: scan-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+@keyframes scan-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.scan-pulse {
+  animation: scan-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes scan-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .answer-in,
+  .row-in,
+  .sheet-in,
+  .skeleton-line {
+    animation: none;
+  }
+
+  .tab-pill,
+  button,
+  a {
+    transition: none;
+  }
+
+  button:not(:disabled):active,
+  a:active {
+    transform: none;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-sweep,
+  .scan-box,
+  .scan-pulse {
+    animation: none;
+  }
+  .scan-box,
+  .scan-tick,
+  .scan-row {
+    opacity: 1;
+    animation: none;
+  }
+  .scan-pop {
     animation: none;
   }
 }

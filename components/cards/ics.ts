@@ -10,7 +10,7 @@ type Event = { title: string; description: string; place: string | null; start: 
 
 export function buildIcs({ title, description, place, start, hasTime }: Event): string {
   const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Elderwise//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT"];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Grace//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT"];
   lines.push(`UID:${crypto.randomUUID()}@elderwise`, `DTSTAMP:${stamp}`);
   if (hasTime) {
     // Local time as written on the letter, one hour long.

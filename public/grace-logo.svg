@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1F2E1C"/>
+      <stop offset="0.45" stop-color="#3F5A3A"/>
+      <stop offset="0.8" stop-color="#6E8C5E"/>
+      <stop offset="1" stop-color="#C9D9B4"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="0.75" cy="0.85" r="0.6">
+      <stop offset="0" stop-color="#F4F1EA" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#F4F1EA" stop-opacity="0"/>
+    </radialGradient>
+    <g id="petal">
+      <path d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"
+            fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linejoin="round"/>
+    </g>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="116" fill="url(#shine)"/>
+  <g>
+    <use href="#petal" transform="rotate(0 256 256)"/>
+    <use href="#petal" transform="rotate(60 256 256)"/>
+    <use href="#petal" transform="rotate(120 256 256)"/>
+    <use href="#petal" transform="rotate(180 256 256)"/>
+    <use href="#petal" transform="rotate(240 256 256)"/>
+    <use href="#petal" transform="rotate(300 256 256)"/>
+  </g>
+</svg>

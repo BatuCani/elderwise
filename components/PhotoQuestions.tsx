@@ -1,18 +1,16 @@
 "use client";
 
 import type { Lang } from "@/prompts/elderwise";
-import { CameraIcon, CloseIcon } from "./icons";
+import { CloseIcon } from "./icons";
 
 // Ready-made questions teach what you can ask an AI about a photo; one tap sends it with the photo.
-const COPY: Record<Lang, { show: string; title: string; remove: string; questions: string[] }> = {
+const COPY: Record<Lang, { title: string; remove: string; questions: string[] }> = {
   en: {
-    show: "Show me a photo",
     title: "What do you want to know?",
     remove: "Remove photo",
     questions: ["Is this real?", "Explain it simply", "What should I do?"],
   },
   de: {
-    show: "Zeig mir ein Foto",
     title: "Was möchten Sie wissen?",
     remove: "Foto entfernen",
     questions: ["Ist das echt?", "Einfach erklären", "Was soll ich tun?"],
@@ -21,33 +19,17 @@ const COPY: Record<Lang, { show: string; title: string; remove: string; question
 
 type Props = {
   lang: Lang;
-  photo: string | null;
-  disabled?: boolean;
-  onAddPhoto: () => void;
+  photo: string;
   onRemove: () => void;
   onAsk: (question: string) => void;
 };
 
-// Start screen: a "Show me a photo" button, or once a photo is chosen, the photo with big question buttons.
-export function PhotoQuestions({ lang, photo, disabled, onAddPhoto, onRemove, onAsk }: Props) {
+// Start screen with a photo attached: the photo and big question buttons.
+export function PhotoQuestions({ lang, photo, onRemove, onAsk }: Props) {
   const c = COPY[lang];
 
-  if (!photo) {
-    return (
-      <button
-        type="button"
-        onClick={onAddPhoto}
-        disabled={disabled}
-        className="glass mt-6 flex min-h-14 items-center gap-3 rounded-full px-6 text-[20px] font-bold text-ink transition-transform active:scale-95 disabled:opacity-50 [@media(max-height:620px)]:mt-2"
-      >
-        <CameraIcon className="h-7 w-7 shrink-0 text-moss" />
-        {c.show}
-      </button>
-    );
-  }
-
   return (
-    <section className="toast-in mt-6 flex w-full max-w-sm flex-col items-center gap-3 [@media(max-height:620px)]:mt-0">
+    <section className="toast-in mt-6 flex w-full max-w-sm flex-col items-center gap-3 [@media(max-height:720px)]:mt-3">
       <div className="flex w-full items-center gap-3">
         <div className="glass relative shrink-0 rounded-2xl p-1.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -69,8 +51,7 @@ export function PhotoQuestions({ lang, photo, disabled, onAddPhoto, onRemove, on
             key={q}
             type="button"
             onClick={() => onAsk(q)}
-            disabled={disabled}
-            className="glass min-h-14 grow rounded-full px-5 text-[20px] font-bold text-moss transition-transform active:scale-95 disabled:opacity-50"
+            className="glass min-h-14 grow rounded-full px-5 text-[20px] font-bold text-moss transition-transform active:scale-95 "
           >
             {q}
           </button>

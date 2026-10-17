@@ -2,8 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 import type { Lang } from "@/prompts/elderwise";
+import { pushProfile } from "./sync";
 
-// Fake demo profile, kept in this browser's localStorage only.
+// Demo profile, kept in this browser's localStorage (and the account when signed in, see sync.ts).
 export type FontSize = "normal" | "large" | "xlarge";
 
 export type Profile = {
@@ -40,6 +41,14 @@ function read(): Profile {
 }
 
 export function updateProfile(patch: Partial<Profile>) {
+  applyRemoteProfile(patch);
+  pushProfile(cache!);
+}
+
+export const currentProfile = read;
+
+// Applies a change without saving it back to the account (used for data loaded from it).
+export function applyRemoteProfile(patch: Partial<Profile>) {
   cache = { ...read(), ...patch };
   try {
     localStorage.setItem(KEY, JSON.stringify(cache));
