@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Burst } from "./Burst";
 import { useProfile } from "@/lib/profile";
 import { earnedNow, skillText, useSkills, type SkillId } from "@/lib/skills";
 
@@ -58,8 +59,9 @@ export function SkillToast() {
       role="status"
       className="toast-in glass fixed inset-x-0 top-[calc(14px+env(safe-area-inset-top))] z-[60] mx-auto flex w-fit max-w-[calc(100%-32px)] items-center gap-3 rounded-full py-2 pl-2 pr-5"
     >
-      <span className="skill-spark flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-moss text-white">
+      <span className="skill-spark relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-moss text-white">
         <SparkIcon className="h-6 w-6" />
+        <Burst />
       </span>
       <span className="text-[18px] font-bold leading-tight text-ink">
         {LABEL[lang]}: <span className="text-moss">{skillText(shown, lang).title}</span>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Burst } from "@/components/Burst";
 import { CheckIcon, CloseIcon, NextIcon, RetryIcon } from "@/components/icons";
 import { useProfile } from "@/lib/profile";
 import { pickRound, QUIZ, type QuizQuestion } from "@/lib/quiz";
@@ -106,7 +107,7 @@ export default function Practice() {
                     onClick={() => choose(i)}
                     disabled={chosen !== null}
                     aria-pressed={chosen === i}
-                    className={`flex min-h-16 items-center justify-center gap-2 rounded-[22px] px-5 py-3 text-center text-xl font-bold leading-snug transition-colors ${
+                    className={`relative flex min-h-16 items-center justify-center gap-2 rounded-[22px] px-5 py-3 text-center text-xl font-bold leading-snug transition-colors ${
                       isRight
                         ? "bg-moss text-white"
                         : isWrong
@@ -117,6 +118,7 @@ export default function Practice() {
                     }`}
                   >
                     {isRight && <CheckIcon className="h-6 w-6 shrink-0" />}
+                    {isRight && chosen === i && <Burst distance={60} />}
                     {isWrong && <CloseIcon className="h-6 w-6 shrink-0" />}
                     {option}
                   </button>
