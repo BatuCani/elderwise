@@ -4,6 +4,7 @@ import { GoogleGenAI, type LiveServerMessage, type Session } from "@google/genai
 import { useSyncExternalStore } from "react";
 import type { Lang } from "@/prompts/elderwise";
 import { ASK_TOOL, LIVE_MODELS, liveConfig } from "@/prompts/live";
+import { withAssistant } from "./assistant";
 
 // Hands-free voice conversation through Gemini Live. Gemini listens and speaks; every real question
 // goes to Claude through the ask_elderwise tool. One conversation at a time, kept outside React so it
@@ -206,7 +207,8 @@ async function open(c: Conversation, model: string): Promise<Session> {
     ai.live
       .connect({
         model,
-        config: liveConfig(c.opts.lang, c.opts.name, c.resume),
+        // The chosen voice, name, personality and pace from "Your assistant" on the Profile tab.
+        config: withAssistant(liveConfig(c.opts.lang, c.opts.name, c.resume)),
         callbacks: {
           onmessage: (m) => {
             if (m.setupComplete && !ready) {
