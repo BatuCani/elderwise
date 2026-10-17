@@ -34,6 +34,7 @@ Gemini is only the voice. Every real question goes to Claude through one tool, `
 `app/api/live-token/route.ts` creates a short-lived, single-use Gemini token on the server, so `GEMINI_API_KEY` never reaches the browser.
 If Live is not available, the mic falls back to push-to-talk with the browser's speech recognition.
 The voice uses `gemini-3.8-live`, with `gemini-3.1-flash-live-preview` as automatic fallback. Dropped connections resume the same conversation, and talking over the answer stops it at once.
+During a conversation, the camera button shares the back camera live: one JPEG frame per second goes into the Live session, so Gemini sees what the person points at, and Claude gets the latest frame as the photo for the answer card.
 
 ## How to run it
 ```bash

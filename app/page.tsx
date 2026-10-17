@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, CloseIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
+import { LiveCamera } from "@/components/LiveCamera";
 import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
@@ -13,7 +14,7 @@ import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
 import { addEntry, setPending as setAnswerPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
 import { haptic } from "@/lib/haptics";
-import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
+import { liveLevel, liveSupported, markAutoNavigation, startLive, stopLive, useLive } from "@/lib/live";
 import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
 import { earnSkill } from "@/lib/skills";
@@ -66,6 +67,24 @@ export default function Talk() {
   const live = useLive();
   const liveOn = live.status !== "idle";
   const liveFailed = useRef(false);
+  // Live camera during a conversation; the latest frame goes to Claude as the photo.
+  const [camera, setCamera] = useState<"environment" | "user" | null>(null);
+  const [cameraCount, setCameraCount] = useState(0);
+  const [cameraError, setCameraError] = useState(false);
+  const frameRef = useRef<string | null>(null);
+  const cameraOnRef = useRef(false);
+  const path = usePathname();
+  const cameraOn = camera !== null && liveOn && path === "/";
+  // Clear the camera choice whenever the camera stops (session ended, tab changed). Cleanups still
+  // run on a hidden Talk tab (Next keeps it alive), so a new session never restarts it silently.
+  useEffect(() => {
+    if (!cameraOn) return;
+    return () => setCamera(null);
+  }, [cameraOn]);
+  useEffect(() => {
+    cameraOnRef.current = cameraOn;
+    if (!cameraOn) frameRef.current = null;
+  }, [cameraOn]);
 
   // Leaving the Talk tab (Next keeps it alive, hidden) clears the toast and must not pull the
   // person back to Answers later.
@@ -176,14 +195,18 @@ export default function Talk() {
         ask: async (q) => {
           const solve = getSolve();
           const followUp = stuckRef.current && solve ? solve : null;
+          const img = (cameraOnRef.current && frameRef.current) || photoRef.current;
           earnSkill("voice");
-          if (photoRef.current) earnSkill("photo");
-          const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, photoRef.current, profile);
+          if (img) earnSkill("photo");
+          const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, img, profile);
           stuckRef.current = false;
           saveAnswer(q, answer, followUp);
           setNewPhoto(null);
           setPhase("done");
-          doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/steps"), 1600);
+          doneTimer.current = setTimeout(() => {
+            markAutoNavigation();
+            navigate((to) => router.push(to), "/", "/steps");
+          }, 1600);
           return answer;
         },
       });
@@ -271,10 +294,27 @@ export default function Talk() {
     else startPushToTalk();
   }
 
+  function toggleCamera() {
+    if (camera) {
+      setCamera(null);
+      return;
+    }
+    setCameraError(false);
+    setCamera("environment");
+  }
+
+  function countCameras() {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((d) => setCameraCount(d.filter((x) => x.kind === "videoinput").length))
+      .catch(() => {});
+  }
+
   function onFinish() {
     unlockSpeech();
     haptic();
     if (liveOn) {
+      setCamera(null);
       stopLive();
       setPhase("idle");
       return;
@@ -313,7 +353,23 @@ export default function Talk() {
           <img src="/grace-mark-moss.svg" alt="" width={28} height={28} className="h-7 w-7" />
           Grace
         </p>
-        <div className="flex-1" />
+        {cameraOn ? (
+          <div className="relative mt-4 mb-6 w-full">
+            <LiveCamera facing={camera} onFrame={(f) => (frameRef.current = f)} onReady={countCameras} onError={() => (setCamera(null), setCameraError(true))} />
+            {cameraCount > 1 && (
+              <button
+                type="button"
+                onClick={() => setCamera(camera === "environment" ? "user" : "environment")}
+                aria-label={t.switchCamera}
+                className="glass absolute right-4 top-4 flex h-14 w-14 items-center justify-center rounded-full text-ink"
+              >
+                <SwitchCameraIcon className="h-7 w-7" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
 
         {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
         <p aria-live="polite" className="sr-only">
@@ -327,7 +383,7 @@ export default function Talk() {
               <VoiceOrb mood={mood} lang={profile.lang} compact />
             </div>
             {liveOn && (
-              <div className="mb-8">
+              <div className={cameraOn ? "mb-6" : "mb-8"}>
                 <p className="text-xl text-muted">
                   {live.status === "connecting" ? t.liveConnecting : live.status === "speaking" ? t.liveSays : live.status === "thinking" ? t.youSaid : t.listening}
                 </p>
@@ -340,6 +396,8 @@ export default function Talk() {
                 {liveText && live.status !== "listening" && (
                   <p
                     className={`mt-3 font-serif font-medium leading-[1.12] ${
+                      cameraOn ? "line-clamp-3 text-[26px] " : ""
+                    }${
                       live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
                     }`}
                   >
@@ -357,25 +415,47 @@ export default function Talk() {
               </div>
             )}
 
-            <div className="grid w-full max-w-sm grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setSheetOpen(true)}
-                className="glass flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] px-2 text-ink transition-transform active:scale-95"
-              >
-                <CameraIcon className="h-14 w-14" />
-                {/* Visible words, not just icons: older adults should never have to guess. */}
-                <span className="text-[19px] font-bold leading-tight">{t.startCamera}</span>
-              </button>
-              <button
-                type="button"
-                onClick={onFinish}
-                className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] bg-moss px-2 text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
-              >
-                <CheckIcon className="h-14 w-14" />
-                <span className="text-[19px] font-bold leading-tight">{t.finishTalking}</span>
-              </button>
-            </div>
+            {cameraError && <p className="mb-4 text-status font-bold text-warn">{t.cameraFailed}</p>}
+            {cameraOn ? (
+              <div className="flex w-full max-w-sm gap-4">
+                <button
+                  type="button"
+                  onClick={toggleCamera}
+                  className="glass flex min-h-20 flex-1 items-center justify-center gap-3 rounded-[28px] text-status font-bold text-ink transition-transform active:scale-95"
+                >
+                  <CameraIcon className="h-8 w-8" />
+                  {t.stopCamera}
+                </button>
+                <button
+                  type="button"
+                  onClick={onFinish}
+                  aria-label={t.finishTalking}
+                  className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-moss text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
+                >
+                  <CheckIcon className="h-10 w-10" />
+                </button>
+              </div>
+            ) : (
+              <div className="grid w-full max-w-sm grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => (liveOn ? toggleCamera() : setSheetOpen(true))}
+                  className="glass flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] px-2 text-ink transition-transform active:scale-95"
+                >
+                  <CameraIcon className="h-14 w-14" />
+                  {/* Visible words, not just icons: older adults should never have to guess. */}
+                  <span className="text-[19px] font-bold leading-tight">{t.startCamera}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onFinish}
+                  className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] bg-moss px-2 text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
+                >
+                  <CheckIcon className="h-14 w-14" />
+                  <span className="text-[19px] font-bold leading-tight">{t.finishTalking}</span>
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -442,14 +522,23 @@ export default function Talk() {
           theme="light"
         >
           <form
-            className="glass flex min-h-[4.25rem] items-center gap-2 rounded-full p-2 pl-5"
+            className={`glass flex min-h-[4.25rem] items-center gap-2 rounded-full p-2 ${liveOn ? "" : "pl-5"}`}
             onSubmit={(e) => {
               e.preventDefault();
               onSendTyped();
             }}
           >
             {liveOn ? (
-              <p className="min-h-12 flex-1 pr-3 text-left text-status leading-[3rem] font-bold text-moss">{t.liveActive}</p>
+              <button
+                type="button"
+                onClick={onFinish}
+                className="flex min-h-14 flex-1 items-center justify-center gap-3 rounded-full bg-white/70 text-status font-bold text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-transform active:scale-[0.98]"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-warn/12 text-warn">
+                  <CloseIcon className="h-6 w-6" />
+                </span>
+                {t.endConversation}
+              </button>
             ) : listening ? (
               <div className="flex-1 pr-3">
                 <VoiceBars stream={mic.stream} className="h-12" />

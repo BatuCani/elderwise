@@ -67,6 +67,8 @@ registerProcessor("elderwise-capture", Capture);
 `;
 
 const RECONNECT_TRIES = 3;
+// A conversation nobody speaks in for this long ends by itself.
+const SILENCE_END_MS = 60_000;
 // Live models sometimes call the tool twice for one question; the repeat reuses the first answer.
 const REPEAT_WINDOW_MS = 30_000;
 
@@ -77,6 +79,8 @@ type Conversation = {
   // Latest session resumption handle: a dropped connection continues the same conversation.
   resume?: string;
   reconnecting: boolean;
+  lastActivity: number;
+  silenceTimer?: ReturnType<typeof setInterval>;
   lastAsk?: { question: string; at: number; answer: Promise<{ headline: string; sentence: string }> };
   mic: MediaStream;
   input: AudioContext;
@@ -142,6 +146,7 @@ export function liveLevel(): number {
 }
 
 async function handle(c: Conversation, m: LiveServerMessage) {
+  if (m.serverContent?.inputTranscription?.text || m.serverContent?.modelTurn || m.toolCall) c.lastActivity = Date.now();
   if (m.sessionResumptionUpdate?.resumable && m.sessionResumptionUpdate.newHandle) c.resume = m.sessionResumptionUpdate.newHandle;
   // The server is about to close this connection: move to a fresh one now, keeping the conversation.
   if (m.goAway) reconnect(c);
@@ -281,6 +286,7 @@ export async function startLive(opts: LiveOptions): Promise<void> {
       session: null,
       model: LIVE_MODELS[0],
       reconnecting: false,
+      lastActivity: Date.now(),
       mic,
       input,
       output,
@@ -321,6 +327,10 @@ export async function startLive(opts: LiveOptions): Promise<void> {
     capture.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
       if (!c.stopped) c.session?.sendRealtimeInput({ audio: { data: toBase64(e.data), mimeType: "audio/pcm;rate=16000" } });
     };
+    c.silenceTimer = setInterval(() => {
+      if (state.status === "listening" && !c.playing.size && Date.now() - c.lastActivity > SILENCE_END_MS) stopLive();
+    }, 5000);
+    document.addEventListener("visibilitychange", endWhenHidden);
     set({ status: "listening" });
   } catch (err) {
     stopLive();
@@ -330,11 +340,35 @@ export async function startLive(opts: LiveOptions): Promise<void> {
   }
 }
 
+// One camera frame (base64 JPEG) into the running session, so Gemini sees what the person points at.
+export function sendLiveFrame(jpeg: string) {
+  const c = convo;
+  if (c && !c.stopped && !c.reconnecting) c.session?.sendRealtimeInput({ video: { data: jpeg, mimeType: "image/jpeg" } });
+}
+
+// The phone locks or the person switches apps: end the conversation instead of listening in the background.
+function endWhenHidden() {
+  if (document.visibilityState === "hidden") stopLive();
+}
+
+// The app moves to Answers by itself after an answer; that must not end the conversation.
+let autoNavigation = false;
+export function markAutoNavigation() {
+  autoNavigation = true;
+}
+export function takeAutoNavigation(): boolean {
+  const was = autoNavigation;
+  autoNavigation = false;
+  return was;
+}
+
 export function stopLive() {
   const c = convo;
   convo = null;
+  document.removeEventListener("visibilitychange", endWhenHidden);
   if (c) {
     c.stopped = true;
+    clearInterval(c.silenceTimer);
     silence(c);
     c.session?.close();
     c.mic.getTracks().forEach((t) => t.stop());
