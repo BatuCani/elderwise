@@ -1,0 +1,333 @@
+/* Grace demo video. Palette and type follow the app: bone, moss, ink; Fraunces + Atkinson Hyperlegible. */
+@font-face {
+  font-family: "Fraunces";
+  src: url("assets/fonts/fraunces.woff2") format("woff2");
+  font-weight: 100 900;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/atkinson-400.woff2") format("woff2");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/atkinson-700.woff2") format("woff2");
+  font-weight: 700;
+}
+
+:root {
+  --bone: #f4f1ea;
+  --moss: #3f5a3a;
+  --ink: #1e2420;
+  --muted: #5d6659;
+  --card: #fbfaf6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--bone);
+}
+body.portrait {
+  width: 1080px;
+  height: 1920px;
+}
+body.landscape {
+  width: 1920px;
+  height: 1080px;
+}
+#root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  color: var(--ink);
+}
+.bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(63, 90, 58, 0.16), transparent 42%),
+    radial-gradient(circle at 85% 88%, rgba(201, 217, 180, 0.55), transparent 48%),
+    var(--bone);
+  background-size: 140% 140%;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* Headlines: word-by-word reveal, accent words in moss (like the reference's two-tone type). */
+.hl {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+}
+.hl .line {
+  display: block;
+}
+.w {
+  display: inline-block;
+}
+.acc {
+  color: var(--moss);
+  font-style: italic;
+}
+.sub {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Feature scenes: copy + phone */
+.copy {
+  position: absolute;
+}
+.mark {
+  display: block;
+}
+.phone-wrap {
+  position: absolute;
+}
+.phone {
+  position: relative;
+  border: 16px solid var(--ink);
+  border-radius: 84px;
+  overflow: hidden;
+  background: var(--bone);
+  aspect-ratio: 1170 / 2532;
+  box-sizing: content-box;
+  box-shadow:
+    0 60px 120px rgba(30, 36, 32, 0.22),
+    0 18px 40px rgba(30, 36, 32, 0.14);
+}
+.shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portrait .copy {
+  top: 130px;
+  left: 70px;
+  right: 70px;
+  text-align: center;
+}
+.portrait .mark {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 22px;
+}
+.portrait .hl {
+  font-size: 92px;
+}
+.portrait .sub {
+  font-size: 40px;
+  margin-top: 26px;
+}
+.portrait .phone-wrap {
+  top: 620px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.portrait .phone {
+  width: 540px;
+}
+
+.landscape .copy {
+  left: 150px;
+  top: 50%;
+  width: 920px;
+  transform: translateY(-50%);
+}
+.landscape .mark {
+  width: 110px;
+  height: 110px;
+  margin-bottom: 26px;
+}
+.landscape .hl {
+  font-size: 104px;
+}
+.landscape .sub {
+  font-size: 42px;
+  margin-top: 30px;
+}
+.landscape .phone-wrap {
+  right: 260px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.landscape .phone {
+  width: 436px;
+}
+
+/* Text-only scenes */
+.center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 80px;
+}
+.big {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  color: var(--moss);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.big .in {
+  margin: 0 0.12em;
+  color: var(--ink);
+  font-style: italic;
+  font-weight: 400;
+}
+.portrait .big {
+  font-size: 300px;
+  margin-bottom: 40px;
+}
+.landscape .big {
+  font-size: 240px;
+  margin-bottom: 30px;
+}
+.portrait .hook-l1 {
+  font-size: 84px;
+}
+.landscape .hook-l1 {
+  font-size: 80px;
+}
+.hook-l2 {
+  margin-top: 60px;
+  color: var(--muted);
+}
+.portrait .hook-l2 {
+  font-size: 60px;
+}
+.landscape .hook-l2 {
+  font-size: 54px;
+  margin-top: 40px;
+}
+
+.kicker {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--moss);
+  font-size: 36px;
+  margin-bottom: 56px;
+}
+.cards {
+  display: flex;
+  gap: 48px;
+}
+.portrait .cards {
+  flex-direction: column;
+}
+.card {
+  background: var(--card);
+  border-radius: 56px;
+  padding: 64px 72px;
+  width: 720px;
+  box-shadow: 0 40px 90px rgba(30, 36, 32, 0.14);
+  text-align: left;
+}
+.landscape .card {
+  width: 680px;
+}
+.spark {
+  width: 84px;
+  height: 84px;
+  fill: #d97757;
+  margin-bottom: 24px;
+}
+.dotwave {
+  display: flex;
+  gap: 12px;
+  height: 84px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.dotwave i {
+  display: block;
+  width: 16px;
+  height: 84px;
+  border-radius: 8px;
+  background: var(--moss);
+}
+.ct {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 84px;
+  line-height: 1;
+}
+.cs {
+  font-size: 38px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.cr {
+  margin-top: 28px;
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--moss);
+}
+
+.endlogo {
+  width: 220px;
+  height: 220px;
+}
+.endname {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 150px;
+  line-height: 1;
+  margin-top: 30px;
+  letter-spacing: -0.03em;
+}
+.endline {
+  font-size: 72px;
+  margin-top: 26px;
+}
+.url {
+  margin-top: 70px;
+  font-size: 46px;
+  font-weight: 700;
+  color: var(--moss);
+}
+.team {
+  margin-top: 30px;
+  font-size: 38px;
+}
+.event {
+  margin-top: 14px;
+  font-size: 34px;
+  color: var(--muted);
+}
+.landscape .endlogo {
+  width: 160px;
+  height: 160px;
+}
+.landscape .endname {
+  font-size: 120px;
+  margin-top: 20px;
+}
+.landscape .endline {
+  font-size: 64px;
+}
+.landscape .url {
+  margin-top: 44px;
+}
