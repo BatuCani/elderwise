@@ -1,9 +1,9 @@
 // Builds the Grace promo in two cuts from one timeline:
 //   index.html            1080x1920 (9:16)
 //   landscape/index.html  1920x1080 (16:9)
-// Structure: a ~33 s promo intro in the style of the reference reel (kinetic two-tone words,
+// Structure: a ~38 s promo intro in the style of the reference reel (kinetic two-tone words,
 // a 3D tunnel of phone screens, a gradient swoosh, a progress bar, Done + confetti, floating cards,
-// a wide UI slide and a pill button being tapped), then ~65 s of the real app being tested in
+// a wide UI slide, a pill button being tapped and the four assistant bots hopping in), then ~65 s of the real app being tested in
 // phone frames, then a logo outro. Cuts sit on the 120 bpm grid of tools/make_music.py.
 // Usage: node tools/build.mjs && python tools/make_music.py
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -28,7 +28,17 @@ const TEST = [
   ["Profile", "Your own assistant", ["voice", "text-xl"], [80, 40]],
 ];
 const SEG = 5.5;
-const INTRO = 33;
+// The four assistant personalities from the Profile tab, as drawn by bot-avatars in the app
+// (stills in assets/bots, exported from the app's own avatar settings). Patient helper is picked.
+const BOTS = [
+  ["patient", "Patient helper"],
+  ["cheerful", "Cheerful friend"],
+  ["short", "Short and clear"],
+  ["storyteller", "Storyteller"],
+];
+const BOTS_AT = 30;
+const BOT_TAP = BOTS_AT + 2.5;
+const INTRO = 38;
 const TEST_END = INTRO + TEST.length * SEG;
 const TOTAL = TEST_END + 6;
 
@@ -97,9 +107,33 @@ function page(orient) {
   T(`tl.fromTo("#pill .sent", {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.4}, 26.0);`);
   // 10. Patient with you, then "now watch it work".
   T(`tl.fromTo("#pat .k", {y: 60, opacity: 0, filter: "blur(12px)"}, {y: 0, opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "power3.out", stagger: 0.15}, 27.55);`);
-  T(`tl.fromTo("#watch .k", {y: 60, opacity: 0, filter: "blur(12px)"}, {y: 0, opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "power3.out", stagger: 0.15}, 30.05);`);
-  T(`tl.fromTo("#watch .sub", {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.4}, 30.9);`);
-  // 11. Real test segments.
+  // 11. Pick a personality: the four bots hop in one by one, the cursor picks Patient helper and it jumps for joy.
+  T(`tl.fromTo("#bots .k", {y: 60, opacity: 0, filter: "blur(12px)"}, {y: 0, opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "power3.out", stagger: 0.12}, ${BOTS_AT + 0.05});`);
+  BOTS.forEach((_, i) => {
+    const at = BOTS_AT + 0.45 + i * 0.3;
+    T(`tl.fromTo("#bt${i} .hop", {y: 260, scale: 0.4, opacity: 0}, {y: 0, scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.7)"}, ${at.toFixed(2)});`);
+    T(`tl.fromTo("#bt${i} .body", {scaleX: 1.12, scaleY: 0.86}, {scaleX: 1, scaleY: 1, duration: 0.35, ease: "back.out(3)"}, ${(at + 0.45).toFixed(2)});`);
+    T(`tl.fromTo("#bt${i} .blabel", {opacity: 0, y: 16}, {opacity: 1, y: 0, duration: 0.35}, ${(at + 0.25).toFixed(2)});`);
+  });
+  T(`tl.fromTo("#bots .cursor", {x: 240, y: 280, opacity: 0}, {x: 0, y: 0, opacity: 1, duration: 0.6, ease: "power2.inOut"}, ${BOT_TAP - 0.65});`);
+  T(`tl.fromTo("#bots .ripple", {scale: 0, opacity: 0.7}, {scale: 2.6, opacity: 0, duration: 0.6, ease: "power2.out"}, ${BOT_TAP});`);
+  T(`tl.fromTo("#bt0 .ring", {scale: 0.8, opacity: 0}, {scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2)"}, ${BOT_TAP});`);
+  T(`tl.fromTo("#bt0 .happy", {opacity: 0}, {opacity: 1, duration: 0.12}, ${BOT_TAP + 0.05});`);
+  T(`tl.to("#bots .bot:not(#bt0)", {opacity: 0.45, duration: 0.4}, ${BOT_TAP + 0.1});`);
+  [0, 0.75].forEach((d, j) => {
+    const h = j ? 70 : 150;
+    T(`tl.to("#bt0 .body", {scaleX: 1.1, scaleY: 0.88, duration: 0.1, ease: "power2.out"}, ${(BOT_TAP + 0.1 + d).toFixed(2)});`);
+    T(`tl.to("#bt0 .hop", {y: -${h}, duration: 0.3, ease: "power2.out"}, ${(BOT_TAP + 0.2 + d).toFixed(2)});`);
+    T(`tl.to("#bt0 .body", {scaleX: 0.94, scaleY: 1.08, duration: 0.2}, ${(BOT_TAP + 0.2 + d).toFixed(2)});`);
+    T(`tl.to("#bt0 .hop", {y: 0, duration: 0.25, ease: "power2.in"}, ${(BOT_TAP + 0.5 + d).toFixed(2)});`);
+    T(`tl.to("#bt0 .body", {scaleX: 1.08, scaleY: 0.9, duration: 0.08}, ${(BOT_TAP + 0.75 + d).toFixed(2)});`);
+    T(`tl.to("#bt0 .body", {scaleX: 1, scaleY: 1, duration: 0.3, ease: "back.out(3)"}, ${(BOT_TAP + 0.83 + d).toFixed(2)});`);
+  });
+  T(`tl.fromTo("#bots .picked", {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.4}, ${BOT_TAP + 0.5});`);
+  // 12. Now watch it work.
+  T(`tl.fromTo("#watch .k", {y: 60, opacity: 0, filter: "blur(12px)"}, {y: 0, opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "power3.out", stagger: 0.15}, ${BOTS_AT + 5.05});`);
+  T(`tl.fromTo("#watch .sub", {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.4}, ${BOTS_AT + 5.9});`);
+  // 13. Real test segments.
   TEST.forEach(([, , frames, tap], i) => {
     const t0 = INTRO + i * SEG;
     T(`tl.fromTo("#ts${i} .phone", {y: 120, rotateY: ${i % 2 ? 18 : -18}, rotateX: 10, scale: 0.92, opacity: 0, transformPerspective: 1800}, {y: 0, rotateY: ${i % 2 ? 6 : -6}, rotateX: 3, scale: 1, opacity: 1, duration: 0.6, ease: "power3.out"}, ${t0 + 0.05});`);
@@ -115,7 +149,7 @@ function page(orient) {
       T(`tl.fromTo("#ts${i} .ripple", {scale: 0, opacity: 0.7}, {scale: 2.6, opacity: 0, duration: 0.6, ease: "power2.out"}, ${at.toFixed(2)});`);
     }
   });
-  // 12. Outro.
+  // 14. Outro.
   T(`tl.fromTo("#outro .tag .k", {y: 50, opacity: 0, filter: "blur(10px)"}, {y: 0, opacity: 1, filter: "blur(0px)", duration: 0.45, stagger: 0.1, ease: "power3.out"}, ${TEST_END + 0.05});`);
   T(`tl.to("#outro .tag", {opacity: 0, y: -40, duration: 0.3}, ${TEST_END + 2.2});`);
   T(`tl.fromTo("#outro .logo", {scale: 0, rotate: -120, opacity: 0}, {scale: 1, rotate: 0, opacity: 1, duration: 0.9, ease: "back.out(1.6)"}, ${TEST_END + 2.5});`);
@@ -149,7 +183,8 @@ function page(orient) {
     clip("wide", 20.5, 3.5, `<div class="center"><div class="screen"><img src="${up}assets/shots/d-learn.jpg" alt="" /><div class="cursor-wrap">${cursor}</div></div></div>`),
     clip("pill", 24, 3.5, `<div class="center"><div class="btn"><span class="grad"></span><span class="lbl">Tell my daughter Anna</span><i class="ripple"></i><div class="pcur">${cursor}</div></div><p class="sent">Message ready for Anna</p></div>`),
     clip("pat", 27.5, 2.5, `<div class="center">${kw("Patient", "with you")}</div>`),
-    clip("watch", 30, 3, `<div class="center">${kw("Now", "watch it work")}<p class="sub">Real app. Real Claude answers.</p></div>`),
+    clip("bots", BOTS_AT, 5, `<div class="center"><p class="kin bots-t"><span class="k ink">Pick</span> <span class="k ink">a</span> <span class="k grad-t">personality</span></p><div class="botrow">${BOTS.map(([b, label], i) => `<div class="bot" id="bt${i}"><div class="hop"><i class="ring"></i><div class="body"><img src="${up}assets/bots/${b}-default.png" alt="" />${i ? "" : `<img class="happy" src="${up}assets/bots/${b}-working.png" alt="" /><div class="tap">${cursor}<i class="ripple"></i></div>`}</div></div><p class="blabel">${label}</p></div>`).join("")}</div><p class="picked">Same Grace, your kind of voice.</p></div>`),
+    clip("watch", BOTS_AT + 5, 3, `<div class="center">${kw("Now", "watch it work")}<p class="sub">Real app. Real Claude answers.</p></div>`),
     ...TEST.map(([kick, title, frames, tap], i) =>
       clip(`ts${i}`, INTRO + i * SEG, SEG, `<div class="split test"><div class="cap"><p class="kick">${kick}</p><p class="ttl">${title}</p></div><div class="pw"><div class="phone">${frames.map((f, k) => `<img class="f${k}" src="${up}${shot(f)}" alt="" />`).join("")}${tap ? `<div class="tap" style="left:${tap[0]}%;top:${tap[1]}%">${cursor}<i class="ripple"></i></div>` : ""}</div></div></div>`),
     ),
@@ -175,6 +210,8 @@ function page(orient) {
       .fcard { width: ${land ? 300 : 230}px; }
       .screen { width: ${land ? 1500 : 980}px; }
       .tag { font-size: ${u(land ? 86 : 64)}; }
+      .bots-t { font-size: ${u(land ? 110 : 96)}; }
+      .bot { width: ${land ? 390 : 440}px; }
     </style>
   </head>
   <body class="${orient}">
@@ -199,5 +236,5 @@ writeFileSync(join(root, "index.html"), page("portrait"));
 // The landscape cut lives in a subfolder: a project may only have one root composition.
 mkdirSync(join(root, "landscape"), { recursive: true });
 writeFileSync(join(root, "landscape", "index.html"), page("landscape"));
-writeFileSync(join(root, "cues.json"), JSON.stringify({ total: TOTAL, intro: INTRO, testEnd: TEST_END, clicks: [7.0, 25.5, ...TEST.map((x, i) => (x[3] ? INTRO + i * SEG + 1.6 : null)).filter((x) => x !== null)], whooshes: [10.75] }) + "\n");
+writeFileSync(join(root, "cues.json"), JSON.stringify({ total: TOTAL, intro: INTRO, testEnd: TEST_END, clicks: [7.0, 25.5, BOT_TAP, ...TEST.map((x, i) => (x[3] ? INTRO + i * SEG + 1.6 : null)).filter((x) => x !== null)], whooshes: [10.75] }) + "\n");
 console.log(`built index.html + landscape/index.html, ${TOTAL}s`);
