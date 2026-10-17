@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { Answer, Lang } from "@/prompts/elderwise";
+import type { Answer, Lang, Step } from "@/prompts/elderwise";
 
 // The problem the person is working through on the Steps page, kept in this browser only.
 export type Solve = {
@@ -63,6 +63,11 @@ const EXAMPLE: Record<Lang, { question: string; answer: Answer }> = {
       headline: "Make your text bigger",
       sentence: "You can change the text size in your phone's Settings.",
       points: ["Open the grey Settings app.", "Tap Display and Brightness.", "Tap Text Size and slide to the right."],
+      steps: [
+        { title: "Open Settings", detail: "Find the grey icon with a gear on your home screen. Tap it once." },
+        { title: "Tap Display and Brightness", detail: "Scroll down a little. It has a blue icon with a white sun. Tap it." },
+        { title: "Make the text bigger", detail: "Tap Text Size. Slide the dot to the right until the text is easy to read." },
+      ],
       when: null,
       action: null,
       learned: "You asked an AI how to do something on your phone.",
@@ -76,6 +81,11 @@ const EXAMPLE: Record<Lang, { question: string; answer: Answer }> = {
       headline: "Schrift größer machen",
       sentence: "Sie können die Schriftgröße in den Einstellungen ändern.",
       points: ["Öffnen Sie die graue App Einstellungen.", "Tippen Sie auf Anzeige und Helligkeit.", "Tippen Sie auf Textgröße und schieben Sie nach rechts."],
+      steps: [
+        { title: "Einstellungen öffnen", detail: "Suchen Sie das graue Symbol mit dem Zahnrad. Tippen Sie einmal darauf." },
+        { title: "Anzeige und Helligkeit", detail: "Scrollen Sie etwas nach unten. Das Symbol ist blau mit einer weißen Sonne. Tippen Sie darauf." },
+        { title: "Schrift größer machen", detail: "Tippen Sie auf Textgröße. Schieben Sie den Punkt nach rechts, bis Sie gut lesen können." },
+      ],
       when: null,
       action: null,
       learned: "Sie haben eine KI gefragt, wie etwas auf dem Handy geht.",
@@ -88,9 +98,11 @@ export function startExample(lang: Lang) {
   startSolve(EXAMPLE[lang].question, EXAMPLE[lang].answer);
 }
 
-// The steps to show: Claude's points, or its one sentence when there are none.
-export function stepsOf(answer: Answer): string[] {
-  return answer.points.length ? answer.points : [answer.sentence];
+// The steps to show: Claude's steps; for older answers its points, or its one sentence.
+export function stepsOf(answer: Answer): Step[] {
+  if (answer.steps?.length) return answer.steps;
+  if (answer.points.length) return answer.points.map((p) => ({ title: p, detail: "" }));
+  return [{ title: answer.headline, detail: answer.sentence }];
 }
 
 // Give Claude the whole situation so "I'm stuck" questions are answered for this exact step.
@@ -99,8 +111,8 @@ export function followUpQuestion(s: Solve, q: string): string {
   return [
     `Earlier I asked: "${s.question || "(a photo)"}".`,
     `You told me: ${s.answer.headline} ${s.answer.sentence}`,
-    `The steps were: ${steps.map((p, i) => `${i + 1}. ${p}`).join(" ")}`,
-    `I am stuck on step ${s.step + 1}: "${steps[s.step]}".`,
+    `The steps were: ${steps.map((p, i) => `${i + 1}. ${p.title}: ${p.detail}`).join(" ")}`,
+    `I am stuck on step ${s.step + 1}: "${steps[s.step]?.title}".`,
     `My question: ${q || "I don't understand this step. Can you explain it more simply?"}`,
     `Help me with just this step.`,
   ].join("\n");

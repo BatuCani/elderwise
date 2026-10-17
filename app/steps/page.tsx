@@ -82,6 +82,7 @@ export default function Steps() {
   const steps = stepsOf(solve.answer);
   const step = Math.min(solve.step, steps.length - 1);
   const last = step === steps.length - 1;
+  const current = steps[step];
   const shown = solve.followUp?.answer ?? solve.answer;
   const warning = shown.type === "warning";
 
@@ -116,7 +117,7 @@ export default function Steps() {
         <p className="shrink-0 font-serif text-wordmark font-medium text-moss">Elderwise</p>
 
         {/* Top: the quick explanation, or Claude's answer to "I'm stuck". */}
-        <section aria-live="polite" className="mt-5 min-h-[4.5rem] overflow-y-auto">
+        <section aria-live="polite" className="mt-4 min-h-[3.5rem] overflow-y-auto">
           {phase === "thinking" || pending?.status === "thinking" ? (
             <p className="flex items-center gap-3 text-status text-moss">
               <span className="thinking-dot" aria-hidden />
@@ -161,57 +162,57 @@ export default function Steps() {
           )}
         </section>
 
-        {/* One step at a time. */}
-        <section className="glass mt-5 shrink-0 rounded-[28px] p-5">
-          <div className="flex items-center gap-3">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss font-serif text-asked font-medium text-white">
+        {/* One step at a time: a short title, then exactly what to do, with Back and Next inside. */}
+        <section className="glass mt-4 flex min-h-[14rem] flex-col rounded-[28px] p-5">
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-moss font-serif text-status font-medium text-white">
               {step + 1}
             </span>
             <span className="flex-1 text-greeting font-bold text-muted">
               {t.step} {step + 1} {t.of} {steps.length}
             </span>
             <button
-              onClick={() => speak(steps[step], profile.lang, profile.speechRate)}
+              onClick={() => speak(`${current.title}. ${current.detail}`, profile.lang, profile.speechRate)}
               aria-label={t.readAloud}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-white/70 text-moss"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white/70 text-moss"
             >
               <SpeakerIcon className="h-6 w-6" />
             </button>
           </div>
-          <p className="mt-4 min-h-[5.5rem] font-serif text-transcript font-medium leading-snug text-ink">{steps[step]}</p>
 
-          {/* Progress dots */}
-          <div aria-hidden className="mt-4 flex justify-center gap-2">
-            {steps.map((_, i) => (
-              <span key={i} className={`h-2.5 rounded-full transition-all ${i === step ? "w-6 bg-moss" : "w-2.5 bg-moss/25"}`} />
-            ))}
+          <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
+            <h2 className="font-serif text-transcript font-medium leading-tight text-ink">{current.title}</h2>
+            {current.detail && <p className="mt-2 text-status leading-snug text-ink">{current.detail}</p>}
+          </div>
+
+          <div className="mt-4 grid shrink-0 grid-cols-2 gap-3">
+            <button
+              onClick={() => setStep(step - 1)}
+              disabled={step === 0}
+              className="flex min-h-14 items-center justify-center gap-1.5 rounded-full bg-white/80 text-status font-bold text-ink transition-transform active:scale-95 disabled:opacity-40"
+            >
+              <BackIcon className="h-6 w-6" />
+              {t.back}
+            </button>
+            <button
+              onClick={() => (last ? router.push("/") : setStep(step + 1))}
+              className="flex min-h-14 items-center justify-center gap-1.5 rounded-full bg-moss text-status font-bold text-white shadow-[0_10px_24px_rgba(63,90,58,0.3)] transition-transform active:scale-95"
+            >
+              {last ? t.allDone : t.next}
+              {last ? <CheckIcon className="h-6 w-6" /> : <NextIcon className="h-6 w-6" />}
+            </button>
           </div>
         </section>
 
-        {/* Back, the mic (stuck on this step? go back to Talk and ask), Next. */}
-        <div className="mt-4 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <button
-            onClick={() => setStep(step - 1)}
-            disabled={step === 0}
-            className="glass flex min-h-16 items-center justify-center gap-1.5 rounded-full text-status font-bold text-ink transition-transform active:scale-95 disabled:opacity-40"
-          >
-            <BackIcon className="h-6 w-6" />
-            {t.back}
-          </button>
+        {/* Stuck on this step? The mic goes back to Talk to ask about it. */}
+        <div className="mt-4 flex shrink-0 justify-center">
           <button
             onClick={goStuck}
             disabled={phase === "thinking"}
             aria-label={t.stuck}
-            className="flex h-[76px] w-[76px] items-center justify-center rounded-full bg-moss text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:opacity-50"
+            className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-moss text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:opacity-50"
           >
             <MicIcon className="h-9 w-9" />
-          </button>
-          <button
-            onClick={() => (last ? router.push("/") : setStep(step + 1))}
-            className="flex min-h-16 items-center justify-center gap-1.5 rounded-full bg-moss text-status font-bold text-white shadow-[0_12px_30px_rgba(63,90,58,0.3)] transition-transform active:scale-95"
-          >
-            {last ? t.allDone : t.next}
-            {last ? <CheckIcon className="h-6 w-6" /> : <NextIcon className="h-6 w-6" />}
           </button>
         </div>
       </main>

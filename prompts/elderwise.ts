@@ -24,6 +24,11 @@ Writing rules:
 - headline: at most 6 words, plain and direct, for example "Don't pay this text." or "Your new tablet".
 - sentence: one short sentence with the most important point.
 - points: up to 3 short reasons or steps, each under 12 words. Use an empty list if none are needed.
+- steps: what the person should do to solve this, in order, 1 to 5 steps. Each step has:
+  - title: at most 5 words, the action in short, for example "Open the Settings app".
+  - detail: 1 or 2 short sentences that say exactly what to do and what they will see, for example
+    "Look for a grey icon with a gear on your home screen. Tap it once."
+  For a scam, the steps are how to stay safe (do not pay, do not click, delete, tell someone).
 - Very simple words, no jargon, no Markdown, no emojis.
 - Read numbers, times, amounts and doses exactly as printed and never invent any.
 - For medication or health, explain what is written and suggest the doctor or pharmacist when unsure.
@@ -57,6 +62,19 @@ export const ANSWER_SCHEMA = {
     headline: { type: "string", description: "At most 6 words." },
     sentence: { type: "string", description: "One short sentence." },
     points: { type: "array", items: { type: "string" }, description: "Up to 3 short reasons or steps." },
+    steps: {
+      type: "array",
+      description: "1 to 5 steps to solve the problem, in order.",
+      items: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "At most 5 words." },
+          detail: { type: "string", description: "1 or 2 short sentences: exactly what to do." },
+        },
+        required: ["title", "detail"],
+        additionalProperties: false,
+      },
+    },
     when: { type: ["string", "null"], description: "Reminder date and time as printed, or null." },
     action: {
       anyOf: [
@@ -75,9 +93,11 @@ export const ANSWER_SCHEMA = {
     learned: { type: "string", description: "One sentence: what the person just did with AI." },
     tip: { type: "string", description: "One sentence: how to ask an AI even better next time." },
   },
-  required: ["type", "headline", "sentence", "points", "when", "action", "learned", "tip"],
+  required: ["type", "headline", "sentence", "points", "steps", "when", "action", "learned", "tip"],
   additionalProperties: false,
 } as const;
+
+export type Step = { title: string; detail: string };
 
 export type AnswerType = "warning" | "explain" | "steps" | "reminder" | "info";
 
@@ -86,6 +106,8 @@ export type Answer = {
   headline: string;
   sentence: string;
   points: string[];
+  // Optional in TypeScript: answers saved before this field existed do not have it.
+  steps?: Step[];
   when: string | null;
   action: { kind: "call_trusted"; label: string } | null;
   learned: string;
