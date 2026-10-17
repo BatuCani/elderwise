@@ -10,6 +10,12 @@ const fraunces = Fraunces({ subsets: ["latin"], weight: ["500"], variable: "--fo
 export const metadata: Metadata = {
   title: "Elderwise",
   description: "Show it, say it, understand it: a patient voice AI companion for older adults.",
+  applicationName: "Elderwise",
+  // "Add to Home Screen" on iPhone opens full screen, without Safari's bars.
+  appleWebApp: { capable: true, title: "Elderwise", statusBarStyle: "default" },
+  icons: { apple: "/apple-touch-icon.png" },
+  // Next only emits the newer mobile-web-app-capable tag; older iOS versions still need this one.
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export const viewport: Viewport = {
