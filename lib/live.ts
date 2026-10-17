@@ -330,6 +330,12 @@ export async function startLive(opts: LiveOptions): Promise<void> {
   }
 }
 
+// One camera frame (base64 JPEG) into the running session, so Gemini sees what the person points at.
+export function sendLiveFrame(jpeg: string) {
+  const c = convo;
+  if (c && !c.stopped && !c.reconnecting) c.session?.sendRealtimeInput({ video: { data: jpeg, mimeType: "image/jpeg" } });
+}
+
 export function stopLive() {
   const c = convo;
   convo = null;
