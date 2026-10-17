@@ -1,7 +1,7 @@
 # Grace: 5-minute finalist presentation
 
 For the finalist round at 16:40 (6 minutes demo + 4 minutes Q&A). The script runs about 5 minutes, which leaves one minute of buffer.
-Slides: open https://elderwise-beryl.vercel.app/pitch.html on the presenting laptop (arrow keys or click to move, **N** shows speaker notes, **F** for full screen). The speaker notes on each slide are the lines below.
+Slides: open https://graceapp.vercel.app/pitch.html on the presenting laptop (arrow keys or click to move, **N** shows speaker notes, **F** for full screen). The speaker notes on each slide are the lines below.
 Roles: **Speaker** (any teammate) talks. **Demo** (one teammate) drives the phone, mirrored to the big screen. **Doctor** (a second teammate) reads two lines in demo 2.
 
 ## Summary
@@ -11,7 +11,7 @@ Grace is a voice AI companion for people over 65. You talk to it or show it a ph
 ## Before you go on stage
 
 - Phone mirrored to the screen, sound on, silent mode off, notifications off.
-- Live app open on the Talk tab: https://elderwise-beryl.vercel.app (Profile: English, text size Normal, name Ingrid, trusted person Anna).
+- Live app open on the Talk tab: https://graceapp.vercel.app (Profile: English, text size Normal, name Ingrid, trusted person Anna).
 - Answers tab cleared ("Clear history"), so the demo starts empty.
 - A second browser tab already open on `/listen` (until "Listen for me" has its own button on Talk).
 - One test question right before, so you know the API works.
