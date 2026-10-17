@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type { AnswerType } from "@/prompts/elderwise";
 
 // A small animated picture at the top of every answer card, so the kind of answer reads at a glance:
@@ -25,12 +26,13 @@ function Letter() {
   return (
     <svg viewBox="0 0 120 80" className="h-full" aria-hidden="true">
       <rect x="30" y="32" width="60" height="40" rx="5" fill="white" stroke={MOSS} strokeWidth="2.5" />
+      {/* The flap opens up behind the letter, which then slides out of the pocket. */}
+      <path d="M31 34l29 20 29-20" fill="#e4ebdd" stroke={MOSS} strokeWidth="2.5" strokeLinejoin="round" className="art-flap" />
       <g className="art-paper">
         <rect x="38" y="20" width="44" height="34" rx="3" fill="white" stroke={MOSS} strokeWidth="2" />
         <path d="M45 30h30M45 37h22M45 44h26" stroke={MOSS} strokeWidth="2.5" strokeLinecap="round" opacity="0.55" />
       </g>
       <path d="M30 40l30 20 30-20v27a5 5 0 0 1-5 5H35a5 5 0 0 1-5-5z" fill="white" stroke={MOSS} strokeWidth="2.5" strokeLinejoin="round" />
-      <path d="M31 34l29 20 29-20" fill="#e4ebdd" stroke={MOSS} strokeWidth="2.5" strokeLinejoin="round" className="art-flap" />
     </svg>
   );
 }
@@ -74,10 +76,14 @@ function Calendar({ day }: { day?: number }) {
 }
 
 function MapPin() {
+  const clip = useId();
   return (
     <svg viewBox="0 0 120 80" className="h-full" aria-hidden="true">
+      <clipPath id={clip}>
+        <rect x="22" y="12" width="76" height="60" rx="10" />
+      </clipPath>
       <rect x="22" y="12" width="76" height="60" rx="10" fill="#e4ebdd" />
-      <path d="M22 50c20-6 30 8 50 0s20-14 26-12M48 12c-4 20 6 34 2 60" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" />
+      <path d="M18 51c20-6 34 8 54 0s20-14 30-12M48 8c-4 20 6 38 2 68" fill="none" stroke="white" strokeWidth="5" clipPath={`url(#${clip})`} />
       <ellipse cx="62" cy="54" rx="8" ry="2.6" fill={MOSS} opacity="0.25" className="art-shadow" />
       <g className="art-drop">
         <path d="M62 54s-12-10.6-12-19.6a12 12 0 0 1 24 0C74 43.4 62 54 62 54z" fill={MOSS} />
