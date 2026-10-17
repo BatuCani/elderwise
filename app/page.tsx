@@ -7,9 +7,10 @@ import { CameraIcon, CheckIcon, MicIcon, RetryIcon, SendIcon } from "@/component
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
+import { askClaude } from "@/lib/ask";
+import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
 import { useProfile } from "@/lib/profile";
-import { getRecognition, LOCALE, speak, spokenText, toJpeg, unlockSpeech, type Recognition } from "@/lib/speech";
-import type { Answer } from "@/prompts/elderwise";
+import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
@@ -51,6 +52,9 @@ export default function Talk() {
   const busyRef = useRef(false);
   const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [asked, setAsked] = useState<{ q: string; img: string | null }>({ q: "", img: null });
+  const live = useLive();
+  const liveOn = live.status !== "idle";
+  const liveFailed = useRef(false);
 
   // Leaving the Talk tab (Next keeps it alive, hidden) clears the toast and must not pull the
   // person back to Answers later.
@@ -78,20 +82,7 @@ export default function Talk() {
     setAsked({ q, img });
     setPhase("thinking");
     try {
-      const body = new FormData();
-      body.append("lang", profile.lang);
-      body.append("question", q);
-      body.append("name", profile.name);
-      body.append("trustedName", profile.trusted.name);
-      body.append("trustedRelation", profile.trusted.relation);
-      body.append(
-        "today",
-        new Date().toLocaleDateString(LOCALE[profile.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-      );
-      if (img) body.append("image", await toJpeg(img), "photo.jpg");
-      const res = await fetch("/api/ask", { method: "POST", body });
-      if (!res.ok) throw new Error(String(res.status));
-      const answer: Answer = await res.json();
+      const answer = await askClaude(q, img, profile);
       addEntry(q || t.inputPlaceholder, answer);
       speak(spokenText(answer), profile.lang, profile.speechRate);
       setPhase("done");
@@ -120,6 +111,29 @@ export default function Talk() {
     else setPhase("idle");
   }
 
+  // Hands-free conversation: Gemini Live listens and speaks, Claude answers through the tool.
+  async function startConversation() {
+    try {
+      await startLive({
+        lang: profile.lang,
+        name: profile.name,
+        ask: async (q) => {
+          const answer = await askClaude(q, photoRef.current, profile);
+          addEntry(q, answer);
+          setNewPhoto(null);
+          setPhase("done");
+          doneTimer.current = setTimeout(() => router.push("/answers"), 1600);
+          return answer;
+        },
+      });
+    } catch (err) {
+      console.warn("Live conversation unavailable, using push-to-talk:", err);
+      liveFailed.current = true;
+      startPushToTalk();
+    }
+  }
+
+  // Fallback: the browser's own speech recognition, restarted until "Done talking".
   function startRecognition() {
     const Ctor = getRecognition();
     if (!Ctor) return;
@@ -155,8 +169,7 @@ export default function Talk() {
     rec.start();
   }
 
-  function onTalk() {
-    unlockSpeech();
+  function startPushToTalk() {
     if (!getRecognition()) {
       // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
       typeRef.current?.focus();
@@ -182,15 +195,29 @@ export default function Talk() {
     ask(q, null);
   }
 
+  function onTalk() {
+    unlockSpeech();
+    setPhase("idle");
+    if (liveSupported() && !liveFailed.current) startConversation();
+    else startPushToTalk();
+  }
+
   function onFinish() {
     unlockSpeech();
+    if (liveOn) {
+      stopLive();
+      setPhase("idle");
+      return;
+    }
     finishingRef.current = true;
     if (recRef.current) recRef.current.stop();
     else finish();
   }
 
   const listening = phase === "listening";
-  const thinking = phase === "thinking";
+  const thinking = phase === "thinking" || live.status === "thinking";
+  // Live conversation text: what was heard while listening, what Claude's answer sounds like while speaking.
+  const liveText = live.status === "speaking" ? live.said : live.heard;
 
   return (
     <>
@@ -202,11 +229,27 @@ export default function Talk() {
 
         {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
         <p aria-live="polite" className="sr-only">
-          {listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
+          {liveOn ? liveText || t.listening : listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
         </p>
 
-        {listening ? (
+        {listening || liveOn ? (
           <>
+            {liveOn && (
+              <div className="mb-8">
+                <p className="text-xl text-muted">
+                  {live.status === "connecting" ? t.liveConnecting : live.status === "speaking" ? t.liveSays : live.status === "thinking" ? t.youSaid : t.listening}
+                </p>
+                {liveText && (
+                  <p
+                    className={`mt-3 font-serif font-medium leading-[1.12] ${
+                      live.status === "listening" ? "text-[40px] text-ink" : live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
+                    }`}
+                  >
+                    {live.status === "speaking" ? liveText : `“${liveText}”`}
+                  </p>
+                )}
+              </div>
+            )}
             {photo && (
               <div className="mb-6 glass rounded-2xl p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -279,10 +322,10 @@ export default function Talk() {
           type="mobile"
           stream={listening ? mic.stream : null}
           motion={thinking ? thinkingMotion : null}
-          level={listening && !mic.stream ? 0.7 : undefined}
-          idle={listening || thinking ? undefined : 0}
-          sensitivity={listening ? 5 : undefined}
-          reach={listening ? 1.8 : undefined}
+          level={liveOn ? liveLevel : listening && !mic.stream ? 0.7 : undefined}
+          idle={listening || thinking || liveOn ? undefined : 0}
+          sensitivity={listening || liveOn ? 5 : undefined}
+          reach={listening || liveOn ? 1.8 : undefined}
           colorVariant="colorful"
           theme="light"
         >
@@ -293,7 +336,9 @@ export default function Talk() {
               onSendTyped();
             }}
           >
-            {listening ? (
+            {liveOn ? (
+              <p className="min-h-12 flex-1 pr-3 text-left text-status leading-[3rem] font-bold text-moss">{t.liveActive}</p>
+            ) : listening ? (
               <div className="flex-1 pr-3">
                 <VoiceBars stream={mic.stream} className="h-12" />
               </div>
