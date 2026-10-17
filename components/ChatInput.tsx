@@ -1,0 +1,109 @@
+"use client";
+
+import { useRef } from "react";
+import { VoiceBeam } from "voice-glow";
+import type { Copy } from "@/app/copy";
+import { CameraIcon, CloseIcon, MicIcon, SendIcon, StopIcon } from "./icons";
+
+type Props = {
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  onMic: () => void;
+  onPhoto: (file: File) => void;
+  onRemovePhoto: () => void;
+  photo: string | null;
+  listening: boolean;
+  thinking: boolean;
+  stream: MediaStream | null;
+  t: Copy;
+};
+
+// While Claude is thinking, the glow gathers into one beam that sweeps back and forth.
+function thinkingMotion() {
+  return { gather: 1, offset: Math.sin(performance.now() / 600) * 0.8, heldLevel: 0.55, stretch: 0.3 };
+}
+
+// The pill at the bottom of the Talk tab: camera, text field, and the black mic button.
+export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemovePhoto, photo, listening, thinking, stream, t }: Props) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const showSend = value.trim().length > 0 && !listening;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {photo && (
+        <div className="flex items-center gap-3 self-start rounded-2xl border border-line bg-white p-2 pr-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo} alt="" className="h-14 w-14 rounded-xl object-cover" />
+          <button onClick={onRemovePhoto} aria-label={t.removePhoto} className="flex h-12 w-12 items-center justify-center rounded-full text-muted">
+            <CloseIcon className="h-6 w-6" />
+          </button>
+        </div>
+      )}
+      <VoiceBeam
+        type="mobile"
+        stream={listening ? stream : null}
+        motion={thinking ? thinkingMotion : null}
+        level={listening && !stream ? 0.4 : undefined}
+        colorVariant="colorful"
+        theme="light"
+      >
+        <form
+          className="flex items-center gap-1 rounded-full border border-line bg-white p-2 shadow-[0_8px_30px_rgba(30,36,32,0.08)]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+        >
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onPhoto(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            aria-label={t.attachPhoto}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-paper text-ink"
+          >
+            <CameraIcon className="h-7 w-7" />
+          </button>
+          <input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={listening ? t.listening : thinking ? t.thinking : t.inputPlaceholder}
+            aria-label={t.inputPlaceholder}
+            className="min-h-12 min-w-0 flex-1 bg-transparent px-1 text-lg text-ink outline-none placeholder:text-muted"
+          />
+          {showSend ? (
+            <button
+              type="submit"
+              disabled={thinking}
+              aria-label={t.send}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
+            >
+              <SendIcon className="h-7 w-7" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onMic}
+              disabled={thinking}
+              aria-label={listening ? t.stopMic : t.mic}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
+            >
+              {listening ? <StopIcon className="h-7 w-7" /> : <MicIcon className="h-7 w-7" />}
+            </button>
+          )}
+        </form>
+      </VoiceBeam>
+    </div>
+  );
+}
