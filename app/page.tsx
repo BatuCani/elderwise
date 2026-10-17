@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
@@ -284,6 +286,8 @@ export default function Talk() {
             ? "listening"
             : "idle";
 
+  const hasWords = Boolean((listening && !liveOn && question.trim()) || (liveOn && live.status === "listening" && liveText));
+
   return (
     <>
       <main
@@ -303,7 +307,8 @@ export default function Talk() {
 
         {listening || liveOn ? (
           <>
-            <div className="mb-6">
+            {/* On short phones the orb steps aside once words show, so the buttons stay clear of the bar. */}
+            <div className={`mb-6 ${hasWords ? "[@media(max-height:720px)]:hidden" : ""}`}>
               <VoiceOrb mood={mood} lang={profile.lang} compact />
             </div>
             {liveOn && (
@@ -311,10 +316,16 @@ export default function Talk() {
                 <p className="text-xl text-muted">
                   {live.status === "connecting" ? t.liveConnecting : live.status === "speaking" ? t.liveSays : live.status === "thinking" ? t.youSaid : t.listening}
                 </p>
-                {liveText && (
+                {/* While you speak: the last 3 words, very big. Elderwise's reply stays as full text. */}
+                {liveText && live.status === "listening" && (
+                  <div className="mt-3">
+                    <LiveWords text={liveText} placeholder={t.listening} />
+                  </div>
+                )}
+                {liveText && live.status !== "listening" && (
                   <p
                     className={`mt-3 font-serif font-medium leading-[1.12] ${
-                      live.status === "listening" ? "text-[40px] text-ink" : live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
+                      live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
                     }`}
                   >
                     {live.status === "speaking" ? liveText : `“${liveText}”`}
@@ -322,6 +333,8 @@ export default function Talk() {
                 )}
               </div>
             )}
+            {/* Normal speech mode: the last 3 words, very big, for reassurance while talking. */}
+            {listening && !liveOn && <LiveWords text={question} placeholder={t.listening} />}
             {photo && (
               <div className="mb-6 glass rounded-2xl p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -360,6 +373,13 @@ export default function Talk() {
             <div className="mt-10 [@media(max-height:620px)]:mt-5">
               <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
             </div>
+            {/* Scan a letter, bill or code: the guided flow in app/scan. */}
+            {!thinking && (
+              <Link href="/scan" className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-status font-bold text-moss [@media(max-height:620px)]:mt-4">
+                <CameraIcon className="h-7 w-7" />
+                {t.scanLetter}
+              </Link>
+            )}
             {phase === "error" && (
               <button
                 onClick={retry}

@@ -38,7 +38,8 @@ Writing rules:
 - If you cannot read part of the photo, say so honestly.
 - action: for warnings, or when the person may need help, offer to contact their trusted person with a label like "Tell my daughter Anna" (use their real name and relation). Otherwise null.
 - learned: one sentence on what the person just did with AI, addressed as "you".
-- tip: one sentence on how to ask an AI even better next time.`;
+- tip: one sentence on how to ask an AI even better next time.
+- fields: when the photo is a letter, bill or payment code, list up to 5 key facts exactly as printed, each with a short label, for example sender, amount, due date, reference or IBAN, and what to do. Use an empty list otherwise.`;
 
 const RULES_DE = `${RULES_EN}
 
@@ -123,6 +124,16 @@ export const ANSWER_SCHEMA = {
         { type: "null" },
       ],
     },
+    fields: {
+      type: "array",
+      description: "Optional key facts from a letter, bill or code, exactly as printed.",
+      items: {
+        type: "object",
+        properties: { label: { type: "string" }, value: { type: "string" } },
+        required: ["label", "value"],
+        additionalProperties: false,
+      },
+    },
   },
   required: ["type", "headline", "sentence", "points", "steps", "when", "action", "learned", "tip", "place", "link"],
   additionalProperties: false,
@@ -146,4 +157,6 @@ export type Answer = {
   // Optional so answers saved before these types existed still load.
   place?: { name: string; address?: string | null } | null;
   link?: { title: string; url: string } | null;
+  // Key facts from a scanned letter or code (sender, amount, due date...). Older answers have none.
+  fields?: { label: string; value: string }[];
 };
