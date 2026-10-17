@@ -15,7 +15,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 // Real app test segments: [caption kicker, caption title, frames, tap (x%, y%) or null].
 const TEST = [
   ["Live test", "A calm welcome", ["welcome", "talk"], [50, 88]],
-  ["Talk", "One big button", ["talk"], [50, 34]],
+  ["Talk", "One big button", ["talk", "talk-listening"], [50, 64]],
   ["Ask", "Is this text real?", ["typed"], [88, 79]],
   ["Real Claude answer", "Checking the text", ["typed", "scam-steps"], null],
   ["Answers", "Scam alert", ["scam-card"], null],
@@ -24,7 +24,7 @@ const TEST = [
   ["Explained", "Key facts, plain words", ["scan-found", "scan-explained"], null],
   ["Pay safely", "QR code checked", ["qr-found", "qr-explained"], null],
   ["Learn", "One AI skill each time", ["learn", "skills"], null],
-  ["Doctor visit", "Listen for me", ["listen"], [50, 52]],
+  ["Doctor visit", "Listen for me", ["listen", "listen-writing"], [50, 70]],
   ["Profile", "Your own assistant", ["voice", "text-xl"], [80, 40]],
 ];
 const SEG = 5.5;
@@ -140,7 +140,7 @@ function page(orient) {
 
   const scenes = [
     ...WORDS.map(([t, a, b], i) => clip(`kw${i}`, t, 1.5, `<div class="center">${kw(a, b)}</div>`)),
-    clip("jt", 6, 2.5, `<div class="split"><div class="cap">${kw("Just", "talk")}</div><div class="pw"><div class="phone" id="jt-phone"><img class="f0" src="${up}assets/shots/talk.jpg" alt="" /><div class="tap" style="left:50%;top:34%">${cursor}<i class="ripple"></i></div></div></div></div>`),
+    clip("jt", 6, 2.5, `<div class="split"><div class="cap">${kw("Just", "talk")}</div><div class="pw"><div class="phone" id="jt-phone"><img class="f0" src="${up}assets/shots/talk.jpg" alt="" /><div class="tap" style="left:50%;top:64%">${cursor}<i class="ripple"></i></div></div></div></div>`),
     clip("tunnel", 8.5, 2.5, `<div class="stage"><div class="walls">${walls.join("")}</div></div><div class="center over"><p class="kin small"><span class="k ink">Letters.</span> <span class="k grad-t">Scams.</span> <span class="k ink">Doctors.</span></p></div>`),
     clip("swoosh", 10.3, 1.7, `<div class="blob"></div>`),
     clip("prog", 12, 3, `<div class="center"><div class="row"><p class="plabel">Checking the message</p><p class="pscore"><span class="num">0</span><span class="of">/100</span></p><div class="bar"><div class="fill"></div></div><p class="pnote">Scam check</p></div></div>`),
