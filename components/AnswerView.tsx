@@ -3,6 +3,7 @@ import type { Answer, AnswerType, Lang } from "@/prompts/elderwise";
 import { CardBody } from "./cards";
 import { LinkCard, PlaceCard } from "./cards-extra";
 import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon } from "./icons";
+import Link from "next/link";
 import { TellTrustedButton } from "./TellTrustedButton";
 
 // Labels for the two newer card types ("place" and "link"), which app/copy.ts does not list yet.
@@ -78,6 +79,11 @@ export function AnswerView({ answer, t, time, lang, at }: Props) {
         </>
         )}
         {action && <TellTrustedButton answer={answer} label={action.label} warning={warning} />}
+        {warning && (
+          <Link href="/practice" className="mt-3 flex min-h-12 items-center justify-center rounded-full bg-white/90 px-5 text-lg font-bold text-warn">
+            Practice spotting scams
+          </Link>
+        )}
       </div>
 
       <div className="glass-moss rounded-3xl p-5 text-learn">
