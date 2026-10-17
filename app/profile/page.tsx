@@ -82,8 +82,11 @@ export default function ProfilePage() {
     <main lang={profile.lang} className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-44 pt-8 min-[360px]:px-5">
       <header className="flex flex-col gap-5">
         <div className="flex items-center gap-4">
-          <div aria-hidden className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white shadow-[0_8px_20px_rgba(63,90,58,0.3)]">
+          <div aria-hidden className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-moss font-serif text-4xl font-medium text-white shadow-[0_8px_20px_rgba(63,90,58,0.3)] ring-4 ring-white">
             {profile.name[0]}
+            {/* Demo profile photo (AI-generated, not a real person). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ingrid.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="break-words font-serif text-display font-medium leading-tight text-ink">{profile.name}</h1>
