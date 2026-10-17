@@ -67,3 +67,6 @@ export const CheckIcon = ({ className }: P) => (
 export const RetryIcon = ({ className }: P) => (
   <svg {...base} className={className}><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" /></svg>
 );
+export const NextIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M9 5l7 7-7 7" /></svg>
+);
