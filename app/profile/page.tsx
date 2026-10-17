@@ -1,36 +1,56 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { AccountCard } from "@/components/AccountCard";
 import { AssistantSettings } from "@/components/AssistantSettings";
+import { ChatIcon, GlobeIcon, PhoneIcon, SpeakerIcon, TextSizeIcon } from "@/components/icons";
+import { CARD, Section } from "@/components/profile/ui";
 import { SkillsCard } from "@/components/SkillsCard";
 import { FamilyLink } from "../family/FamilyLink";
-import { GlobeIcon, PhoneIcon, SpeakerIcon, TextSizeIcon } from "@/components/icons";
+import { useAnswers } from "@/lib/answers";
+import { useAssistant } from "@/lib/assistant";
 import { updateProfile, useProfile, type FontSize } from "@/lib/profile";
+import { useSkills } from "@/lib/skills";
+import type { Lang } from "@/prompts/elderwise";
 import { TEXT } from "../copy";
 import { EditDetails, editLabel, type EditWhat } from "./EditDetails";
 
 const FONT_ORDER: FontSize[] = ["normal", "large", "xlarge"];
+// The "Aa" sample on each text-size button, drawn at the size it stands for.
+const SAMPLE_PX: Record<FontSize, number> = { normal: 19, large: 24, xlarge: 30 };
 
-function Row({ icon, label, value, onClick }: { icon: ReactNode; label: string; value: string; onClick: () => void }) {
-  return (
-    // flex-wrap: with very large text the value moves to its own line instead of running off the screen.
-    <button onClick={onClick} className="flex min-h-16 w-full flex-wrap items-center gap-x-4 gap-y-1 glass rounded-[20px] px-5 py-3 text-left">
-      <span className="shrink-0 text-muted">{icon}</span>
-      <span className="min-w-0 flex-[1_1_auto] break-words text-lg font-bold text-ink">{label}</span>
-      <span className="ml-auto text-lg font-bold text-moss">{value}</span>
-    </button>
-  );
-}
-
-function EditPill({ onClick, label }: { onClick: () => void; label: string }) {
-  return (
-    <button onClick={onClick} className="glass mt-2 flex min-h-12 w-fit items-center gap-2 rounded-full px-5 text-lg font-bold text-moss">
-      <PencilIcon className="h-5 w-5" />
-      {label}
-    </button>
-  );
-}
+const COPY: Record<Lang, {
+  since: (assistant: string, when: string) => string;
+  today: string;
+  asked: string;
+  scams: string;
+  skills: string;
+  reading: string;
+  preview: string;
+  message: string;
+}> = {
+  en: {
+    since: (a, w) => `Learning with ${a} since ${w}`,
+    today: "today",
+    asked: "Questions asked",
+    scams: "Scams stopped",
+    skills: "AI skills",
+    reading: "Reading & listening",
+    preview: "This is how your text will look.",
+    message: "Message",
+  },
+  de: {
+    since: (a, w) => `Lernt mit ${a} seit ${w}`,
+    today: "heute",
+    asked: "Fragen gestellt",
+    scams: "Betrug gestoppt",
+    skills: "KI gelernt",
+    reading: "Lesen & Hören",
+    preview: "So groß sieht Ihr Text aus.",
+    message: "Nachricht",
+  },
+};
 
 const PencilIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
@@ -39,38 +59,152 @@ const PencilIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// Profile tab: who you are, three settings, and your trusted person.
+function EditButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#e6e1d6] bg-white text-moss active:bg-paper"
+    >
+      <PencilIcon className="h-5 w-5" />
+    </button>
+  );
+}
+
+function Stat({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="glass flex min-w-0 flex-col items-center justify-start gap-1.5 rounded-[20px] px-2 py-3 text-center">
+      <span className="font-serif text-3xl font-medium leading-none text-moss">{value}</span>
+      <span className="hyphens-auto break-words text-base leading-tight text-muted">{label}</span>
+    </div>
+  );
+}
+
+// One setting as a row: line icon left, label, current value right in the accent colour.
+function Row({ icon, label, value, onClick }: { icon: ReactNode; label: string; value: string; onClick: () => void }) {
+  return (
+    // flex-wrap: with very large text the value moves to its own line instead of running off the screen.
+    <button onClick={onClick} className={`${CARD} flex min-h-16 w-full flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 text-left active:bg-paper`}>
+      <span className="shrink-0 text-moss">{icon}</span>
+      <span className="min-w-0 flex-[1_1_auto] break-words text-lg font-bold text-ink">{label}</span>
+      <span className="ml-auto text-lg font-bold text-moss">{value}</span>
+    </button>
+  );
+}
+
+// Profile tab: who you are, your assistant, your trusted person, reading settings and your account.
 export default function ProfilePage() {
   const profile = useProfile();
+  const assistant = useAssistant();
+  const answers = useAnswers();
   const t = TEXT[profile.lang];
+  const c = COPY[profile.lang];
   const [editing, setEditing] = useState<EditWhat>(null);
   const relation = t.relations[profile.trusted.relation] ?? profile.trusted.relation;
-  const nextFont = FONT_ORDER[(FONT_ORDER.indexOf(profile.fontSize) + 1) % FONT_ORDER.length];
+  const phone = profile.trusted.phone.replace(/\s/g, "");
+
+  // Answers are newest first, so the last one is when this person started.
+  const first = answers.at(-1)?.at;
+  const since =
+    first && new Date(first).toDateString() !== new Date().toDateString()
+      ? new Date(first).toLocaleDateString(profile.lang === "de" ? "de-DE" : "en-GB", { day: "numeric", month: "long" })
+      : c.today;
+  const scams = answers.filter((e) => e.answer.type === "warning").length;
+  const skills = useSkills().length;
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-40 pt-8">
-      <header className="flex items-center gap-4">
-        <div aria-hidden className="flex h-20 w-20 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white">
-          {profile.name[0]}
+    <main lang={profile.lang} className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-44 pt-8 min-[360px]:px-5">
+      <header className="flex flex-col gap-5">
+        <div className="flex items-center gap-4">
+          <div aria-hidden className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white shadow-[0_8px_20px_rgba(63,90,58,0.3)]">
+            {profile.name[0]}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="break-words font-serif text-display font-medium leading-tight text-ink">{profile.name}</h1>
+            <p className="text-base leading-snug text-muted">{c.since(assistant.name, since)}</p>
+          </div>
+          <EditButton onClick={() => setEditing("me")} label={`${editLabel(profile.lang)}: ${profile.name}`} />
         </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="break-words font-serif text-4xl font-medium text-ink">{profile.name}</h1>
-          <EditPill onClick={() => setEditing("me")} label={editLabel(profile.lang)} />
+        <div className="grid grid-cols-3 gap-2">
+          <Stat value={answers.length} label={c.asked} />
+          <Stat value={scams} label={c.scams} />
+          <Stat value={skills} label={c.skills} />
         </div>
       </header>
 
       <SkillsCard lang={profile.lang} />
 
-      <section className="flex flex-col gap-3">
-        <Row
-          icon={<TextSizeIcon className="h-7 w-7" />}
-          label={t.fontSize}
-          value={t.fontSizes[profile.fontSize]}
-          onClick={() => updateProfile({ fontSize: nextFont })}
-        />
-        <div className="glass rounded-[20px] px-5 py-4">
+      <AssistantSettings />
+
+      <Section title={t.trustedTitle}>
+        <div className={`${CARD} flex flex-col gap-4 p-5`}>
           <div className="flex items-center gap-4">
-            <SpeakerIcon className="h-7 w-7 text-muted" />
+            <div aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-learn-bg font-serif text-2xl font-medium text-moss">
+              {profile.trusted.name[0]}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="break-words text-xl font-bold text-ink">{profile.trusted.name}</p>
+              <p className="break-words text-lg text-muted">{relation}</p>
+            </div>
+            <EditButton onClick={() => setEditing("trusted")} label={`${editLabel(profile.lang)}: ${profile.trusted.name}`} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href={`tel:${phone}`}
+              className="flex min-h-14 flex-[1_1_6.5rem] items-center justify-center gap-2 rounded-full bg-moss px-5 text-lg font-bold text-white"
+            >
+              <PhoneIcon className="h-6 w-6 shrink-0" />
+              {t.call}
+            </a>
+            <a
+              href={`sms:${phone}`}
+              className="flex min-h-14 flex-[1_1_6.5rem] items-center justify-center gap-2 rounded-full border border-[#e6e1d6] bg-paper px-5 text-lg font-bold text-moss"
+            >
+              <ChatIcon className="h-6 w-6 shrink-0" />
+              {c.message}
+            </a>
+          </div>
+        </div>
+        <FamilyLink />
+      </Section>
+
+      <EditDetails what={editing} relationLabel={relation} onClose={() => setEditing(null)} />
+
+      <Section title={c.reading}>
+        <div className={`${CARD} flex flex-col gap-4 p-5`}>
+          <div className="flex items-center gap-4">
+            <TextSizeIcon className="h-7 w-7 shrink-0 text-moss" />
+            <p className="flex-1 text-lg font-bold text-ink">{t.fontSize}</p>
+          </div>
+          <div role="radiogroup" aria-label={t.fontSize} className="grid grid-cols-3 gap-2">
+            {FONT_ORDER.map((size) => {
+              const selected = size === profile.fontSize;
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => updateProfile({ fontSize: size })}
+                  className={`flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border-2 px-1 py-2 ${
+                    selected ? "border-moss bg-learn-bg text-moss" : "border-[#e6e1d6] bg-paper/60 text-ink"
+                  }`}
+                >
+                  <span aria-hidden className="font-serif font-medium leading-none" style={{ fontSize: SAMPLE_PX[size] }}>
+                    Aa
+                  </span>
+                  <span className={`break-words text-base leading-tight ${selected ? "font-bold" : ""}`}>{t.fontSizes[size]}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="rounded-2xl bg-paper/60 px-4 py-3 text-lg leading-snug text-ink">{c.preview}</p>
+        </div>
+
+        <div className={`${CARD} px-5 py-4`}>
+          <div className="flex items-center gap-4">
+            <SpeakerIcon className="h-7 w-7 shrink-0 text-moss" />
             <label htmlFor="rate" className="flex-1 text-lg font-bold text-ink">
               {t.speechRate}
             </label>
@@ -87,44 +221,19 @@ export default function ProfilePage() {
             onChange={(e) => updateProfile({ speechRate: Number(e.target.value) })}
             className="rate-slider mt-3 w-full"
           />
-          <div className="flex justify-between text-base text-muted">
+          <div className="flex justify-between text-base font-bold text-muted">
             <span>{t.slow}</span>
             <span>{t.fast}</span>
           </div>
         </div>
+
         <Row
           icon={<GlobeIcon className="h-7 w-7" />}
           label={t.language}
           value={profile.lang === "en" ? "English" : "Deutsch"}
           onClick={() => updateProfile({ lang: profile.lang === "en" ? "de" : "en" })}
         />
-      </section>
-
-      <AssistantSettings />
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold text-muted">{t.trustedTitle}</h2>
-        <div className="flex flex-wrap items-center gap-4 glass rounded-[20px] p-4">
-          <div aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-paper font-serif text-2xl font-medium text-ink">
-            {profile.trusted.name[0]}
-          </div>
-          <div className="min-w-0 flex-[1_1_auto]">
-            <p className="text-xl font-bold text-ink">{profile.trusted.name}</p>
-            <p className="text-lg text-muted">{relation}</p>
-          </div>
-          <a
-            href={`tel:${profile.trusted.phone.replace(/\s/g, "")}`}
-            className="ml-auto flex min-h-12 items-center gap-2 rounded-full bg-moss px-5 text-lg font-bold text-white"
-          >
-            <PhoneIcon className="h-6 w-6 shrink-0" />
-            {t.call}
-          </a>
-        </div>
-        <EditPill onClick={() => setEditing("trusted")} label={editLabel(profile.lang)} />
-        <FamilyLink />
-      </section>
-
-      <EditDetails what={editing} relationLabel={relation} onClose={() => setEditing(null)} />
+      </Section>
 
       <AccountCard />
     </main>
