@@ -46,7 +46,7 @@ const svg = {
 };
 
 // Each personality has its own animated bot (bot-avatars, MIT). Different seeds keep them from blinking in unison.
-const PERSONALITY_AVATARS: Record<Personality, BotAvatarProps> = {
+export const PERSONALITY_AVATARS: Record<Personality, BotAvatarProps> = {
   patient: { type: "flower", face: "mouth", color: "#3F5A3A", seed: 0.1 },
   cheerful: { type: "star", hat: "party", seed: 0.35 },
   short: { type: "pebble", glasses: "round", seed: 0.6 },

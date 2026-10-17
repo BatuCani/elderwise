@@ -1,21 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { MODE_FRAMES, paintFrame, resolvePreset } from "thinking-orbs/engine";
-import type { OrbState } from "thinking-orbs";
+import { BotAvatar } from "bot-avatars";
+import { useAssistant } from "@/lib/assistant";
 import type { Lang } from "@/prompts/elderwise";
+import { PERSONALITY_AVATARS } from "./AssistantSettings";
 
 // What the Talk tab is doing right now; each mood has its own orb animation.
 export type OrbMood = "idle" | "connecting" | "listening" | "thinking" | "looking" | "speaking";
 
-const ORB: Record<OrbMood, OrbState> = {
-  idle: "breathing",
-  connecting: "connecting",
-  listening: "listening",
-  thinking: "solving",
-  looking: "searching",
-  speaking: "composing",
+// How the assistant's bot face behaves in each mood: calm while idle or listening, busy while it works.
+const BOT_STATE: Record<OrbMood, "default" | "working"> = {
+  idle: "default",
+  connecting: "default",
+  listening: "default",
+  thinking: "working",
+  looking: "working",
+  speaking: "working",
 };
+
+// After this long with nothing happening the bot dozes off; a tap wakes it right away.
+const SLEEP_AFTER_MS = 45_000;
 
 // Shown while someone holds the orb down: they don't need to hold, just let go and talk.
 const HOLD_HINT: Record<Lang, string> = {
@@ -42,10 +47,6 @@ const COPY: Record<Lang, Record<OrbMood, string>> = {
   },
 };
 
-// The orb geometry is tuned for 64px; we paint it bigger on our own canvas so it stays crisp.
-const BASE = 64;
-const MOSS = { r: 63, g: 90, b: 58 };
-
 const reducedQuery = "(prefers-reduced-motion: reduce)";
 function subscribeReduced(cb: () => void) {
   const mq = matchMedia(reducedQuery);
@@ -65,47 +66,26 @@ type Props = {
   hideHint?: boolean;
 };
 
-// The big animated "face" of Elderwise on the Talk tab (orbs from thinking-orbs, libraries.dev).
+// The big friendly face of Grace on the Talk tab: the bot of the chosen personality (bot-avatars,
+// libraries.dev) in a soft moss glow, with a calm ring that breathes while it listens or speaks.
 export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label, hideHint = false }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const reduced = useSyncExternalStore(subscribeReduced, () => matchMedia(reducedQuery).matches, () => false);
-  const state = ORB[mood];
+  const assistant = useAssistant();
+  const [asleep, setAsleep] = useState(false);
   const [holding, setHolding] = useState(false);
   const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const firedByPointer = useRef(false);
 
-  // Draw the orb animation; with reduced motion it is one still frame.
+  // Idle for a long while: the bot falls asleep. Any other mood keeps it awake.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
-    const { mode, speed, opts } = resolvePreset(state, BASE);
-    const frameFn = MODE_FRAMES[mode];
-    let raf = 0;
-    const draw = (t: number) => {
-      const px = canvas.clientWidth;
-      const dpr = Math.min(3, window.devicePixelRatio || 1);
-      if (canvas.width !== Math.round(px * dpr)) {
-        canvas.width = Math.round(px * dpr);
-        canvas.height = Math.round(px * dpr);
-      }
-      const scale = (px * dpr) / BASE;
-      ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      ctx.clearRect(0, 0, BASE, BASE);
-      paintFrame(ctx, frameFn(BASE, t, opts), false, MOSS);
+    if (mood !== "idle") return;
+    const timer = setTimeout(() => setAsleep(true), SLEEP_AFTER_MS);
+    return () => {
+      clearTimeout(timer);
+      setAsleep(false);
     };
-    if (reduced) {
-      draw(0.6);
-      return;
-    }
-    const loop = () => {
-      draw((performance.now() / 1000) * speed);
-      raf = requestAnimationFrame(loop);
-    };
-    loop();
-    return () => cancelAnimationFrame(raf);
-  }, [state, reduced]);
+  }, [mood]);
 
   // A soft fade and grow whenever the mood changes.
   useEffect(() => {
@@ -127,9 +107,28 @@ export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label, 
   const circle = compact
     ? "h-[128px] w-[128px] [@media(max-height:620px)]:h-[96px] [@media(max-height:620px)]:w-[96px]"
     : "h-[240px] w-[240px] [@media(max-height:720px)]:h-[160px] [@media(max-height:720px)]:w-[160px]";
+  const active = mood === "listening" || mood === "speaking";
+  const botSize = compact ? 80 : 112;
   const orb = (
-    <div ref={wrapRef} className={`flex items-center justify-center rounded-full ${glow} ${circle}`}>
-      <canvas ref={canvasRef} aria-hidden className="h-[92%] w-[92%]" />
+    <div ref={wrapRef} className={`relative flex items-center justify-center rounded-full ${glow} ${circle}`}>
+      {/* A solid, soft ring that breathes while Grace listens or speaks; it fades away otherwise. */}
+      <span
+        aria-hidden
+        className={`orb-ring pointer-events-none absolute inset-[16%] rounded-full border-2 border-moss/25 transition-opacity duration-500 ${
+          active ? "opacity-100" : "opacity-0"
+        } ${mood === "speaking" ? "orb-ring-fast" : ""}`}
+      />
+      <BotAvatar
+        {...PERSONALITY_AVATARS[assistant.personality]}
+        shading="fabric"
+        size={botSize}
+        state={asleep ? "sleeping" : BOT_STATE[mood]}
+        turn={mood === "listening" ? 1.5 : 1}
+        interactive={false}
+        paused={reduced}
+        aria-hidden
+        className="relative"
+      />
     </div>
   );
 
