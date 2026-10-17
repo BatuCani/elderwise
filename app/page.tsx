@@ -67,11 +67,8 @@ export default function Talk() {
   const cameraOnRef = useRef(false);
   const path = usePathname();
   const cameraOn = camera !== null && liveOn && path === "/";
-  useEffect(() => {
-    if (!liveOn || path !== "/") setCamera(null);
-  }, [liveOn, path]);
-  // A hidden Talk tab (Next keeps it alive) runs no effects, so the reset above never fires there:
-  // clear the camera when it stops being on, including when the tab is hidden.
+  // Clear the camera choice whenever the camera stops (session ended, tab changed). Cleanups still
+  // run on a hidden Talk tab (Next keeps it alive), so a new session never restarts it silently.
   useEffect(() => {
     if (!cameraOn) return;
     return () => setCamera(null);
