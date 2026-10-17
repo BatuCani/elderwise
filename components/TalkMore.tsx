@@ -42,6 +42,14 @@ type Props = {
 // Talk tab: one round "+" next to the mic. Tapping it melts out the secondary actions
 // (Scan a letter, Type, Tip of the day) as round glass buttons; tap again or outside to melt them back.
 // liquid-gooey snaps instead of animating under prefers-reduced-motion.
+// The menu opens downward in a half circle under the "+" (down-left, down, down-right),
+// so it never covers the orb or its hint.
+const ARC = [
+  { x: -64, y: 46 },
+  { x: 0, y: 78 },
+  { x: 64, y: 46 },
+];
+
 export function TalkMore({ lang, onScan, onType, onTip, onOpenChange }: Props) {
   const c = COPY[lang];
   const [open, setOpenState] = useState(false);
@@ -69,8 +77,8 @@ export function TalkMore({ lang, onScan, onType, onTip, onOpenChange }: Props) {
         {items.map((item, i) => (
           <Liquid.Item
             key={item.label}
-            x={0}
-            y={open ? -(i + 1) * 84 : 0}
+            x={open ? ARC[i].x : 0}
+            y={open ? ARC[i].y : 0}
             scale={open ? 1 : 0.6}
             transition="bouncy"
             delay={open ? i * 45 : (items.length - 1 - i) * 30}
