@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, CloseIcon, MicIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
 import { LiveCamera } from "@/components/LiveCamera";
@@ -272,8 +273,8 @@ export default function Talk() {
   }
 
   function openTyping() {
-    setTypeOpen(true);
-    setTimeout(() => typeRef.current?.focus());
+    flushSync(() => setTypeOpen(true));
+    typeRef.current?.focus();
   }
 
   function onSendTyped() {
