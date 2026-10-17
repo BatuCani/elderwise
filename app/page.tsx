@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone } from "voice-glow";
-import { ChatInput } from "@/components/ChatInput";
+import { MicIcon, StopIcon } from "@/components/icons";
 import { addEntry } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
-import { getRecognition, LOCALE, speak, spokenText, toJpeg, unlockSpeech, type Recognition } from "@/lib/speech";
+import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
@@ -19,7 +19,7 @@ function greetingKey(): "morning" | "afternoon" | "evening" {
   return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
 }
 
-// Talk tab: only the voice interface. Answers open on the Answers tab.
+// Talk tab: one big talk button in the middle of the screen. Answers open on the Answers tab.
 export default function Talk() {
   const router = useRouter();
   const profile = useProfile();
@@ -27,15 +27,9 @@ export default function Talk() {
   const mic = useMicrophone();
   const [phase, setPhase] = useState<Phase>("idle");
   const [question, setQuestion] = useState("");
-  const [photo, setPhoto] = useState<string | null>(null);
   const recRef = useRef<Recognition | null>(null);
   const heardRef = useRef("");
   const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
-
-  function setNewPhoto(src: string | null) {
-    if (photo?.startsWith("blob:")) URL.revokeObjectURL(photo);
-    setPhoto(src);
-  }
 
   async function ask(q: string) {
     setPhase("thinking");
@@ -50,7 +44,6 @@ export default function Talk() {
         "today",
         new Date().toLocaleDateString(LOCALE[profile.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
       );
-      if (photo) body.append("image", await toJpeg(photo), "photo.jpg");
       const res = await fetch("/api/ask", { method: "POST", body });
       if (!res.ok) throw new Error(String(res.status));
       const answer: Answer = await res.json();
@@ -58,7 +51,6 @@ export default function Talk() {
       speak(spokenText(answer), profile.lang, profile.speechRate);
       setPhase("done");
       setQuestion("");
-      setNewPhoto(null);
       setTimeout(() => router.push("/answers"), 1200);
     } catch {
       setPhase("error");
@@ -74,8 +66,12 @@ export default function Talk() {
     }
     const Ctor = getRecognition();
     if (!Ctor) {
-      // No speech recognition in this browser: typing is the fallback.
-      document.querySelector<HTMLInputElement>("form input:not([type=file])")?.focus();
+      // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
+      const typed = window.prompt(t.inputPlaceholder)?.trim();
+      if (typed) {
+        setQuestion(typed);
+        ask(typed);
+      }
       return;
     }
     mic.start();
@@ -92,7 +88,7 @@ export default function Talk() {
     rec.onend = () => {
       recRef.current = null;
       mic.stop();
-      if (heardRef.current.trim() || photo) ask(heardRef.current);
+      if (heardRef.current.trim()) ask(heardRef.current);
       else setPhase("idle");
     };
     recRef.current = rec;
@@ -101,35 +97,56 @@ export default function Talk() {
     rec.start();
   }
 
-  const status =
-    phase === "listening"
-      ? question || t.listening
-      : phase === "thinking"
-        ? t.thinking
-        : phase === "error"
-          ? t.error
-          : null;
+  const listening = phase === "listening";
+  const thinking = phase === "thinking";
+  const status = listening
+    ? question
+      ? `“${question}”`
+      : t.listening
+    : thinking
+      ? t.thinking
+      : phase === "error"
+        ? t.error
+        : t.tapToTalk;
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 pb-56 pt-8">
-        <p className="font-serif text-2xl font-medium text-moss">Elderwise</p>
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center px-6 pb-36 pt-8 text-center">
+        <p className="self-start font-serif text-2xl font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
         <p className="text-xl text-muted">
           {greeting}, {profile.name}
         </p>
-        <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
+
+        <div className="relative mt-10 flex h-56 w-56 items-center justify-center">
+          {(listening || thinking) && (
+            <span
+              aria-hidden
+              className={`absolute inset-0 rounded-full bg-moss/25 ${listening ? "animate-ping" : "animate-pulse"}`}
+            />
+          )}
+          <button
+            type="button"
+            onClick={onMic}
+            disabled={thinking}
+            aria-label={listening ? t.stopMic : t.mic}
+            className="relative flex h-56 w-56 items-center justify-center rounded-full bg-moss text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:opacity-60"
+          >
+            {listening ? <StopIcon className="h-24 w-24" /> : <MicIcon className="h-24 w-24" />}
+          </button>
+        </div>
+
         <p
           aria-live="polite"
-          className={`mt-8 min-h-[4.5rem] leading-snug ${
-            phase === "listening"
-              ? "font-serif text-4xl font-medium text-moss"
+          className={`mt-10 min-h-[5rem] leading-snug ${
+            listening && question
+              ? "font-serif text-3xl font-medium text-moss"
               : phase === "error"
                 ? "text-2xl font-bold text-warn"
-                : "text-2xl text-ink"
+                : "font-serif text-3xl font-medium text-ink"
           }`}
         >
-          {status && (phase === "listening" && question ? `“${status}”` : status)}
+          {status}
         </p>
         <div className="flex-1" />
       </main>
@@ -137,32 +154,11 @@ export default function Talk() {
       {phase === "done" && (
         <div
           role="status"
-          className="fixed inset-x-0 bottom-[calc(40px+9rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
+          className="fixed inset-x-0 bottom-[calc(40px+5rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
         >
           ✓ {t.done}
         </div>
       )}
-
-      <div className="fixed inset-x-0 bottom-[calc(40px+4rem+env(safe-area-inset-bottom))] z-10 px-5">
-        <div className="mx-auto max-w-xl">
-          <ChatInput
-            value={phase === "listening" ? "" : question}
-            onChange={setQuestion}
-            onSubmit={() => {
-              unlockSpeech();
-              ask(question);
-            }}
-            onMic={onMic}
-            onPhoto={(f) => setNewPhoto(URL.createObjectURL(f))}
-            onRemovePhoto={() => setNewPhoto(null)}
-            photo={photo}
-            listening={phase === "listening"}
-            thinking={phase === "thinking"}
-            stream={mic.stream}
-            t={t}
-          />
-        </div>
-      </div>
     </>
   );
 }
