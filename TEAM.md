@@ -1,11 +1,11 @@
-# Elderwise - team plan
+# Grace - team plan
 
 Claude Impact Lab Berlin, 17 Oct 2026.
 Hard deadline **16:00**: public repo, README, 2-minute demo video.
 
 ## The product in one paragraph
 
-Elderwise is a patient voice AI companion for older adults.
+Grace (first called Elderwise) is a patient voice AI companion for older adults.
 The person shows something (a photo or screenshot of a letter, an SMS, a medication box, a timetable), presses one big glowing orb and asks out loud.
 Claude answers in simple words, in very large text, and reads the answer aloud.
 After every answer a learning card explains "this is what you just did with AI", so the person learns to use AI on their own.
@@ -17,7 +17,7 @@ A family view lets a son or daughter see what was asked and get a warning when C
 - **What the demo lets them do:** show something, ask out loud, get a clear spoken answer, and learn one AI skill each time.
 - **Why it matters:** YC lists "AI for the Aging Population" as an open Request for Startups (voice interfaces, family caregiver coordination).
 
-Live app: https://elderwise-beryl.vercel.app
+Live app: https://graceapp.vercel.app
 
 ## Stack and structure
 
@@ -44,7 +44,7 @@ Three tabs in a bottom navbar:
 
 ## How to start (everyone)
 
-1. Accept the GitHub invite, then `git clone https://github.com/BatuCani/elderwise && cd elderwise`.
+1. Accept the GitHub invite, then `git clone https://github.com/BatuCani/grace && cd grace`.
 2. `git pull` once Batu says the skeleton is on `main`.
 3. `cp .env.example .env` and paste your Claude API key. Never commit `.env`.
 4. `npm install && npm run dev`, open http://localhost:3000.

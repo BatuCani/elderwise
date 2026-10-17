@@ -1,4 +1,4 @@
-# Elderwise
+# Grace
 
 ### Just say it.
 
@@ -38,7 +38,7 @@ Older adults don't learn AI from tutorials. They learn it by solving a problem t
 
 Psychology calls this a mastery experience: succeeding at something yourself is the strongest source of confidence that you can do it again.
 
-**Elderwise solves the problem first. Then it shows you what you just did.**
+**Grace solves the problem first. Then it shows you what you just did.**
 
 ---
 
@@ -64,7 +64,7 @@ Psychology calls this a mastery experience: succeeding at something yourself is 
 
 **Calm, never shaming.** A scam alert says what to do, not what you did wrong.
 
-**The person decides.** Elderwise explains and suggests. Calling the trusted person is always one tap, never automatic.
+**The person decides.** Grace explains and suggests. Calling the trusted person is always one tap, never automatic.
 
 ---
 
@@ -74,7 +74,7 @@ Psychology calls this a mastery experience: succeeding at something yourself is 
 
 Ingrid gets a text: her parcel is held, she should pay a small fee via a link.
 
-She opens Elderwise, taps the glowing button and asks: "Is this real?" The button glows with her voice.
+She opens Grace, taps the glowing button and asks: "Is this real?" The button glows with her voice.
 
 The Answers card turns deep red: a scam alert, three plain reasons, read aloud. One tap: "Tell my daughter Anna".
 
@@ -90,7 +90,9 @@ Claude Sonnet 5.5 with vision reads the photo and the spoken question.
 
 Structured output (a JSON schema) turns every answer into a visual card instead of a wall of text: type, headline, sentence, points, action, "You learned" and tip.
 
-All prompts live in one file, `prompts/elderwise.ts`. Browser speech in and out, voice-glow for the live voice effect, English and German.
+The real-time voice is Gemini Live, but it only speaks for Claude: every real question goes to Claude through one tool, and the card on screen is Claude's answer.
+
+All prompts live in one file, `prompts/elderwise.ts`. voice-glow for the live voice effect, English and German.
 
 ---
 
@@ -111,7 +113,7 @@ Y Combinator lists *AI for the Aging Population* in its Requests for Startups.
 
 ## What comes next
 
-**Family code word.** Elderwise helps the family agree on a secret word, so Ingrid can tell a fake "grandchild" call from a real one.
+**Family code word.** Grace helps the family agree on a secret word, so Ingrid can tell a fake "grandchild" call from a real one.
 
 **Step by step.** For letters that need action, one step per screen, with two buttons only: "Done" or "I don't understand".
 
@@ -123,7 +125,7 @@ Y Combinator lists *AI for the Aging Population* in its Requests for Startups.
 
 ## AI should adapt to people. Not the other way round.
 
-### Elderwise.
+### Grace.
 
 <!-- Team: add names and roles here -->
 
