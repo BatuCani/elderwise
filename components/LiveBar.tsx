@@ -10,7 +10,7 @@ export function LiveBar() {
   const path = usePathname();
   const t = TEXT[useProfile().lang];
   const { status } = useLive();
-  if (status === "idle" || path === "/") return null;
+  if (status === "idle" || path === "/" || path === "/welcome") return null;
 
   return (
     <div className="glass fixed inset-x-5 bottom-[calc(26px+5rem+env(safe-area-inset-bottom))] z-20 mx-auto flex max-w-xl items-center gap-3 rounded-full py-2 pl-5 pr-2">
