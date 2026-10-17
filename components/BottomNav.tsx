@@ -17,8 +17,8 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-      <div className="mx-auto flex max-w-xl">
+    <nav className="fixed inset-x-5 bottom-[calc(26px+env(safe-area-inset-bottom))] z-20 mx-auto max-w-xl rounded-[34px] glass-nav">
+      <div className="flex px-2">
         {tabs.map(({ href, label, Icon }) => {
           const active = path === href;
           return (

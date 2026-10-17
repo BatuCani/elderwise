@@ -20,10 +20,46 @@
 }
 
 body {
-  background: var(--color-paper);
+  /* Soft fixed color blobs behind the glass surfaces (iOS 26 "Liquid Glass" look). */
+  background:
+    radial-gradient(circle at 8% 4%, rgba(170, 196, 150, 0.55), transparent 42%),
+    radial-gradient(circle at 100% 45%, rgba(255, 196, 160, 0.45), transparent 40%),
+    radial-gradient(circle at 0% 96%, rgba(160, 180, 255, 0.4), transparent 45%),
+    var(--color-paper);
+  background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 8px 24px rgba(30, 36, 32, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.glass-moss {
+  background: rgba(228, 235, 221, 0.6);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 8px 24px rgba(30, 36, 32, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 10px 30px rgba(30, 36, 32, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 button,

@@ -121,7 +121,13 @@ export default function Talk() {
         <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
         <p
           aria-live="polite"
-          className={`mt-8 min-h-[4.5rem] text-2xl leading-snug ${phase === "error" ? "font-bold text-warn" : "text-ink"}`}
+          className={`mt-8 min-h-[4.5rem] leading-snug ${
+            phase === "listening"
+              ? "font-serif text-4xl font-medium text-moss"
+              : phase === "error"
+                ? "text-2xl font-bold text-warn"
+                : "text-2xl text-ink"
+          }`}
         >
           {status && (phase === "listening" && question ? `“${status}”` : status)}
         </p>
@@ -131,13 +137,13 @@ export default function Talk() {
       {phase === "done" && (
         <div
           role="status"
-          className="fixed inset-x-0 bottom-[calc(10rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
+          className="fixed inset-x-0 bottom-[calc(40px+9rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
         >
           ✓ {t.done}
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-[calc(4.2rem+env(safe-area-inset-bottom))] z-10 px-4 pb-4">
+      <div className="fixed inset-x-0 bottom-[calc(40px+4rem+env(safe-area-inset-bottom))] z-10 px-5">
         <div className="mx-auto max-w-xl">
           <ChatInput
             value={phase === "listening" ? "" : question}

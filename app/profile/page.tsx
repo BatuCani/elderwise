@@ -9,7 +9,7 @@ const FONT_ORDER: FontSize[] = ["normal", "large", "xlarge"];
 
 function Row({ icon, label, value, onClick }: { icon: ReactNode; label: string; value: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex min-h-16 w-full items-center gap-4 rounded-[20px] bg-white px-5 text-left">
+    <button onClick={onClick} className="flex min-h-16 w-full items-center gap-4 glass rounded-[20px] px-5 text-left">
       <span className="text-muted">{icon}</span>
       <span className="flex-1 text-lg font-bold text-ink">{label}</span>
       <span className="text-lg font-bold text-moss">{value}</span>
@@ -24,7 +24,7 @@ export default function ProfilePage() {
   const nextFont = FONT_ORDER[(FONT_ORDER.indexOf(profile.fontSize) + 1) % FONT_ORDER.length];
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-28 pt-8">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-40 pt-8">
       <header className="flex items-center gap-4">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white">
           {profile.name[0]}
@@ -39,7 +39,7 @@ export default function ProfilePage() {
           value={t.fontSizes[profile.fontSize]}
           onClick={() => updateProfile({ fontSize: nextFont })}
         />
-        <div className="rounded-[20px] bg-white px-5 py-4">
+        <div className="glass rounded-[20px] px-5 py-4">
           <div className="flex items-center gap-4">
             <SpeakerIcon className="h-7 w-7 text-muted" />
             <label htmlFor="rate" className="flex-1 text-lg font-bold text-ink">
@@ -71,7 +71,7 @@ export default function ProfilePage() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold text-muted">{t.trustedTitle}</h2>
-        <div className="flex items-center gap-4 rounded-[20px] bg-white p-4">
+        <div className="flex items-center gap-4 glass rounded-[20px] p-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-paper font-serif text-2xl font-medium text-ink">
             {profile.trusted.name[0]}
           </div>
