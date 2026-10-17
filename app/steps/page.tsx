@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BackIcon, CheckIcon, CloseIcon, MicIcon, NextIcon, SendIcon, SpeakerIcon } from "@/components/icons";
+import { BackIcon, CheckIcon, CloseIcon, MicIcon, RetryIcon, NextIcon, SendIcon, SpeakerIcon } from "@/components/icons";
 import { addEntry } from "@/lib/answers";
 import { askElderwise } from "@/lib/ask";
 import { useProfile } from "@/lib/profile";
-import { clearFollowUp, followUpQuestion, getSolve, setFollowUp, setStep, setStuck, stepsOf, useSolve } from "@/lib/solve";
+import { clearFollowUp, followUpQuestion, getSolve, setFollowUp, retryPending, setStep, setStuck, startExample, stepsOf, usePending, useSolve } from "@/lib/solve";
 import { speak, spokenText, unlockSpeech } from "@/lib/speech";
 import { TEXT } from "../copy";
 
@@ -21,6 +21,45 @@ export default function Steps() {
   const solve = useSolve();
   const [typed, setTyped] = useState("");
   const [phase, setPhase] = useState<"idle" | "thinking" | "error">("idle");
+  const pending = usePending();
+
+  const retryButton = (
+    <button
+      onClick={() => {
+        unlockSpeech();
+        retryPending();
+      }}
+      className="glass mt-5 flex min-h-14 items-center gap-3 rounded-full px-7 text-status font-bold text-moss"
+    >
+      <RetryIcon className="h-7 w-7" />
+      {t.tryAgain}
+    </button>
+  );
+
+  // A new question is on its way (straight after "Done talking" on Talk): wait for it here.
+  if (pending && (!pending.followUp || !solve)) {
+    return (
+      <main
+        aria-live="polite"
+        className="mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center justify-center px-6 pb-[calc(26px+4rem+2rem+env(safe-area-inset-bottom))] pt-[calc(28px+env(safe-area-inset-top))] text-center"
+      >
+        {pending.question && (
+          <p className="font-serif text-asked font-medium leading-snug text-ink/70">“{pending.question}”</p>
+        )}
+        {pending.status === "thinking" ? (
+          <p className="mt-8 flex items-center gap-3 text-status text-moss">
+            <span className="thinking-dot" aria-hidden />
+            {t.thinking}
+          </p>
+        ) : (
+          <>
+            <p className="mt-8 text-status font-bold leading-snug text-warn">{t.error}</p>
+            {retryButton}
+          </>
+        )}
+      </main>
+    );
+  }
 
   if (!solve) {
     return (
@@ -30,6 +69,12 @@ export default function Steps() {
           <MicIcon className="h-7 w-7" />
           {t.goTalk}
         </Link>
+        <button
+          onClick={() => startExample(profile.lang)}
+          className="glass flex min-h-14 items-center gap-3 rounded-full px-7 text-status font-bold text-moss"
+        >
+          {t.tryExample}
+        </button>
       </main>
     );
   }
@@ -72,11 +117,16 @@ export default function Steps() {
 
         {/* Top: the quick explanation, or Claude's answer to "I'm stuck". */}
         <section aria-live="polite" className="mt-5 min-h-[4.5rem] overflow-y-auto">
-          {phase === "thinking" ? (
+          {phase === "thinking" || pending?.status === "thinking" ? (
             <p className="flex items-center gap-3 text-status text-moss">
               <span className="thinking-dot" aria-hidden />
               {t.thinking}
             </p>
+          ) : pending?.status === "error" ? (
+            <>
+              <p className="text-status font-bold leading-snug text-warn">{t.error}</p>
+              {retryButton}
+            </>
           ) : phase === "error" ? (
             <p className="text-status font-bold leading-snug text-warn">{t.error}</p>
           ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import type { Answer } from "@/prompts/elderwise";
+import type { Answer, Lang } from "@/prompts/elderwise";
 
 // The problem the person is working through on the Steps page, kept in this browser only.
 export type Solve = {
@@ -54,6 +54,40 @@ export const setStuck = (stuck: boolean) => update({ stuck });
 export const setFollowUp = (question: string, answer: Answer) => update({ followUp: { question, answer }, stuck: false });
 export const clearFollowUp = () => update({ followUp: null });
 
+// A sample problem, so the Steps page can be tried before asking anything (fake data).
+const EXAMPLE: Record<Lang, { question: string; answer: Answer }> = {
+  en: {
+    question: "How do I make the text on my phone bigger?",
+    answer: {
+      type: "steps",
+      headline: "Make your text bigger",
+      sentence: "You can change the text size in your phone's Settings.",
+      points: ["Open the grey Settings app.", "Tap Display and Brightness.", "Tap Text Size and slide to the right."],
+      when: null,
+      action: null,
+      learned: "You asked an AI how to do something on your phone.",
+      tip: "Ask for one step at a time if it goes too fast.",
+    },
+  },
+  de: {
+    question: "Wie mache ich die Schrift auf meinem Handy größer?",
+    answer: {
+      type: "steps",
+      headline: "Schrift größer machen",
+      sentence: "Sie können die Schriftgröße in den Einstellungen ändern.",
+      points: ["Öffnen Sie die graue App Einstellungen.", "Tippen Sie auf Anzeige und Helligkeit.", "Tippen Sie auf Textgröße und schieben Sie nach rechts."],
+      when: null,
+      action: null,
+      learned: "Sie haben eine KI gefragt, wie etwas auf dem Handy geht.",
+      tip: "Bitten Sie um einen Schritt nach dem anderen, wenn es zu schnell geht.",
+    },
+  },
+};
+
+export function startExample(lang: Lang) {
+  startSolve(EXAMPLE[lang].question, EXAMPLE[lang].answer);
+}
+
 // The steps to show: Claude's points, or its one sentence when there are none.
 export function stepsOf(answer: Answer): string[] {
   return answer.points.length ? answer.points : [answer.sentence];
@@ -72,6 +106,21 @@ export function followUpQuestion(s: Solve, q: string): string {
   ].join("\n");
 }
 
+// A question on its way to Claude. The Steps page opens right away and shows this while waiting.
+export type Pending = { question: string; status: "thinking" | "error"; followUp: boolean };
+let pending: Pending | null = null;
+let retryFn: (() => void) | null = null;
+
+export function setPending(next: Pending | null, retry?: () => void) {
+  pending = next;
+  if (retry) retryFn = retry;
+  listeners.forEach((l) => l());
+}
+
+export function retryPending() {
+  retryFn?.();
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener);
@@ -79,4 +128,8 @@ function subscribe(listener: () => void) {
 
 export function useSolve(): Solve | null {
   return useSyncExternalStore(subscribe, read, () => null);
+}
+
+export function usePending(): Pending | null {
+  return useSyncExternalStore(subscribe, () => pending, () => null);
 }

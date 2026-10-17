@@ -3,13 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, MicIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, MicIcon, SendIcon } from "@/components/icons";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
 import { askElderwise } from "@/lib/ask";
 import { useProfile } from "@/lib/profile";
-import { followUpQuestion, getSolve, setFollowUp, setStuck, startSolve } from "@/lib/solve";
+import { followUpQuestion, getSolve, setFollowUp, setPending, setStuck, startSolve, type Solve } from "@/lib/solve";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import { TEXT } from "./copy";
 
@@ -51,18 +51,6 @@ export default function Talk() {
   const listeningRef = useRef(false);
   const finishingRef = useRef(false);
   const busyRef = useRef(false);
-  const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const [asked, setAsked] = useState<{ q: string; img: string | null }>({ q: "", img: null });
-
-  // Leaving the Talk tab (Next keeps it alive, hidden) clears the toast and must not pull the
-  // person back to Answers later.
-  useEffect(
-    () => () => {
-      clearTimeout(doneTimer.current);
-      setPhase((p) => (p === "done" ? "idle" : p));
-    },
-    [],
-  );
 
   // Coming from "Stuck?" on the Steps page: start listening right away. This runs each time Talk
   // is shown (Next keeps it alive, hidden). Leaving Talk without asking drops the "stuck" mode.
@@ -95,37 +83,35 @@ export default function Talk() {
     return `${baseRef.current} ${sessionRef.current}`.trim();
   }
 
-  async function ask(q: string, img: string | null) {
+  // Open the Steps page right away; it shows "Thinking…" until Claude's answer is in.
+  function ask(q: string, img: string | null) {
     if (busyRef.current) return;
+    // When stuck on a step, Claude also gets the problem and the step, so it answers about that.
+    const solve = getSolve();
+    send(q, img, stuckRef.current && solve ? solve : null);
+    stuckRef.current = false;
+    setPhase("idle");
+    setQuestion("");
+    router.push("/steps");
+  }
+
+  async function send(q: string, img: string | null, followUp: Solve | null) {
     busyRef.current = true;
-    setAsked({ q, img });
-    setPhase("thinking");
+    setPending({ question: q, status: "thinking", followUp: !!followUp }, () => send(q, img, followUp));
     try {
-      // When stuck on a step, Claude also gets the problem and the step, so it answers about that.
-      const solve = getSolve();
-      const followUp = stuckRef.current && solve ? solve : null;
       const answer = await askElderwise(followUp ? followUpQuestion(followUp, q) : q, img, profile);
-      stuckRef.current = false;
       if (followUp) setFollowUp(q || t.inputPlaceholder, answer);
       else startSolve(q, answer);
       addEntry(q || t.inputPlaceholder, answer);
-      speak(spokenText(answer), profile.lang, profile.speechRate);
-      setPhase("done");
-      setQuestion("");
+      setPending(null);
       setNewPhoto(null);
-      // Let the "Done" toast show for a moment, then open the steps while the answer is read aloud.
-      doneTimer.current = setTimeout(() => router.push("/steps"), 1500);
+      speak(spokenText(answer), profile.lang, profile.speechRate);
     } catch {
-      setPhase("error");
+      setPending({ question: q, status: "error", followUp: !!followUp });
       speak(t.error, profile.lang, profile.speechRate);
     } finally {
       busyRef.current = false;
     }
-  }
-
-  function retry() {
-    unlockSpeech();
-    ask(asked.q, asked.img);
   }
 
   function finish() {
@@ -267,15 +253,6 @@ export default function Talk() {
             >
               <MicIcon className="h-20 w-20" />
             </button>
-            {phase === "error" && (
-              <button
-                onClick={retry}
-                className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-7 text-status font-bold text-moss"
-              >
-                <RetryIcon className="h-7 w-7" />
-                {t.tryAgain}
-              </button>
-            )}
 
           </>
         )}
@@ -340,17 +317,6 @@ export default function Talk() {
         </VoiceBeam>
       </div>
 
-      {phase === "done" && (
-        <div
-          role="status"
-          className="toast-in glass fixed inset-x-0 bottom-[calc(26px+4rem+6rem+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2 pl-2 pr-5 text-toast font-bold text-ink"
-        >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss text-white">
-            <CheckIcon className="h-5 w-5" />
-          </span>
-          {t.done}
-        </div>
-      )}
     </>
   );
 }
