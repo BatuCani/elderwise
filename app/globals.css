@@ -555,3 +555,26 @@ button.glass:active {
     transform: none;
   }
 }
+
+/* Talk tab: the calm ring round the assistant's bot breathes while it listens, a little quicker while it speaks. */
+.orb-ring {
+  animation: orb-ring 2.4s ease-in-out infinite;
+}
+.orb-ring-fast {
+  animation-duration: 1.4s;
+}
+@keyframes orb-ring {
+  0%,
+  100% {
+    transform: scale(0.94);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-ring {
+    animation: none;
+  }
+}
