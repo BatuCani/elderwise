@@ -55,7 +55,7 @@ Teams of 5 (at least 1 builder, 1 product or design, 1 domain expert; plus found
 ## Credits
 - [Next.js](https://nextjs.org) (MIT), [React](https://react.dev) (MIT), [Tailwind CSS](https://tailwindcss.com) (MIT).
 - [Anthropic TypeScript SDK](https://github.com/anthropics/anthropic-sdk-typescript) (MIT) and the Claude API.
-- [voice-glow](https://www.npmjs.com/package/voice-glow) for the voice-reactive glow around the input.
+- [voice-glow](https://www.npmjs.com/package/voice-glow) (MIT) for the voice-reactive glow around the input.
 - [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (OFL) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL) via Google Fonts.
 - Browser Web Speech API (SpeechRecognition and speechSynthesis).
 - Sample images in `public/samples/` are fictional mocks made for this demo; no real personal data.
