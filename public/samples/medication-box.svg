@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="table" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9cdb8"/><stop offset="1" stop-color="#b9a98e"/></linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e9edf0"/><stop offset="1" stop-color="#ffffff"/></linearGradient>
+  </defs>
+  <rect width="1080" height="1350" fill="url(#table)"/>
+  <ellipse cx="560" cy="1150" rx="460" ry="60" fill="#000" opacity=".15"/>
+  <!-- box side (3D) -->
+  <path d="M130 330 l60 -80 h780 l-60 80z" fill="url(#top)" stroke="#c9ced3" stroke-width="2"/>
+  <path d="M910 330 l60 -80 v800 l-60 80z" fill="#d4dade"/>
+  <!-- box front -->
+  <rect x="130" y="330" width="780" height="800" fill="#ffffff" stroke="#c9ced3" stroke-width="2"/>
+  <rect x="130" y="330" width="780" height="120" fill="#2f6f9f"/>
+  <rect x="130" y="450" width="780" height="14" fill="#e3a72f"/>
+  <text x="170" y="408" font-size="44" font-weight="bold" fill="#fff">Ramipril 5 mg</text>
+  <text x="870" y="408" font-size="28" fill="#fff" text-anchor="end">Tablets</text>
+  <!-- generic logo -->
+  <circle cx="200" cy="540" r="34" fill="none" stroke="#2f6f9f" stroke-width="6"/>
+  <path d="M182 540 h36" stroke="#2f6f9f" stroke-width="6"/>
+  <text x="250" y="552" font-size="30" font-weight="bold" fill="#2f6f9f">Medipharm</text>
+  <text x="870" y="552" font-size="28" fill="#333" text-anchor="end">50 tablets</text>
+  <!-- pharmacy label sticker -->
+  <rect x="170" y="620" width="700" height="370" rx="10" fill="#fffbe9" stroke="#b9b39a" stroke-width="2"/>
+  <text x="200" y="670" font-size="24" fill="#6b6650">APOTHEKE AM MARKT · dispensed 12.10.2026</text>
+  <line x1="200" y1="690" x2="840" y2="690" stroke="#cfc8a8" stroke-width="2"/>
+  <text font-size="40" font-weight="bold" fill="#111">
+    <tspan x="200" y="750">1 tablet twice daily</tspan>
+    <tspan x="200" y="805">with food</tspan>
+  </text>
+  <text x="200" y="870" font-size="32" fill="#9b1c1c" font-weight="bold">Do not combine with alcohol</text>
+  <text x="200" y="930" font-size="26" fill="#444">For: Example Patient · Prescribed by Dr. Weber</text>
+  <text x="200" y="965" font-size="22" fill="#777">Store below 25 °C · Keep out of reach of children</text>
+  <!-- barcode -->
+  <g fill="#222">
+    <rect x="600" y="1030" width="4" height="70"/><rect x="608" y="1030" width="2" height="70"/><rect x="614" y="1030" width="6" height="70"/>
+    <rect x="624" y="1030" width="2" height="70"/><rect x="630" y="1030" width="4" height="70"/><rect x="640" y="1030" width="2" height="70"/>
+    <rect x="646" y="1030" width="6" height="70"/><rect x="656" y="1030" width="2" height="70"/><rect x="662" y="1030" width="4" height="70"/>
+    <rect x="670" y="1030" width="2" height="70"/><rect x="676" y="1030" width="6" height="70"/><rect x="686" y="1030" width="4" height="70"/>
+    <rect x="694" y="1030" width="2" height="70"/><rect x="700" y="1030" width="6" height="70"/><rect x="710" y="1030" width="2" height="70"/>
+    <rect x="716" y="1030" width="4" height="70"/><rect x="724" y="1030" width="2" height="70"/><rect x="730" y="1030" width="6" height="70"/>
+  </g>
+  <text x="170" y="1060" font-size="22" fill="#555">PZN 00000000 · Rx only</text>
+  <text x="170" y="1095" font-size="22" fill="#555">Lot A1234 · EXP 08/2028</text>
+  <text x="540" y="1300" font-size="20" fill="#5b5040" text-anchor="middle">Fictional example for the Elderwise demo.</text>
+</svg>
