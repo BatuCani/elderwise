@@ -5,6 +5,7 @@ import { useState } from "react";
 import { VoiceBeam } from "voice-glow";
 import { CameraIcon, MicIcon } from "@/components/icons";
 import { updateProfile, useProfile } from "@/lib/profile";
+import { accountsEnabled } from "@/lib/supabase";
 import { markWelcomeSeen } from "@/lib/welcome";
 import { WELCOME } from "./copy";
 
@@ -19,7 +20,8 @@ function Logo({ className }: { className?: string }) {
   );
 }
 
-// First-run onboarding: three calm screens, then the Talk tab. Skippable at every step.
+// First-run onboarding: three calm screens (plus an optional free account), then the Talk tab.
+// Skippable at every step.
 export default function Welcome() {
   const router = useRouter();
   const profile = useProfile();
@@ -27,19 +29,21 @@ export default function Welcome() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
 
-  function finish() {
+  function finish(to = "/") {
     if (name.trim()) updateProfile({ name: name.trim() });
     markWelcomeSeen();
-    router.replace("/");
+    router.replace(to);
   }
 
-  const last = step === 2;
+  const total = accountsEnabled ? 4 : 3;
+  const last = step === total - 1;
+  const accountStep = step === 3;
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-6 pb-[calc(32px+env(safe-area-inset-bottom))] pt-[calc(24px+env(safe-area-inset-top))]">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="whitespace-nowrap text-lg text-muted">{w.step(step + 1)}</p>
-        <button onClick={finish} className="glass min-h-12 rounded-full px-6 text-lg font-bold text-ink">
+        <p className="whitespace-nowrap text-lg text-muted">{w.step(step + 1, total)}</p>
+        <button onClick={() => finish()} className="glass min-h-12 rounded-full px-6 text-lg font-bold text-ink">
           {w.skip}
         </button>
       </div>
@@ -49,7 +53,8 @@ export default function Welcome() {
         className="flex flex-1 flex-col"
         onSubmit={(e) => {
           e.preventDefault();
-          if (last) finish();
+          if (accountStep) finish("/signup?next=/");
+          else if (last) finish();
           else setStep(step + 1);
         }}
       >
@@ -100,17 +105,37 @@ export default function Welcome() {
               />
             </div>
           )}
+
+          {accountStep && (
+            <>
+              <Logo className="h-20 w-20 self-center" />
+              <div className="glass rounded-[32px] p-6">
+                <h1 className="font-serif text-[36px] font-medium leading-[1.05] text-ink">{w.saveTitle}</h1>
+                <p className="mt-3 text-[22px] leading-snug text-ink">{w.saveBody}</p>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex flex-col items-center gap-6">
           <div className="flex gap-2" aria-hidden>
-            {[0, 1, 2].map((i) => (
+            {Array.from({ length: total }, (_, i) => (
               <span key={i} className={`h-2.5 rounded-full transition-all ${i === step ? "w-8 bg-moss" : "w-2.5 bg-moss/25"}`} />
             ))}
           </div>
           <button type="submit" className="min-h-16 w-full rounded-full bg-moss text-xl font-bold text-white shadow-lg">
-            {last ? w.start : w.next}
+            {accountStep ? w.createAccount : last ? w.start : w.next}
           </button>
+          {accountStep && (
+            <>
+              <button type="button" onClick={() => finish("/signin?next=/")} className="glass min-h-16 w-full rounded-full text-xl font-bold text-ink">
+                {w.signIn}
+              </button>
+              <button type="button" onClick={() => finish()} className="min-h-14 w-full rounded-full text-xl font-bold text-moss underline underline-offset-4">
+                {w.noAccount}
+              </button>
+            </>
+          )}
         </div>
       </form>
     </main>

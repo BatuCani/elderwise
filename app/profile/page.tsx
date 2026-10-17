@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { AccountCard } from "@/components/AccountCard";
 import { AssistantSettings } from "@/components/AssistantSettings";
 import { GlobeIcon, PhoneIcon, SpeakerIcon, TextSizeIcon } from "@/components/icons";
 import { updateProfile, useProfile, type FontSize } from "@/lib/profile";
@@ -119,6 +120,8 @@ export default function ProfilePage() {
       </section>
 
       <EditDetails what={editing} relationLabel={relation} onClose={() => setEditing(null)} />
+
+      <AccountCard />
     </main>
   );
 }
