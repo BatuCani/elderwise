@@ -1,12 +1,8 @@
-> 👋 **Starter for Claude Impact Lab teams.** Fill in each section below as you build and delete this note.
->
-> 📅 **Agenda, rules, deadline and judging** are in the event repo: **[claude-impact-lab-berlin-2026-10-17](https://github.com/Claude-Community-Berlin/claude-impact-lab-berlin-2026-10-17)**. Read it first.
->
-> ✅ **When you're finished:** record a 2-minute demo video, then submit with the **[submission form](https://tally.so/r/1WPr9Q)** before **16:00**. One submission per team.
->
-> 🔑 Set your API key first: `cp .env.example .env`, then paste your key into `.env` (it's git-ignored, never commit it).
-
 # Elderwise
+
+**Try it:** https://elderwise-beryl.vercel.app (best on a phone; tap Share → Add to Home Screen on iPhone)
+
+![Elderwise: welcome, Talk, Answers and Profile screens](docs/screenshots.jpg)
 
 **One line:** a patient voice AI companion for older adults: say what you need (and show a photo if you like), and get a simple visual answer that is read aloud, plus one AI skill learned each time.
 
@@ -15,10 +11,12 @@
 - **What the demo lets them do:** press one button, ask out loud about a letter, text message or appointment, and get a big, calm answer card with a "You learned" tip.
 
 ## What it does
-Three tabs, nothing more:
-- **Talk:** "How can I help?" and one input pill. Tap the mic and speak (live transcript shown), or type; the camera button adds a photo. The pill glows with your voice (VoiceBeam).
-- **Answers:** the newest answer as one big visual card (deep red scam alert, explanation, steps or reminder) with up to 3 numbered points and an optional "Tell my daughter Anna" call button, a "Read aloud" pill and a "You learned:" card. Older answers are listed below. Saved in the browser.
-- **Profile:** text size, speaking speed slider, language (English or German), and the trusted person with a call button. Saved in the browser, fake demo data.
+A short welcome (three calm screens, skippable), then three tabs, nothing more:
+- **Talk:** "How can I help?" and one big microphone button. Tap it and speak; the live transcript shows while Elderwise listens and the screen glows with your voice. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
+- **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points and an optional "Tell my daughter Anna" call button. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
+- **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), and the trusted person with a call button.
+
+Everything is saved only in the browser and uses fake demo data (Ingrid and her daughter Anna).
 
 ## How Claude is used
 `app/api/ask/route.ts` sends the photo (as an image block) and the spoken question to `claude-sonnet-5-5` with the official Anthropic TypeScript SDK.
@@ -35,22 +33,19 @@ npm run dev             # open http://localhost:3000
 On a phone in the same Wi-Fi, open `http://<your-laptop-ip>:3000`.
 Voice input uses the browser Web Speech API (Chrome, Safari on iPhone). The microphone needs HTTPS or localhost, so on a phone over plain http the typed field is the fallback.
 
-**Live link (if any):** <link>
+**Live link:** https://elderwise-beryl.vercel.app
 
-## Screenshots / demo
-<Drop screenshots here, or link your 2-minute demo video.>
+## Demo video
+<Add the link to the 2-minute demo video here.>
 
 ## Team
-Teams of 5 (at least 1 builder, 1 product or design, 1 domain expert; plus founder or anyone). Link each name to a GitHub or LinkedIn profile, and replace the example row with your team.
-
-| Name | Role / background |
+| Name | Role in this project |
 |---|---|
-| [Mehul Patel](https://github.com/nomadicmehul) *(example)* | Claude Ambassador, DevRel |
-| [Your name](https://www.linkedin.com/in/your-profile) | Builder / Product or design / Domain expert / Founder |
-| [Your name](https://github.com/your-username) | |
-| [Your name](https://github.com/your-username) | |
-| [Your name](https://github.com/your-username) *(optional)* | |
-| [Your name](https://github.com/your-username) *(optional)* | |
+| Batu | Builder: voice flow, Claude API route, Liquid Glass design, layout |
+| Sam | Claude prompts and answer quality, Talk screen |
+| Ahmet | Demo photos and the "Add a photo" flow |
+| MaRie | Answer cards, answer history, pitch deck |
+| Endrik | Profile tab, accessibility and large-text QA |
 
 ## Credits
 - [Next.js](https://nextjs.org) (MIT), [React](https://react.dev) (MIT), [Tailwind CSS](https://tailwindcss.com) (MIT).
