@@ -1,8 +1,12 @@
+import type { ReactNode } from "react";
+
 // "Show me the way": a place from an answer (pharmacy, doctor, address) with a map and a transit route.
 type Props = {
   name: string;
   address?: string;
   kicker?: string;
+  // The small animated map picture from components/cards/CardArt.tsx.
+  art?: ReactNode;
 };
 
 const PinIcon = ({ className }: { className?: string }) => (
@@ -34,13 +38,14 @@ export function directionsUrl(place: string) {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place)}&travelmode=transit`;
 }
 
-export function PlaceCard({ name, address, kicker = "Show me the way" }: Props) {
+export function PlaceCard({ name, address, kicker = "Show me the way", art }: Props) {
   const query = address ? `${name}, ${address}` : name;
   const button =
     "flex min-h-14 flex-1 items-center justify-center gap-2 rounded-[28px] px-5 py-3 text-center text-xl font-bold";
 
   return (
     <section className="glass rounded-3xl p-6 text-ink">
+      {art}
       <p className="mb-3 text-base font-bold uppercase tracking-[0.08em] text-muted">{kicker}</p>
       <div className="flex items-start gap-3">
         <PinIcon className="mt-1 h-9 w-9 shrink-0 text-moss" />

@@ -578,3 +578,147 @@ button.glass:active {
     animation: none;
   }
 }
+
+/* Answer cards: the small header pictures (components/cards/CardArt.tsx) and the key-fact chips.
+   Every animation runs once as the card arrives, except the scam shield's slow red pulse. */
+.art-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-pop 520ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+@keyframes art-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+.art-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: art-ring 2.2s ease-out 300ms 4;
+}
+.art-ring-late {
+  animation-delay: 1.4s;
+}
+@keyframes art-ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+.art-flap {
+  transform-box: fill-box;
+  transform-origin: top;
+  animation: art-flap 600ms cubic-bezier(0.4, 0, 0.2, 1) 250ms both;
+}
+@keyframes art-flap {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(-1);
+  }
+}
+.art-paper {
+  animation: art-paper 520ms cubic-bezier(0.2, 0.9, 0.3, 1.15) 650ms both;
+}
+@keyframes art-paper {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: translateY(-4px);
+  }
+}
+.art-draw {
+  stroke-dasharray: 100;
+  animation: art-draw 1.1s cubic-bezier(0.4, 0, 0.2, 1) 200ms both;
+}
+@keyframes art-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.art-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+.art-cal {
+  perspective: 300px;
+}
+.art-page {
+  transform-origin: top;
+  animation: art-page 700ms cubic-bezier(0.5, 0, 0.3, 1) 350ms both;
+}
+@keyframes art-page {
+  to {
+    opacity: 0;
+    transform: rotateX(-110deg);
+  }
+}
+.art-drop {
+  animation: art-drop 620ms cubic-bezier(0.3, 1.4, 0.5, 1) 200ms both;
+}
+@keyframes art-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-22px);
+  }
+}
+.art-shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-pop 620ms ease-out 200ms both;
+}
+.art-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-glow 1.2s ease-in-out 200ms 2;
+}
+@keyframes art-glow {
+  50% {
+    opacity: 0.3;
+    transform: scale(1.15);
+  }
+}
+.chip-in {
+  animation: art-pop 380ms cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art-pop,
+  .art-flap,
+  .art-paper,
+  .art-draw,
+  .art-dot,
+  .art-page,
+  .art-drop,
+  .art-shadow,
+  .art-glow,
+  .chip-in,
+  .answer-in,
+  .row-in {
+    animation: none;
+  }
+  .art-ring {
+    display: none;
+  }
+  .art-flap {
+    transform: scaleY(-1);
+  }
+  .art-paper {
+    transform: translateY(-4px);
+  }
+  .art-page {
+    opacity: 0;
+  }
+}

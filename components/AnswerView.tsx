@@ -1,9 +1,13 @@
 import type { Copy } from "@/app/copy";
 import type { Answer, AnswerType, Lang } from "@/prompts/elderwise";
 import { CardBody } from "./cards";
+import { CardArt } from "./cards/CardArt";
+import { KeyFacts } from "./cards/KeyFacts";
+import { parseWhen } from "./cards/when";
 import { LinkCard, PlaceCard } from "./cards-extra";
 import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon } from "./icons";
 import Link from "next/link";
+import { LearnedCard } from "./LearnedCard";
 import { TellTrustedButton } from "./TellTrustedButton";
 
 // Labels for the two newer card types ("place" and "link"), which app/copy.ts does not list yet.
@@ -23,7 +27,8 @@ export function TypeIcon({ type, className }: { type: AnswerType; className?: st
 // phone is unused now (TellTrustedButton reads the trusted person from the profile); kept so callers don't change.
 type Props = { answer: Answer; t: Copy; phone?: string; time: string; lang: Lang; at: number };
 
-// One answer as a big visual card, then the "You learned" card.
+// One answer as a big visual card (a small animated picture on top, the key numbers pulled out),
+// then the "You learned" card with the assistant's bot.
 // Warnings keep the red card below; every other type uses its own card from components/cards.
 export function AnswerView({ answer, t, time, lang, at }: Props) {
   const { type, headline, sentence, points, action } = answer;
@@ -33,25 +38,32 @@ export function AnswerView({ answer, t, time, lang, at }: Props) {
   const place = type === "place" && answer.place?.name ? answer.place : null;
   const link = type === "link" && answer.link && /^https:\/\//i.test(answer.link.url) ? answer.link : null;
   const extra = place !== null || link !== null;
+  const day = type === "reminder" && answer.when ? parseWhen(answer.when, new Date(at))?.date.getDate() : undefined;
+  const art = <CardArt type={type} steps={points.length} day={day} />;
 
   return (
     <section className="flex flex-col gap-3">
       <div
-        className={`rounded-3xl ${extra ? "" : "p-6"} ${
+        className={`answer-in rounded-3xl ${extra ? "" : "p-6"} ${
           warning ? "bg-warn text-white shadow-[0_16px_40px_rgba(142,36,36,0.35)]" : extra ? "" : "bg-white text-ink"
         }`}
       >
         {place ? (
           <>
-            <PlaceCard name={place.name} address={place.address ?? undefined} kicker={`${kind} · ${time}`} />
+            <PlaceCard name={place.name} address={place.address ?? undefined} kicker={`${kind} · ${time}`} art={art} />
             {sentence && <p className="mt-4 px-2 text-xl leading-snug text-ink">{sentence}</p>}
           </>
         ) : link ? (
           <LinkCard title={link.title} sentence={sentence} href={link.url} kicker={`${kind} · ${time}`} buttonLabel={EXTRA_TEXT[lang].open} />
         ) : !warning ? (
-          <CardBody answer={answer} kicker={`${kind} · ${time}`} lang={lang} at={at} />
+          <>
+            {art}
+            <CardBody answer={answer} kicker={`${kind} · ${time}`} lang={lang} at={at} />
+            <KeyFacts answer={answer} lang={lang} />
+          </>
         ) : (
         <>
+        {art}
         <p className={`mb-3 text-base font-bold uppercase tracking-[0.08em] ${warning ? "text-white/85" : "text-muted"}`}>
           {t.kinds[type]} · {time}
         </p>
@@ -76,6 +88,7 @@ export function AnswerView({ answer, t, time, lang, at }: Props) {
             ))}
           </ol>
         )}
+        <KeyFacts answer={answer} lang={lang} warning />
         </>
         )}
         {action && <TellTrustedButton answer={answer} label={action.label} warning={warning} />}
@@ -86,11 +99,7 @@ export function AnswerView({ answer, t, time, lang, at }: Props) {
         )}
       </div>
 
-      <div className="glass-moss rounded-3xl p-5 text-learn">
-        <p className="text-lg font-bold">{t.learned}</p>
-        <p className="mt-1 text-lg leading-snug">{answer.learned}</p>
-        <p className="mt-2 text-lg leading-snug">{answer.tip}</p>
-      </div>
+      <LearnedCard title={t.learned} learned={answer.learned} tip={answer.tip} />
     </section>
   );
 }
