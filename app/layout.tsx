@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Fraunces } from "next/font/google";
 import { BottomNav } from "@/components/BottomNav";
 import { FirstRun } from "@/components/FirstRun";
+import { LiveBar } from "@/components/LiveBar";
 import { ProfileRoot } from "@/components/ProfileRoot";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <FirstRun />
         {/* On tablets and desktop the app sits in a phone-width column; the background stays full-bleed. */}
         <div className="mx-auto flex w-full max-w-app flex-1 flex-col">{children}</div>
+        <LiveBar />
         <BottomNav />
       </body>
     </html>
