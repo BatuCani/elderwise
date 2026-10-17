@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { AccountCard } from "@/components/AccountCard";
 import { AssistantSettings } from "@/components/AssistantSettings";
 import { SkillsCard } from "@/components/SkillsCard";
+import { FamilyLink } from "../family/FamilyLink";
 import { GlobeIcon, PhoneIcon, SpeakerIcon, TextSizeIcon } from "@/components/icons";
 import { updateProfile, useProfile, type FontSize } from "@/lib/profile";
 import { TEXT } from "../copy";
@@ -120,6 +121,7 @@ export default function ProfilePage() {
           </a>
         </div>
         <EditPill onClick={() => setEditing("trusted")} label={editLabel(profile.lang)} />
+        <FamilyLink />
       </section>
 
       <EditDetails what={editing} relationLabel={relation} onClose={() => setEditing(null)} />
