@@ -35,7 +35,9 @@ export default function FamilyPage() {
   const F = FAMILY_TEXT[lang];
   const saved = useAnswers();
   const skills = useSkills();
-  const [now] = useState(() => Date.now());
+  // Read the clock after mount: Date.now() during render is not allowed in a prerendered client page.
+  const [now, setNow] = useState(0);
+  useEffect(() => setNow(Date.now()), []);
   const isDemo = saved.length === 0;
 
   const week: Entry[] = useMemo(
