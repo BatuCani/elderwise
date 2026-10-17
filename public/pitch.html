@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grace · Finalist pitch</title>
+<link rel="icon" href="/grace-logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400..700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+  /* Slides from docs/PRESENTATION.md. Arrow keys, space or click to move. N shows speaker notes. F for full screen. */
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #111512; overflow: hidden; }
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  #stage > section { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+  #stage > section.on { opacity: 1; pointer-events: auto; }
+  #stage > section > aside { display: none; }
+  #notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 40vh; overflow: auto; padding: 16px 24px; background: rgba(17,21,18,.94); color: #F4F1EA; font: 20px/1.45 'Atkinson Hyperlegible', Arial, sans-serif; white-space: pre-wrap; display: none; }
+  body.notes #notes { display: block; }
+  #count { position: fixed; right: 16px; top: 12px; color: #9AA59C; font: 16px 'Atkinson Hyperlegible', Arial, sans-serif; }
+  @media (prefers-reduced-motion: reduce) { #stage > section { transition: none; } }
+</style>
+</head>
+<body>
+<div id="stage">
+<section id="cover" data-transition="fade" style="background:#2F4630;color:#F4F1EA;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:center;gap:40px">
+<svg aria-label="Large Grace petal flower in the background" viewBox="96 96 320 320" width="980" height="980" style="position:absolute;left:1080px;top:50px;width:980px;height:980px"><g fill="none" stroke="#4E6B48" stroke-width="10" stroke-linejoin="round"><path d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(60 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(120 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(180 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(240 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(300 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/></g></svg>
+<svg aria-label="Grace logo" viewBox="96 96 320 320" width="160" height="160" style="width:160px;height:160px"><g fill="none" stroke="#F4F1EA" stroke-width="22" stroke-linejoin="round"><path d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(60 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(120 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(180 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(240 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(300 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/></g></svg>
+<h1 style="font-family:Fraunces, Georgia, serif;font-size:220px;font-weight:500;line-height:1;color:#F4F1EA">Grace</h1>
+<p style="font-size:48px;line-height:1.3;width:1000px;color:#F4F1EA">A calm voice companion for people over 65. It helps with everyday life and teaches a little AI every time.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#D6E0CF">Claude Impact Lab Berlin  ·  17 October 2026  ·  AI education for everyone</p>
+<aside>Open on this slide while the team sets up. Phone mirrored, Talk tab open, Answers cleared. Then go straight to Ingrid.</aside>
+</section>
+<section id="ingrid" data-transition="fade" style="background:#F4F1EA;color:#1E2420;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:96px">
+<div style="flex:1;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:28px;font-weight:700;letter-spacing:3px;color:#3F5A3A">MEET INGRID</p>
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:76px;font-weight:500;line-height:1.1">78. Ran a bakery for thirty years. Still does the crossword in pen.</h2>
+<p style="font-size:38px;line-height:1.35;color:#3A423C">But lately the world speaks a language she never learned. Letters full of jargon. Apps that time out. And texts like this one.</p>
+</div>
+<div style="width:540px;background:#1E2420;border-radius:64px;padding:24px;display:flex;flex-direction:column">
+<div style="background:#E9E5DC;border-radius:44px;padding:48px 36px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;font-weight:700;color:#4A524C;text-align:center">DHL Info  ·  Today 08:17</p>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:30px;line-height:1.35;color:#1E2420"><b>DHL:</b> Your parcel is waiting. Pay a 1.99 EUR customs fee within 24h, or the parcel will be returned to the sender:</p>
+<p style="font-size:28px;color:#1F4E8C"><u>dhl-customs-parcel.info</u></p>
+</div>
+<p style="font-size:24px;color:#4A524C;text-align:center">Fake demo message from our sample set</p>
+</div>
+</div>
+<aside>0:00 Speaker. "Meet Ingrid. She's 78. She ran a bakery for thirty years and still does the crossword in pen. But lately the world speaks a language she never learned. Letters full of jargon. Apps that time out. And texts like this one."</aside>
+</section>
+<section id="numbers" data-transition="fade" style="background:#F4F1EA;color:#1E2420;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:500;line-height:1.1">Ingrid isn't alone.</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="background:#FFFFFF;border-radius:32px;padding:40px 48px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:120px;font-weight:600;line-height:1;color:#3F5A3A">28%</p>
+<p style="font-size:32px;line-height:1.3">of people aged 65 to 74 in the EU have basic digital skills.</p>
+</div>
+<div style="background:#FFFFFF;border-radius:32px;padding:40px 48px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:120px;font-weight:600;line-height:1;color:#3F5A3A">1 in 4</p>
+<p style="font-size:32px;line-height:1.3">people over 60 live with disabling hearing loss.</p>
+</div>
+<div style="background:#FFFFFF;border-radius:32px;padding:40px 48px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:120px;font-weight:600;line-height:1;color:#8E2424">1 in 18</p>
+<p style="font-size:32px;line-height:1.3">older adults fall victim to fraud or scams every year.</p>
+</div>
+<div style="background:#FFFFFF;border-radius:32px;padding:40px 48px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:120px;font-weight:600;line-height:1;color:#8E2424">$4.9 bn</p>
+<p style="font-size:32px;line-height:1.3">lost by Americans over 60 to reported online fraud in 2024.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A524C">Sources: Eurostat, Digital skills 2023  ·  WHO, World Report on Hearing 2021  ·  Burnes et al., AJPH 2017  ·  FBI IC3 Elder Fraud Report 2024</p>
+<aside>0:20 Demo opens the camera, Add a photo, picks the parcel text. Speaker: "Ingrid isn't alone. In the EU, only 28 percent of people aged 65 to 74 have basic digital skills. One in four people over 60 has disabling hearing loss. And every year, about one in eighteen older adults falls for a scam."</aside>
+</section>
+<section id="insight" data-transition="fade" style="background:#3F5A3A;color:#F4F1EA;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:56px">
+<p style="font-size:28px;font-weight:700;letter-spacing:3px;color:#FFD3B4">WHAT PSYCHOLOGY TELLS US</p>
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:92px;font-weight:500;line-height:1.12;width:1560px">Most people who avoid AI were simply <i>never shown</i>, on a problem that matters to them.</h2>
+<p style="font-size:40px;line-height:1.3;width:1400px;color:#E4EBDD">Ingrid could call her daughter. Again. Or she could ask Grace: a companion she simply talks to, that teaches her a little AI every time.</p>
+<aside>0:40 Speaker. "So we built Grace. Not another chatbot, but a companion you simply talk to. It reads the small print with you, and it teaches you a little AI every time you use it. Psychology tells us why people avoid AI. It's almost never that they can't. It's that nobody showed them, on a problem that matters to them."</aside>
+</section>
+<section id="how" data-transition="fade" style="background:#F4F1EA;color:#1E2420;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:64px">
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:500;line-height:1.1">Show it. Ask it. Understand it.</h2>
+<div style="display:flex;flex-direction:row;align-items:stretch;gap:20px">
+<div style="flex:1;background:#FFFFFF;border-radius:32px;padding:40px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#3F5A3A">1</p>
+<h3 style="font-size:38px;font-weight:700;line-height:1.15">Talk or show</h3>
+<p style="font-size:28px;line-height:1.35;color:#3A423C">One big button. Ask out loud, or hold up a letter, a pill box or a text.</p>
+</div>
+<p style="font-size:56px;color:#3F5A3A;align-self:center">→</p>
+<div style="flex:1;background:#FFFFFF;border-radius:32px;padding:40px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#3F5A3A">2</p>
+<h3 style="font-size:38px;font-weight:700;line-height:1.15">Claude reads it</h3>
+<p style="font-size:28px;line-height:1.35;color:#3A423C">Claude reads the photo and the question, and checks for scam patterns.</p>
+</div>
+<p style="font-size:56px;color:#3F5A3A;align-self:center">→</p>
+<div style="flex:1;background:#FFFFFF;border-radius:32px;padding:40px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#3F5A3A">3</p>
+<h3 style="font-size:38px;font-weight:700;line-height:1.15">One calm card</h3>
+<p style="font-size:28px;line-height:1.35;color:#3A423C">Large text, plain words, read aloud. Slower whenever she wants.</p>
+</div>
+<p style="font-size:56px;color:#3F5A3A;align-self:center">→</p>
+<div style="flex:1;background:#E4EBDD;border-radius:32px;padding:40px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#3F5A3A">4</p>
+<h3 style="font-size:38px;font-weight:700;line-height:1.15">You learned</h3>
+<p style="font-size:28px;line-height:1.35;color:#3A423C">Every answer ends with one AI skill she can use again.</p>
+</div>
+</div>
+<p style="font-size:36px;line-height:1.3;color:#3A423C">No prompt engineering, no menus. Then one tap does the next step: <b>Tell Anna</b>, <b>Add to calendar</b>, <b>Call</b>.</p>
+<aside>Bridge into the live demo. Keep it short: one button, one card, one lesson. Then hand over to the phone.</aside>
+</section>
+<section id="scam" data-transition="fade" style="background:#F4F1EA;color:#1E2420;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:500;line-height:1.1"><span style="color:#3F5A3A">Demo 1</span>  “Grace, is this message real?”</h2>
+<div style="display:flex;flex-direction:row;gap:40px;align-items:flex-start">
+<div style="width:820px;background:#FFFFFF;border-radius:32px;border:4px solid #8E2424;display:flex;flex-direction:column">
+<div style="background:#8E2424;border-radius:26px 26px 0px 0px;padding:28px 40px">
+<p style="font-size:40px;font-weight:700;color:#FFFFFF;letter-spacing:2px">LIKELY A SCAM</p>
+</div>
+<div style="padding:36px 40px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:30px;line-height:1.35">It asks you to pay a small fee through a link.</p>
+<p style="font-size:30px;line-height:1.35">The web address is not the delivery company's own site.</p>
+<p style="font-size:30px;line-height:1.35">It rushes you: 24 hours, or the parcel goes back to the sender.</p>
+<p style="font-size:30px;line-height:1.35;font-weight:700">Don't tap the link. You can delete the message.</p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:32px">
+<div style="background:#FFFFFF;border-radius:32px;padding:36px 40px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:28px;line-height:1.35;color:#3A423C">One tap sends her daughter a real message.</p>
+<div style="background:#3F5A3A;border-radius:48px;padding:20px 32px">
+<p style="font-size:32px;font-weight:700;color:#FFFFFF;text-align:center">Tell Anna</p>
+</div>
+</div>
+<div style="background:#E4EBDD;border-radius:32px;padding:36px 40px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#3F5A3A">YOU LEARNED</p>
+<p style="font-size:32px;line-height:1.35">You asked AI to check a message. You can do this with any text, letter or email.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A524C">Card text shown as an example. In the live demo, Claude writes it from the photo.</p>
+<aside>1:05 Demo taps the big button and asks out loud: "Grace, is this message real?" Speaker: "One button. Ingrid just talks, the way she'd ask a person. Her words appear in big letters while she speaks."
+1:25 Let Grace read the red card for a few seconds. Then: "One calm card. Deep red means scam. Three plain reasons, read aloud, and slower if she wants."
+1:50 Tap Tell Anna. "One tap, and her daughter Anna gets a real message. Ingrid stays in charge, and her family stays in the loop."
+2:05 Scroll to You learned. "And this is the part we care about most. 'You learned: you asked AI to check a message. You can do this with any text, letter or email.' Ingrid wasn't just helped. She learned something."</aside>
+</section>
+<section id="listen" data-transition="fade" style="background:#F4F1EA;color:#1E2420;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:500;line-height:1.1"><span style="color:#3F5A3A">Demo 2</span>  Listen for me</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#3F5A3A">1  ASK FIRST</p>
+<div style="background:#FFFFFF;border-radius:32px;border:3px solid #1E2420;padding:36px;display:flex;flex-direction:column;gap:28px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:38px;line-height:1.2">“I hear poorly. May my phone write down what you say? Nothing is saved as sound.”</p>
+<div style="background:#1E2420;border-radius:48px;padding:18px 24px">
+<p style="font-size:28px;font-weight:700;color:#F4F1EA;text-align:center">Start writing along</p>
+</div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#3F5A3A">2  HUGE LIVE CAPTIONS</p>
+<div style="background:#1E2420;border-radius:32px;padding:36px;display:flex;flex-direction:column">
+<p style="font-size:38px;line-height:1.3;font-weight:700;color:#F4F1EA">Your blood pressure is a little high. Please take one tablet every morning, and come back on Tuesday at ten thirty.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#3F5A3A">3  ONE SUMMARY CARD</p>
+<div style="background:#FFFFFF;border-radius:32px;padding:36px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:32px;line-height:1.3;font-weight:700">Take one tablet every morning.</p>
+<div style="background:#FFD3B4;border-radius:24px;padding:24px 28px;display:flex;flex-direction:column;gap:4px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#5A2E10">TUESDAY</p>
+<p style="font-family:Fraunces, Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">10:30</p>
+<p style="font-size:28px">Doctor's appointment</p>
+</div>
+<div style="background:#3F5A3A;border-radius:48px;padding:18px 24px">
+<p style="font-size:28px;font-weight:700;color:#FFFFFF;text-align:center">Add to calendar</p>
+</div>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:28px;color:#3A423C">Claude never adds anything the doctor didn't say, and flags what may have been misheard.</p>
+<aside>2:30 Demo switches to the /listen tab, consent card. Speaker: "Now something Ingrid couldn't do before. At the doctor's, she misses half of what is said. So Grace first shows a card she can hold up: 'I hear poorly. May my phone write down what you say? Nothing is saved as sound.' Respect for both sides of the desk."
+2:55 Tap Start writing along. Doctor reads: "Your blood pressure is a little high. Please take one tablet every morning, and come back on Tuesday at ten thirty." Let the captions speak for themselves.
+3:15 Tap Done, sum it up. "Claude turns the conversation into one card: what to do, and the next appointment, straight into her calendar. It never adds anything the doctor didn't say, and it flags what may have been misheard."</aside>
+</section>
+<section id="learn" data-transition="fade" style="background:#F4F1EA;color:#1E2420;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:500;line-height:1.1"><span style="color:#3F5A3A">Learn</span>  24 short lessons, 8 everyday topics</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px">
+<div style="background:#FFFFFF;border-radius:28px;padding:32px;border:3px solid #3F5A3A"><p style="font-size:32px;font-weight:700">Spot scams</p></div>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px"><p style="font-size:32px;font-weight:700">Letters &amp; forms</p></div>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px"><p style="font-size:32px;font-weight:700">Health &amp; medicines</p></div>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px"><p style="font-size:32px;font-weight:700">Money &amp; bills</p></div>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px"><p style="font-size:32px;font-weight:700">Your phone</p></div>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px"><p style="font-size:32px;font-weight:700">Getting around</p></div>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px"><p style="font-size:32px;font-weight:700">Family &amp; photos</p></div>
+<div style="background:#FFFFFF;border-radius:28px;padding:32px"><p style="font-size:32px;font-weight:700">Talking to AI</p></div>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px;align-items:stretch">
+<div style="flex:1;background:#E4EBDD;border-radius:32px;padding:40px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#3F5A3A">EVERY LESSON ENDS WITH</p>
+<p style="font-size:40px;font-weight:700">Try it with Grace</p>
+<p style="font-size:28px;line-height:1.35;color:#3A423C">A real question goes to Claude, a real answer card comes back. Each new skill fills her progress ring on Profile.</p>
+</div>
+<div style="flex:1.4;background:#3F5A3A;border-radius:32px;padding:40px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:Fraunces, Georgia, serif;font-size:44px;line-height:1.2;color:#F4F1EA">“Succeeding yourself is the strongest source of confidence.”</p>
+<p style="font-size:26px;color:#E4EBDD">Mastery experiences, Bandura 1977</p>
+</div>
+</div>
+<aside>3:40 Demo opens the Learn tab, taps Spot scams, shows a lesson and Try it with Grace. Speaker: "When Ingrid is ready, the Learn tab has 24 short lessons: scams, letters, medicines, money, her phone. Each one ends with 'Try it with Grace'. Psychologists call this a mastery experience: succeeding yourself is the strongest source of confidence. That idea is behind every screen."</aside>
+</section>
+<section id="hood" data-transition="fade" style="background:#F4F1EA;color:#1E2420;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:40px">
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:64px;font-weight:500;line-height:1.1">Built today. Working today.</h2>
+<div style="display:flex;flex-direction:row;gap:20px;align-items:stretch">
+<div style="flex:1;background:#FFFFFF;border-radius:32px;padding:36px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#4A524C">VOICE IN</p>
+<p style="font-size:30px;line-height:1.35">Talk, or show a photo. A real-time voice model only speaks.</p>
+</div>
+<p style="font-size:56px;color:#3F5A3A;align-self:center">→</p>
+<div style="flex:1.3;background:#3F5A3A;border-radius:32px;padding:36px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#FFD3B4">THE BRAIN: CLAUDE SONNET 5.5</p>
+<p style="font-size:30px;line-height:1.35;color:#F4F1EA">Reads the photo, spots scam patterns, answers in a fixed structure.</p>
+</div>
+<p style="font-size:56px;color:#3F5A3A;align-self:center">→</p>
+<div style="flex:1;background:#FFFFFF;border-radius:32px;padding:36px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:26px;font-weight:700;letter-spacing:2px;color:#4A524C">CARDS OUT</p>
+<p style="font-size:30px;line-height:1.35">Scam alert, steps, reminder, explanation. Read aloud.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="flex:1;background:#E4EBDD;border-radius:32px;padding:36px 40px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-size:32px;font-weight:700;color:#3F5A3A">Works today</h3>
+<p style="font-size:28px;line-height:1.4">Voice and photo questions, answer cards with one-tap actions, Listen for me, 24 lessons, 8 AI skills tracked on Profile, live Berlin bus times, English and German, installs like an app.</p>
+</div>
+<div style="flex:1;background:#FFFFFF;border-radius:32px;padding:36px 40px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-size:32px;font-weight:700;color:#4A524C">Next</h3>
+<p style="font-size:28px;line-height:1.4">Testing with older adults, medication reminders, more languages. The impact is our hypothesis, not yet our evidence.</p>
+</div>
+</div>
+<aside>4:15 Speaker. "Under the hood, Claude Sonnet 5.5 is the brain. It reads the photo, spots the scam pattern and answers in a fixed structure that becomes these cards. The real-time voice only speaks; every real question goes to Claude. Big text, plain words, English and German, and it installs on any phone like an app."</aside>
+</section>
+<section id="close" data-transition="fade" style="background:#2F4630;color:#F4F1EA;font-family:'Atkinson Hyperlegible', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:center;gap:48px">
+<p style="font-size:38px;line-height:1.4;width:1300px;color:#E4EBDD">Three weeks later, at her Thursday card club, Herbert holds up his phone, worried about a strange message. Ingrid smiles: “Let me show you something.”</p>
+<h2 style="font-family:Fraunces, Georgia, serif;font-size:104px;font-weight:500;line-height:1.08;width:1400px">A little help. A lot more independence.</h2>
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px">
+<svg aria-label="Grace logo" viewBox="96 96 320 320" width="96" height="96" style="width:96px;height:96px"><g fill="none" stroke="#F4F1EA" stroke-width="22" stroke-linejoin="round"><path d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(60 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(120 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(180 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(240 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/><path transform="rotate(300 256 256)" d="M256 200 C 232 180, 222 146, 237 124 C 246 111, 266 111, 275 124 C 290 146, 280 180, 256 200 Z"/></g></svg>
+<p style="font-family:Fraunces, Georgia, serif;font-size:72px;font-weight:500">This is Grace.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#D6E0CF">Try it: elderwise-beryl.vercel.app  ·  Code: github.com/BatuCani/elderwise</p>
+<aside>4:40 Speaker. "Three weeks later, at her Thursday card club, Ingrid's friend Herbert holds up his phone, worried about a strange message. Ingrid smiles: 'Let me show you something.' That's AI education for everyone. A little help, a lot more independence. This is Grace. Thank you." Then stop talking and let it land. The team stands together.</aside>
+</section>
+</div>
+<div id="notes" aria-live="polite"></div>
+<div id="count"></div>
+<script>
+  const stage = document.getElementById("stage");
+  const slides = [...stage.querySelectorAll(":scope > section")];
+  const notes = document.getElementById("notes");
+  const count = document.getElementById("count");
+  let i = Math.max(0, slides.findIndex(s => "#" + s.id === location.hash));
+  function fit() {
+    const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `scale(${k}) translate(-50%, -50%)`;
+  }
+  function show(n) {
+    i = Math.min(slides.length - 1, Math.max(0, n));
+    slides.forEach((s, j) => s.classList.toggle("on", j === i));
+    const a = slides[i].querySelector(":scope > aside");
+    notes.textContent = a ? a.textContent.trim() : "";
+    count.textContent = `${i + 1} / ${slides.length}`;
+    history.replaceState(null, "", "#" + slides[i].id);
+  }
+  addEventListener("resize", fit);
+  addEventListener("keydown", e => {
+    if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key === "n" || e.key === "N") document.body.classList.toggle("notes");
+    else if (e.key === "f" || e.key === "F") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  });
+  addEventListener("click", e => { if (!e.target.closest("a")) show(e.clientX < innerWidth / 3 ? i - 1 : i + 1); });
+  fit(); show(i);
+</script>
+</body>
+</html>
