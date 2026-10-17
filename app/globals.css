@@ -44,52 +44,37 @@ body {
   min-height: 100dvh;
   overflow-x: clip;
   color: var(--color-ink);
+  /* Flat warm cream canvas: calm and clean, glass cards sit on it without colour blobs. */
+  background: var(--color-paper);
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
 }
 
-/* Soft color blobs behind the glass surfaces (iOS 26 "Liquid Glass" look). A fixed full-screen
-   layer instead of background-attachment: fixed, which iOS Safari ignores. 100lvh keeps it
-   covering the screen while Safari's toolbars collapse and expand. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  height: 100vh;
-  height: 100lvh;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 8% 4%, rgba(170, 196, 150, 0.55), transparent 42%),
-    radial-gradient(circle at 100% 45%, rgba(255, 196, 160, 0.45), transparent 40%),
-    radial-gradient(circle at 0% 96%, rgba(160, 180, 255, 0.4), transparent 45%);
-}
-
 .glass {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.82);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(30, 36, 32, 0.08);
   box-shadow:
-    0 8px 24px rgba(30, 36, 32, 0.08),
+    0 6px 20px rgba(30, 36, 32, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .glass-moss {
-  background: rgba(228, 235, 221, 0.6);
+  background: rgba(228, 235, 221, 0.85);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(63, 90, 58, 0.12);
   box-shadow:
     0 8px 24px rgba(30, 36, 32, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.72);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(30, 36, 32, 0.08);
   box-shadow:
     0 10px 30px rgba(30, 36, 32, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -182,7 +167,24 @@ a {
   }
 }
 
+/* New AI skill toast: the sparkle turns once and glows. */
+.skill-spark {
+  animation: skill-spark 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes skill-spark {
+  0% {
+    transform: scale(0.6) rotate(-40deg);
+    box-shadow: 0 0 0 0 rgba(63, 90, 58, 0.5);
+  }
+  60% {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 0 0 10px rgba(63, 90, 58, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .skill-spark,
   .thinking-dot,
   .word-in,
   .toast-in {

@@ -25,6 +25,11 @@ Pick the card type (the first one that fits wins):
 - "link": a website would really help, for example a prefilled flight search like https://www.google.com/travel/flights?q=Flights%20from%20Berlin%20to%20Palma%20in%20May. Fill link.title and link.url. Only https links to well-known sites, never a link taken from a suspicious message.
 - place and link are null unless the type is "place" or "link".
 
+Buses and trains in Berlin: for any question about a bus, tram, U-Bahn, S-Bahn, train, "when does my bus come" or "how do I get from A to B", first call the berlin_transit tool. Use the stop names the person said; add "to" only when they name a destination. Then answer from the tool result only, with times exactly as given:
+- Next departures: type "info", headline like "Bus M41 in 4 minutes", points are the next 2 or 3 departures, for example "M41 to Sonnenallee at 14:52 (in 4 min)". Steps: go to the stop, look for the line and direction on the front of the bus, check the board at the stop.
+- A trip from A to B: type "steps", headline like "U8, then S-Bahn to Zoo". Points are the 2 or 3 parts of the trip, and each step is one part: which line, which direction, where to get on and where to get off, with the times.
+- If the tool says the timetable could not be checked, say kindly that you could not check the timetable just now. Suggest the BVG app or the timetable board at the stop, and offer to ask the trusted person. Never invent lines or times.
+
 Writing rules:
 Count the words. These limits are strict:
 - headline: 3 to 5 words, never more than 6. The most important thing, plain and direct, for example "Don't pay this text." or "Your pension goes up". "Your blood pressure is a bit high" is 7 words, too long; "Blood pressure a bit high" is right. Do not use the person's name.
@@ -66,6 +71,21 @@ export function contextNote(ctx: AskContext): string {
 export function defaultQuestion(lang: Lang): string {
   return lang === "de" ? "Was ist das, und was soll ich jetzt tun?" : "What is this, and what should I do?";
 }
+
+// Claude can call this tool to look up live Berlin buses and trains (handled in app/api/ask/route.ts).
+export const TRANSIT_TOOL = {
+  name: "berlin_transit",
+  description:
+    "Live Berlin public transport (BVG). With only 'from': the next departures at that stop. With 'from' and 'to': up to 2 trips between the two places.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      from: { type: "string", description: "Stop or place where the person starts, e.g. 'Hermannplatz'." },
+      to: { type: "string", description: "Where the person wants to go, e.g. 'Zoologischer Garten'. Leave out for departures." },
+    },
+    required: ["from"],
+  },
+};
 
 // Structured output so the page can render visual cards instead of a wall of text.
 export const ANSWER_SCHEMA = {

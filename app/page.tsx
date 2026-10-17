@@ -17,6 +17,7 @@ import { haptic } from "@/lib/haptics";
 import { liveLevel, liveSupported, markAutoNavigation, startLive, stopLive, useLive } from "@/lib/live";
 import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
+import { earnSkill } from "@/lib/skills";
 import { followUpQuestion, getSolve, setFollowUp, setPending, setStuck, startSolve, useSolve, type Solve } from "@/lib/solve";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import type { Answer } from "@/prompts/elderwise";
@@ -146,6 +147,7 @@ export default function Talk() {
 
   async function send(q: string, img: string | null, followUp: Solve | null) {
     busyRef.current = true;
+    if (img) earnSkill("photo");
     setAnswerPending(true);
     setPending({ question: q, status: "thinking", followUp: !!followUp }, () => send(q, img, followUp));
     try {
@@ -179,6 +181,7 @@ export default function Talk() {
     listeningRef.current = false;
     mic.stop();
     const q = heard();
+    if (q) earnSkill("voice");
     if (q || photoRef.current) ask(q, photoRef.current);
     else setPhase("idle");
   }
@@ -193,6 +196,8 @@ export default function Talk() {
           const solve = getSolve();
           const followUp = stuckRef.current && solve ? solve : null;
           const img = (cameraOnRef.current && frameRef.current) || photoRef.current;
+          earnSkill("voice");
+          if (img) earnSkill("photo");
           const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, img, profile);
           stuckRef.current = false;
           saveAnswer(q, answer, followUp);
