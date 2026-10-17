@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import { VoiceBeam } from "voice-glow";
-import type { Copy } from "@/app/copy";
+import { TEXT, type Copy } from "@/app/copy";
 import { CameraIcon, CloseIcon, MicIcon, SendIcon, StopIcon } from "./icons";
+import { PhotoSheet } from "./PhotoSheet";
 
 type Props = {
   value: string;
@@ -27,7 +28,7 @@ function thinkingMotion() {
 // The pill at the bottom of the Talk tab: camera, text field, and the black mic button.
 // Fixed px sizes (not rem) so it keeps the same size and position at every text size.
 export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemovePhoto, photo, listening, thinking, stream, t }: Props) {
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const showSend = value.trim().length > 0 && !listening;
 
   return (
@@ -58,21 +59,9 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
             onSubmit();
           }}
         >
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onPhoto(f);
-              e.target.value = "";
-            }}
-          />
           <button
             type="button"
-            onClick={() => fileRef.current?.click()}
+            onClick={() => setSheetOpen(true)}
             aria-label={t.attachPhoto}
             className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-white/70 text-ink"
           >
@@ -107,6 +96,7 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
           )}
         </form>
       </VoiceBeam>
+      <PhotoSheet open={sheetOpen} lang={t === TEXT.de ? "de" : "en"} onClose={() => setSheetOpen(false)} onFile={onPhoto} />
     </div>
   );
 }
