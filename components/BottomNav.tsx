@@ -4,22 +4,27 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, type MouseEvent } from "react";
 import { TEXT } from "@/app/copy";
+import { LEARN_TEXT } from "@/app/learn/text";
 import { inViewTransition, navigate, routeCommitted } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
-import { ChatIcon, ListIcon, UserIcon } from "./icons";
+import { BookIcon, ChatIcon, ListIcon, UserIcon } from "./icons";
 
-// Exactly three tabs: Talk (home), Answers and Profile. A soft glass pill glides under the active one.
+// Four tabs: Talk (home), Answers, Learn and Profile. A soft glass pill glides under the active one.
 export function BottomNav() {
   const path = usePathname();
   const router = useRouter();
-  const t = TEXT[useProfile().lang];
+  const lang = useProfile().lang;
+  const t = TEXT[lang];
   const first = useRef(true);
   const tabs = [
     { href: "/", label: t.tabTalk, Icon: ChatIcon },
     { href: "/answers", label: t.tabAnswers, Icon: ListIcon },
+    { href: "/learn", label: LEARN_TEXT[lang].tab, Icon: BookIcon },
     { href: "/profile", label: t.tabProfile, Icon: UserIcon },
   ];
-  const activeIndex = tabs.findIndex((tab) => tab.href === path);
+  // A topic page (/learn/scams) keeps the Learn tab active.
+  const isActive = (href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`));
+  const activeIndex = tabs.findIndex((tab) => isActive(tab.href));
 
   // iOS Safari only shows :active press states when the page listens for touches.
   useEffect(() => {
@@ -55,12 +60,12 @@ export function BottomNav() {
         {activeIndex >= 0 && (
           <span
             aria-hidden
-            className="tab-pill absolute inset-y-1.5 left-2 w-[calc((100%-16px)/3)] rounded-[26px]"
+            className="tab-pill absolute inset-y-1.5 left-2 w-[calc((100%-16px)/4)] rounded-[26px]"
             style={{ transform: `translateX(${activeIndex * 100}%)` }}
           />
         )}
         {tabs.map(({ href, label, Icon }) => {
-          const active = path === href;
+          const active = isActive(href);
           return (
             <Link
               key={href}
