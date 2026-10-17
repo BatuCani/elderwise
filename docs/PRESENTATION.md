@@ -1,7 +1,7 @@
 # Grace: 5-minute finalist presentation
 
 For the finalist round at 16:40 (6 minutes demo + 4 minutes Q&A). The script runs about 5 minutes, which leaves one minute of buffer.
-Slides: open https://graceapp.vercel.app/pitch.html on the presenting laptop (arrow keys or click to move, **N** shows speaker notes, **F** for full screen). The speaker notes on each slide are the lines below.
+Slides (15, one idea each; the dark "Live demo" slides are the cue to switch to the phone): open https://graceapp.vercel.app/pitch.html on the presenting laptop (arrow keys or click to move, **N** shows speaker notes, **F** for full screen). The speaker notes on each slide are the lines below.
 Roles: **Speaker** (any teammate) talks. **Demo** (one teammate) drives the phone, mirrored to the big screen. **Doctor** (a second teammate) reads two lines in demo 2.
 
 ## Summary
@@ -34,7 +34,8 @@ Grace is a voice AI companion for people over 65. You talk to it or show it a ph
 | 2:55 | Doctor, Demo | Tap **Start writing along**. Doctor reads: *"Your blood pressure is a little high. Please take one tablet every morning, and come back on Tuesday at ten thirty."* Huge live captions appear. | (Let the captions speak for themselves.) |
 | 3:15 | Demo | Tap **Done, sum it up** → reminder card with the calendar block and **Add to calendar** | "Claude turns the conversation into one card: what to do, and the next appointment, straight into her calendar. It never adds anything the doctor didn't say, and it flags what may have been misheard." |
 | 3:40 | Demo | Learn tab: topic tiles, open **Spot scams**, show a lesson and **Try it with Grace** | "When Ingrid is ready, the Learn tab has 24 short lessons: scams, letters, medicines, money, her phone. Each one ends with 'Try it with Grace'. Psychologists call this a mastery experience: succeeding yourself is the strongest source of confidence. That idea is behind every screen." |
-| 4:15 | Speaker | Talk screen | "Under the hood, Claude Sonnet 5.5 is the brain. It reads the photo, spots the scam pattern and answers in a fixed structure that becomes these cards. The real-time voice only speaks; every real question goes to Claude. Big text, plain words, English and German, and it installs on any phone like an app." |
+| 4:00 | Demo | Profile → **See what Anna sees** (Family view) | "And Anna? She gets a calm view of the week: what Ingrid asked, which scam Grace caught, which skills she learned. Family stays in the loop. Ingrid stays in charge." |
+| 4:20 | Speaker | Talk screen | "Under the hood, Claude Sonnet 5.5 is the brain. It reads the photo, spots the scam pattern and answers in a fixed structure that becomes these cards. The real-time voice only speaks; every real question goes to Claude. Big text, plain words, English and German, and it installs on any phone like an app." |
 | 4:40 | Speaker | Grace logo | "Three weeks later, at her Thursday card club, Ingrid's friend Herbert holds up his phone, worried about a strange message. Ingrid smiles: 'Let me show you something.' That's AI education for everyone. A little help, a lot more independence. This is Grace. Thank you." Then stop talking and let it land. |
 
 ## If something goes wrong
