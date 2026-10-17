@@ -175,3 +175,167 @@ a {
     animation: none;
   }
 }
+
+/* ---- Motion: native iOS feel. Only transform and opacity animate, so Safari stays on the GPU. ---- */
+
+/* Every button and link gives a little when pressed. Utilities like active:scale-95 still win. */
+@layer base {
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 120ms ease, background-color 120ms ease;
+  }
+
+  button:not(:disabled):active,
+  a:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Glass buttons catch a brighter highlight while pressed. */
+button.glass:not(:disabled):active,
+a.glass:active {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+/* Tab bar pill: a soft lit glass lozenge without its own blur, so no extra backdrop-filter layer. */
+.tab-pill {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 4px 14px rgba(30, 36, 32, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transition: transform 380ms cubic-bezier(0.3, 1.25, 0.5, 1);
+  view-transition-name: tab-pill;
+}
+
+.tab-bar {
+  view-transition-name: tab-bar;
+}
+
+/* During a view transition the pill glides as its own layer; the live element must not move twice. */
+html[data-nav-dir] .tab-pill {
+  transition: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+html[data-nav-dir="forward"]::view-transition-old(root) {
+  animation-name: screen-out-left;
+}
+html[data-nav-dir="forward"]::view-transition-new(root) {
+  animation-name: screen-in-right;
+}
+html[data-nav-dir="back"]::view-transition-old(root) {
+  animation-name: screen-out-right;
+}
+html[data-nav-dir="back"]::view-transition-new(root) {
+  animation-name: screen-in-left;
+}
+
+::view-transition-group(tab-pill) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.3, 1.25, 0.5, 1);
+}
+
+::view-transition-group(tab-bar),
+::view-transition-old(tab-bar),
+::view-transition-new(tab-bar) {
+  animation-duration: 200ms;
+}
+
+@keyframes screen-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@keyframes screen-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes screen-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes screen-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+
+/* Newest answer (and the thinking card) fade in with a gentle rise; older rows follow one by one. */
+.answer-in {
+  animation: rise-in 250ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.row-in {
+  animation: rise-in 280ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* An older answer opens like an iOS sheet. */
+.sheet-in {
+  animation: sheet-in 320ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}
+
+/* Placeholder lines in the thinking card: a slow opacity pulse (cheaper than a moving gradient). */
+.skeleton-line {
+  border-radius: 12px;
+  background: rgba(30, 36, 32, 0.08);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .answer-in,
+  .row-in,
+  .sheet-in,
+  .skeleton-line {
+    animation: none;
+  }
+
+  .tab-pill,
+  button,
+  a {
+    transition: none;
+  }
+
+  button:not(:disabled):active,
+  a:active {
+    transform: none;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

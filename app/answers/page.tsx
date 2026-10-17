@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import { AnswerView, TypeIcon } from "@/components/AnswerView";
-import { CARD_TEXT, ClearHistory, EmptyAnswers, friendlyTime, ReadAloudButton, todayKey } from "@/components/cards";
+import { AnswerSkeleton, CARD_TEXT, ClearHistory, EmptyAnswers, friendlyTime, SpeakButtons, todayKey } from "@/components/cards";
 import { BackIcon } from "@/components/icons";
-import { useAnswers, type Entry } from "@/lib/answers";
+import { useAnswers, usePending, type Entry } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
 import { LOCALE } from "@/lib/speech";
 import { TEXT } from "../copy";
@@ -18,6 +18,7 @@ export default function AnswersPage() {
   const t = TEXT[profile.lang];
   const L = CARD_TEXT[profile.lang];
   const entries = useAnswers();
+  const pending = usePending();
   const [latest, ...older] = entries;
   const today = useSyncExternalStore(noSubscribe, todayKey, () => "");
   const when = (at: number) => friendlyTime(at, today, LOCALE[profile.lang], L.yesterday);
@@ -27,33 +28,34 @@ export default function AnswersPage() {
   return (
     <>
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-5 pb-40 pt-8">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-serif text-4xl font-medium text-ink">{t.tabAnswers}</h1>
-          {latest && (
-            <ReadAloudButton answer={latest.answer} lang={profile.lang} rate={profile.speechRate} label={t.readAloud} />
-          )}
-        </header>
+        <h1 className="font-serif text-4xl font-medium text-ink">{t.tabAnswers}</h1>
+        {pending && <AnswerSkeleton label={t.thinking} />}
         {!latest ? (
-          <EmptyAnswers t={t} lang={profile.lang} />
+          !pending && <EmptyAnswers t={t} lang={profile.lang} />
         ) : (
           <>
-            <AnswerView
-              answer={latest.answer}
-              t={t}
-              phone={profile.trusted.phone}
-              time={when(latest.at)}
-              lang={profile.lang}
-              at={latest.at}
-            />
+            {/* Keyed by id: a new answer mounts fresh and rises in. */}
+            <div key={latest.id} className="answer-in flex flex-col gap-3">
+              <SpeakButtons answer={latest.answer} lang={profile.lang} rate={profile.speechRate} label={t.readAloud} />
+              <AnswerView
+                answer={latest.answer}
+                t={t}
+                phone={profile.trusted.phone}
+                time={when(latest.at)}
+                lang={profile.lang}
+                at={latest.at}
+              />
+            </div>
             {older.length > 0 && (
               <section className="flex flex-col gap-2">
                 <h2 className="text-lg font-bold text-muted">{L.earlier}</h2>
-                {older.map((e) => (
+                {older.map((e, i) => (
                   <button
                     key={e.id}
                     type="button"
                     onClick={() => setOpenId(e.id)}
-                    className="flex min-h-16 items-center gap-4 glass rounded-[20px] px-4 py-3 text-left"
+                    style={{ animationDelay: `${60 + Math.min(i, 8) * 40}ms` }}
+                    className="row-in flex min-h-16 items-center gap-4 glass rounded-[20px] px-4 py-3 text-left"
                   >
                     <TypeIcon type={e.answer.type} className="h-7 w-7 shrink-0" />
                     <span className="flex-1 text-lg font-bold leading-snug text-ink">{e.answer.headline}</span>
@@ -112,21 +114,19 @@ function AnswerSheet({ entry, time, onClose, backLabel, readLabel }: SheetProps)
       onKeyDown={(e: KeyboardEvent) => {
         if (e.key === "Escape") onClose();
       }}
-      className="fixed inset-0 z-40 overflow-y-auto bg-paper"
+      className="sheet-in fixed inset-0 z-40 overflow-y-auto bg-paper"
     >
       <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-5 pb-16 pt-8">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            ref={backRef}
-            type="button"
-            onClick={onClose}
-            className="glass flex min-h-12 items-center gap-2 rounded-full px-5 text-lg font-bold text-ink"
-          >
-            <BackIcon className="h-6 w-6" />
-            {backLabel}
-          </button>
-          <ReadAloudButton answer={entry.answer} lang={profile.lang} rate={profile.speechRate} label={readLabel} />
-        </header>
+        <button
+          ref={backRef}
+          type="button"
+          onClick={onClose}
+          className="glass flex min-h-12 items-center gap-2 self-start rounded-full px-5 text-lg font-bold text-ink"
+        >
+          <BackIcon className="h-6 w-6" />
+          {backLabel}
+        </button>
+        <SpeakButtons answer={entry.answer} lang={profile.lang} rate={profile.speechRate} label={readLabel} />
         <AnswerView
           answer={entry.answer}
           t={t}
