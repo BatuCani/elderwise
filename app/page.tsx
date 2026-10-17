@@ -112,23 +112,26 @@ export default function Talk() {
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 pb-56 pt-10">
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 pb-56 pt-8">
+        <p className="font-serif text-2xl font-medium text-moss">Elderwise</p>
+        <div className="flex-1" />
         <p className="text-xl text-muted">
           {greeting}, {profile.name}
         </p>
-        <h1 className="mt-2 font-serif text-[2.8rem] font-medium leading-[1.08] text-ink">{t.headline}</h1>
+        <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
         <p
           aria-live="polite"
           className={`mt-8 min-h-[4.5rem] text-2xl leading-snug ${phase === "error" ? "font-bold text-warn" : "text-ink"}`}
         >
           {status && (phase === "listening" && question ? `“${status}”` : status)}
         </p>
+        <div className="flex-1" />
       </main>
 
       {phase === "done" && (
         <div
           role="status"
-          className="fixed inset-x-0 top-[calc(1.5rem+env(safe-area-inset-top))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
+          className="fixed inset-x-0 bottom-[calc(10rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
         >
           ✓ {t.done}
         </div>

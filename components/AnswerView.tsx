@@ -1,6 +1,6 @@
 import type { Copy } from "@/app/copy";
 import type { Answer, AnswerType } from "@/prompts/elderwise";
-import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon, PhoneIcon, SpeakerIcon } from "./icons";
+import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon, PhoneIcon } from "./icons";
 
 export function TypeIcon({ type, className }: { type: AnswerType; className?: string }) {
   if (type === "warning") return <AlertIcon className={`${className} text-warn`} />;
@@ -10,16 +10,19 @@ export function TypeIcon({ type, className }: { type: AnswerType; className?: st
   return <InfoIcon className={`${className} text-moss`} />;
 }
 
-type Props = { answer: Answer; t: Copy; phone: string; onReadAloud: () => void };
+type Props = { answer: Answer; t: Copy; phone: string; time: string };
 
-// One answer as a big visual card, then "Read aloud", then the "You learned" card.
-export function AnswerView({ answer, t, phone, onReadAloud }: Props) {
+// One answer as a big visual card, then the "You learned" card.
+export function AnswerView({ answer, t, phone, time }: Props) {
   const { type, headline, sentence, points, when, action } = answer;
   const warning = type === "warning";
 
   return (
     <section className="flex flex-col gap-3">
       <div className={`rounded-3xl p-6 ${warning ? "bg-warn text-white" : "bg-white text-ink"}`}>
+        <p className={`mb-3 text-base font-bold uppercase tracking-[0.08em] ${warning ? "text-white/85" : "text-muted"}`}>
+          {t.kinds[type]} · {time}
+        </p>
         <div className="flex items-start gap-3">
           {warning ? <AlertIcon className="mt-1 h-9 w-9 shrink-0" /> : <TypeIcon type={type} className="mt-1 h-9 w-9 shrink-0" />}
           <h2 className="font-serif text-3xl font-medium leading-tight">{headline}</h2>
@@ -59,14 +62,6 @@ export function AnswerView({ answer, t, phone, onReadAloud }: Props) {
           </a>
         )}
       </div>
-
-      <button
-        onClick={onReadAloud}
-        className="flex min-h-12 items-center gap-2 self-start rounded-full border border-line bg-white px-5 text-lg font-bold text-ink"
-      >
-        <SpeakerIcon className="h-6 w-6" />
-        {t.readAloud}
-      </button>
 
       <div className="rounded-3xl bg-learn-bg p-5 text-learn">
         <p className="text-lg font-bold">{t.learned}</p>

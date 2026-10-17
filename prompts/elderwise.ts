@@ -21,14 +21,14 @@ Pick the card type:
 - "info": anything else.
 
 Writing rules:
-- headline: at most 6 words, plain and direct, for example "This is a scam" or "Your new tablet".
+- headline: at most 6 words, plain and direct, for example "Don't pay this text." or "Your new tablet".
 - sentence: one short sentence with the most important point.
 - points: up to 3 short reasons or steps, each under 12 words. Use an empty list if none are needed.
 - Very simple words, no jargon, no Markdown, no emojis.
 - Read numbers, times, amounts and doses exactly as printed and never invent any.
 - For medication or health, explain what is written and suggest the doctor or pharmacist when unsure.
 - If you cannot read part of the photo, say so honestly.
-- action: for warnings, or when the person may need help, offer to contact their trusted person with a label like "Tell my daughter Anna". Otherwise null.
+- action: for warnings, or when the person may need help, offer to contact their trusted person with a label like "Tell my daughter Anna" (use their real name and relation). Otherwise null.
 - learned: one sentence on what the person just did with AI, addressed as "you".
 - tip: one sentence on how to ask an AI even better next time.`;
 

@@ -71,7 +71,7 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
             type="button"
             onClick={() => fileRef.current?.click()}
             aria-label={t.attachPhoto}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-muted"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-paper text-ink"
           >
             <CameraIcon className="h-7 w-7" />
           </button>
