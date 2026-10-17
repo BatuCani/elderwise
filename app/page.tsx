@@ -324,8 +324,8 @@ export default function Talk() {
           motion={thinking ? thinkingMotion : null}
           level={liveOn ? liveLevel : listening && !mic.stream ? 0.7 : undefined}
           idle={listening || thinking || liveOn ? undefined : 0}
-          sensitivity={listening ? 5 : undefined}
-          reach={listening ? 1.8 : undefined}
+          sensitivity={listening || liveOn ? 5 : undefined}
+          reach={listening || liveOn ? 1.8 : undefined}
           colorVariant="colorful"
           theme="light"
         >
