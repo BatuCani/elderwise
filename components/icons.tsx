@@ -73,3 +73,24 @@ export const SwitchCameraIcon = ({ className }: P) => (
 export const NextIcon = ({ className }: P) => (
   <svg {...base} className={className}><path d="M9 5l7 7-7 7" /></svg>
 );
+export const ShieldIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg>
+);
+export const MailIcon = ({ className }: P) => (
+  <svg {...base} className={className}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
+);
+export const SmartphoneIcon = ({ className }: P) => (
+  <svg {...base} className={className}><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M11 18.5h2" /></svg>
+);
+export const PillIcon = ({ className }: P) => (
+  <svg {...base} className={className}><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-45 12 12)" /><path d="m9.5 9.5 5 5" /></svg>
+);
+export const BusIcon = ({ className }: P) => (
+  <svg {...base} className={className}><rect x="4" y="3" width="16" height="15" rx="3" /><path d="M4 11h16M8 21v-3M16 21v-3M8 14.5h.01M16 14.5h.01" /></svg>
+);
+export const UsersIcon = ({ className }: P) => (
+  <svg {...base} className={className}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6" /></svg>
+);
+export const BellIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20.5a2 2 0 0 0 4 0" /></svg>
+);
