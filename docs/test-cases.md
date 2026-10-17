@@ -1096,3 +1096,102 @@ do not pay / click / share your PIN and offer to tell the trusted person, health
 }
 ```
 
+
+# Transit tool: "When does my bus come?" (issue #15)
+
+Claude can now call the `berlin_transit` tool, which looks up live Berlin buses and trains at https://v6.bvg.transport.rest (free, no key).
+
+**Note:** during testing on 17 October 2026 the real BVG service was down (HTTP 503 and timeouts). So:
+- the **fallback** was tested against the real (broken) service, and
+- the **normal answers** were tested against a small local fake service with sample departures in the same format (`BVG_API_URL=http://localhost:3999`). The times below are sample data, not a real timetable.
+
+## 11. Next bus from Hermannplatz
+
+- **Spoken question:** When does the next bus leave from Hermannplatz?
+- **Perfect answer:** type info, headline like "Bus M41 in 4 minutes", the next 2 or 3 departures as points, steps to find the right bus. No invented times.
+
+### Real BVG service down: GOOD
+Grace said "Timetable not available right now: I could not check the timetable just now, so I do not want to guess any times."
+Steps: check the stop board, open the BVG app, ask Anna (with the Anna button).
+
+### With sample data: GOOD: right type, headline with line and minutes, departures exactly as given.
+
+```json
+{
+  "type": "info",
+  "headline": "Bus M41 in 4 minutes",
+  "sentence": "The next bus at Hermannplatz leaves at 14:57, going towards Hauptbahnhof.",
+  "points": [
+    "M41 to Hauptbahnhof at 14:57 (in 4 min)",
+    "M41 to Sonnenallee at 15:00 (in 7 min), 2 min late",
+    "171 to U Rathaus Neukölln at 15:02 (in 9 min)"
+  ],
+  "steps": [
+    {
+      "title": "Go to the stop",
+      "detail": "Walk to the bus stop at Hermannplatz now. The first bus is only 4 minutes away."
+    },
+    {
+      "title": "Check the bus front",
+      "detail": "Look for the line and direction on the front of the bus. Make sure it says the place you want."
+    },
+    {
+      "title": "Check the board",
+      "detail": "Look at the timetable board at the stop. It shows if a bus is late."
+    }
+  ],
+  "when": null,
+  "action": null,
+  "learned": "You asked the AI for live bus times and got a clear answer.",
+  "tip": "Next time, tell the AI where you want to go and it can find the right bus.",
+  "place": null,
+  "link": null
+}
+```
+
+## 12. Trip from Alexanderplatz to Zoologischer Garten
+
+- **Spoken question:** How do I get from Alexanderplatz to Zoologischer Garten?
+- **Perfect answer:** type steps, headline naming the line(s), one step per part of the trip: line, direction, where to get on and off, times.
+
+### Real BVG service down: GOOD
+Grace said "Timetable could not be checked" and suggested the BVG app with start and goal filled in, the departure board, and Anna.
+
+### With sample data: GOOD: steps card, direct S5 first with direction and times, U2 plus a 450 m walk as the second option.
+
+```json
+{
+  "type": "steps",
+  "headline": "S5 straight to Zoo",
+  "sentence": "The S5 train goes directly from Alexanderplatz to Zoologischer Garten, with no change.",
+  "points": [
+    "S5 towards Westkreuz at 14:59",
+    "Arrive at Zoologischer Garten at 15:15",
+    "Or U2 at 14:56, then walk 450 m"
+  ],
+  "steps": [
+    {
+      "title": "Go to the S-Bahn",
+      "detail": "At Alexanderplatz, follow the signs for the S-Bahn platform. Look for the S5 towards Westkreuz."
+    },
+    {
+      "title": "Take the S5",
+      "detail": "Board the S5 towards Westkreuz at 14:59. Stay on the train for the whole ride."
+    },
+    {
+      "title": "Get off at Zoo",
+      "detail": "Leave the train at Zoologischer Garten. You should arrive at 15:15."
+    },
+    {
+      "title": "Or take the U2",
+      "detail": "The U2 towards Ruhleben leaves at 14:56. Get off at Wittenbergplatz at 15:13 and walk 450 m to Zoologischer Garten."
+    }
+  ],
+  "when": null,
+  "action": null,
+  "learned": "You asked the AI to plan a trip across Berlin with live times.",
+  "tip": "Next time, tell the AI when you want to leave, so it can plan around that.",
+  "place": null,
+  "link": null
+}
+```
