@@ -3,7 +3,6 @@ import { Atkinson_Hyperlegible, Fraunces } from "next/font/google";
 import { BottomNav } from "@/components/BottomNav";
 import { FirstRun } from "@/components/FirstRun";
 import { LiveBar } from "@/components/LiveBar";
-import { FirstRun } from "@/components/FirstRun";
 import { ProfileRoot } from "@/components/ProfileRoot";
 import "./globals.css";
 
