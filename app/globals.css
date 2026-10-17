@@ -25,7 +25,8 @@
   --text-asked: clamp(1.25rem, 6.4vw, 1.5rem);
   --text-status: clamp(1rem, 5.1vw, 1.1rem);
   --text-toast: 0.9rem;
-  --text-tab: 0.72rem;
+  /* Tab labels stop growing at 14px: with four tabs, bigger labels would be cut to "Antwo…". */
+  --text-tab: min(0.72rem, 14px);
 }
 
 :root {
@@ -181,6 +182,21 @@ a {
     transform: scale(1.1) rotate(10deg);
     box-shadow: 0 0 0 10px rgba(63, 90, 58, 0);
   }
+}
+
+/* Tile titles in two-column grids: long German words ("Medikamente", "Rentenbescheid") break
+   with a hyphen instead of being cut off at large text sizes. */
+.tile-title {
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+/* Two tiles per row at normal text size; with Large / Extra large text the grid turns into one
+   column on its own (8rem grows with the text-size setting), so long words always fit. */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(8rem, 100%), 1fr));
 }
 
 @media (prefers-reduced-motion: reduce) {

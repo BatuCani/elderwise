@@ -105,7 +105,7 @@ export function ChooseStep({ c, onUpload, onPicture, onCode, onExample }: Props)
 
       <section>
         <h2 className="mb-3 text-lg font-bold text-muted">{c.examples}</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="tile-grid gap-3">
           {EXAMPLES.map((ex) => (
             <button
               key={ex.key}
@@ -115,7 +115,7 @@ export function ChooseStep({ c, onUpload, onPicture, onCode, onExample }: Props)
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={ex.src} alt="" className={`aspect-[4/3] w-full bg-white ${ex.code ? "object-contain p-3" : "object-cover object-top"}`} />
-              <span className="min-h-14 px-3 py-3 text-base font-bold leading-tight text-ink">{c.exampleNames[ex.key]}</span>
+              <span className="tile-title min-h-14 px-3 py-3 text-base font-bold leading-tight text-ink">{c.exampleNames[ex.key]}</span>
             </button>
           ))}
         </div>
