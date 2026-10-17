@@ -2,20 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
-import { addEntry, setPending } from "@/lib/answers";
+import { addEntry, setPending as setAnswerPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
 import { haptic } from "@/lib/haptics";
 import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
 import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
+import { followUpQuestion, getSolve, setFollowUp, setPending, setStuck, startSolve, useSolve, type Solve } from "@/lib/solve";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
+import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
@@ -73,6 +75,32 @@ export default function Talk() {
     [],
   );
 
+  // Coming from "Stuck?" on the Steps page: start listening right away. Talk reacts to the flag
+  // changing, because Next may keep Talk alive (hidden) instead of mounting it again.
+  // Leaving Talk without asking drops the "stuck" mode.
+  const stuckRef = useRef(false);
+  const shownRef = useRef(false);
+  const stuckNow = useSolve()?.stuck ?? false;
+  const autoTalk = useEffectEvent(() => {
+    if (shownRef.current) onTalk();
+  });
+  useEffect(() => {
+    if (!stuckNow) return;
+    stuckRef.current = true;
+    setStuck(false);
+    setTimeout(autoTalk, 300);
+  }, [stuckNow]);
+  useEffect(() => {
+    shownRef.current = true;
+    return () => {
+      shownRef.current = false;
+      // Only when Talk is really left (not React's quick dev re-run).
+      setTimeout(() => {
+        if (!shownRef.current) stuckRef.current = false;
+      });
+    };
+  }, []);
+
   function setNewPhoto(src: string | null) {
     if (photoRef.current?.startsWith("blob:")) URL.revokeObjectURL(photoRef.current);
     photoRef.current = src;
@@ -83,28 +111,43 @@ export default function Talk() {
     return `${baseRef.current} ${sessionRef.current}`.trim();
   }
 
-  async function ask(q: string, img: string | null) {
+  // Open the Steps page right away; it shows "Thinking…" until Claude's answer is in.
+  function ask(q: string, img: string | null) {
     if (busyRef.current) return;
-    busyRef.current = true;
     setAsked({ q, img });
-    setPhase("thinking");
-    setPending(true);
+    // When stuck on a step, Claude also gets the problem and the step, so it answers about that.
+    const solve = getSolve();
+    send(q, img, stuckRef.current && solve ? solve : null);
+    stuckRef.current = false;
+    setPhase("idle");
+    setQuestion("");
+    navigate((to) => router.push(to), "/", "/steps");
+  }
+
+  async function send(q: string, img: string | null, followUp: Solve | null) {
+    busyRef.current = true;
+    setAnswerPending(true);
+    setPending({ question: q, status: "thinking", followUp: !!followUp }, () => send(q, img, followUp));
     try {
-      const answer = await askClaude(q, img, profile);
-      addEntry(q || t.inputPlaceholder, answer);
-      speak(spokenText(answer), profile.lang, profile.speechRate);
-      setPhase("done");
-      setQuestion("");
+      const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, img, profile);
+      saveAnswer(q, answer, followUp);
+      setPending(null);
       setNewPhoto(null);
-      // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
-      doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1500);
+      speak(spokenText(answer), profile.lang, profile.speechRate);
     } catch {
-      setPhase("error");
+      setPending({ question: q, status: "error", followUp: !!followUp });
       speak(t.error, profile.lang, profile.speechRate);
     } finally {
       busyRef.current = false;
-      setPending(false);
+      setAnswerPending(false);
     }
+  }
+
+  // Keep the answer for the Steps page (new problem, or help with the step the person is stuck on).
+  function saveAnswer(q: string, answer: Answer, followUp: Solve | null) {
+    if (followUp) setFollowUp(q || t.inputPlaceholder, answer);
+    else startSolve(q, answer);
+    addEntry(q || t.inputPlaceholder, answer);
   }
 
   function retry() {
@@ -127,12 +170,14 @@ export default function Talk() {
         lang: profile.lang,
         name: profile.name,
         ask: async (q) => {
-          setPending(true);
-          const answer = await askClaude(q, photoRef.current, profile).finally(() => setPending(false));
-          addEntry(q, answer);
+          const solve = getSolve();
+          const followUp = stuckRef.current && solve ? solve : null;
+          const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, photoRef.current, profile);
+          stuckRef.current = false;
+          saveAnswer(q, answer, followUp);
           setNewPhoto(null);
           setPhase("done");
-          doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1600);
+          doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/steps"), 1600);
           return answer;
         },
       });
