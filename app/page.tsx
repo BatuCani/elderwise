@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
@@ -315,6 +316,13 @@ export default function Talk() {
             <div className="mt-10 [@media(max-height:620px)]:mt-5">
               <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
             </div>
+            {/* Scan a letter, bill or code: the guided flow in app/scan. */}
+            {!thinking && (
+              <Link href="/scan" className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-status font-bold text-moss [@media(max-height:620px)]:mt-4">
+                <CameraIcon className="h-7 w-7" />
+                {t.scanLetter}
+              </Link>
+            )}
             {phase === "error" && (
               <button
                 onClick={retry}

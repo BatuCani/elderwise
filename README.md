@@ -60,5 +60,7 @@ Voice input uses the browser Web Speech API (Chrome, Safari on iPhone). The micr
 - [Orbs / micro-intent](https://github.com/Orb-agent/micro-intent), our team's earlier hackathon project: the PCM capture worklet, the barge-in and reconnect patterns, and the voice rules for older adults are adapted from it.
 - [voice-glow](https://www.npmjs.com/package/voice-glow) (MIT) for the voice-reactive glow around the input.
 - [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (OFL) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL) via Google Fonts.
+- [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) (MIT) reads QR codes and barcodes in "Scan a letter" when the browser has no built-in BarcodeDetector.
 - Browser Web Speech API (SpeechRecognition and speechSynthesis).
 - Sample images in `public/samples/` are fictional mocks made for this demo; no real personal data.
+- The "Scan a letter" flow is inspired by the Dribbble shot [Onboarding flow (Upload your bill)](https://dribbble.com/shots/27784869) by Eugen Esanu (patterns only, no assets copied).
