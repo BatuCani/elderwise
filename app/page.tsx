@@ -1,15 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, CloseIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, CloseIcon, MicIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
 import { LiveCamera } from "@/components/LiveCamera";
 import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { DailyTip } from "@/components/DailyTip";
+import { TalkMore } from "@/components/TalkMore";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
 import { addEntry, setPending as setAnswerPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
@@ -24,13 +24,6 @@ import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
-
-const noSubscribe = () => () => {};
-
-function greetingKey(): "morning" | "afternoon" | "evening" {
-  const h = new Date().getHours();
-  return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
-}
 
 // While Claude is thinking, the glow gathers into one beam that sweeps back and forth.
 function thinkingMotion() {
@@ -50,7 +43,9 @@ export default function Talk() {
   const typeRef = useRef<HTMLInputElement>(null);
   const [typed, setTyped] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
-  const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
+  // Typing and the tip of the day live behind the "+" next to the mic, so the orb has the screen to itself.
+  const [typeOpen, setTypeOpen] = useState(false);
+  const [tipOpen, setTipOpen] = useState(false);
   const recRef = useRef<Recognition | null>(null);
   // Speech recognition stops after pauses; we keep restarting it until "Done talking",
   // so the text heard so far is kept in `baseRef` and the current run in `sessionRef`.
@@ -262,7 +257,7 @@ export default function Talk() {
   function startPushToTalk() {
     if (!getRecognition()) {
       // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
-      typeRef.current?.focus();
+      openTyping();
       return;
     }
     mic.start();
@@ -276,12 +271,18 @@ export default function Talk() {
     startRecognition();
   }
 
+  function openTyping() {
+    setTypeOpen(true);
+    setTimeout(() => typeRef.current?.focus());
+  }
+
   function onSendTyped() {
     const q = typed.trim();
     if (!q) return;
     unlockSpeech();
     setTyped("");
     typeRef.current?.blur();
+    setTypeOpen(false);
     ask(q, null);
   }
 
@@ -371,7 +372,7 @@ export default function Talk() {
           <div className="flex-1" />
         )}
 
-        {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
+        {/* Status is only announced to screen readers; the start screen shows just the headline. */}
         <p aria-live="polite" className="sr-only">
           {liveOn ? liveText || t.listening : listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
         </p>
@@ -459,32 +460,45 @@ export default function Talk() {
           </>
         ) : (
           <>
-            {/* Short phones: skip the greeting so the talk hint never hides behind the typing bar. */}
-            <p className="text-greeting text-muted [@media(max-height:720px)]:hidden">
-              {greeting}, {profile.name}
-            </p>
             {micHint && phase === "idle" ? (
               // Blocked microphone: the message takes the headline's place, right where the eye already is.
-              <p role="alert" className="mt-3 max-w-sm text-[21px] font-bold leading-snug text-warn">
+              <p role="alert" className="max-w-sm text-[21px] font-bold leading-snug text-warn">
                 {t.micBlocked}
               </p>
             ) : (
-              <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem]">
-                {t.headline}
+              <h1 className="font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem]">
+                {thinking ? t.thinking : t.headline}
               </h1>
             )}
-            {/* The orb is the talk button: tapping it does the same as the mic button did. */}
+            {/* The orb is the talk button too: tapping it does the same as the mic button. */}
             <div className="mt-10 [@media(max-height:720px)]:mt-5">
               <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
             </div>
-            {/* Scan a letter, bill or code: the guided flow in app/scan. */}
-            {!thinking && (
-              <Link href="/scan" className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-status font-bold text-moss [@media(max-height:720px)]:mt-3">
-                <CameraIcon className="h-7 w-7" />
-                {t.scanLetter}
-              </Link>
+            {/* One big mic, and one small "+" for everything else (scan, type, tip of the day).
+                While typing, the bar takes their place; the orb still starts talking. */}
+            {!thinking && !typeOpen && (
+              <div className="mt-8 grid w-full max-w-[15rem] grid-cols-[3.5rem_1fr_3.5rem] items-center [@media(max-height:720px)]:mt-4">
+                <span />
+                <button
+                  type="button"
+                  onClick={onTalk}
+                  aria-label={t.mic}
+                  className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-moss text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] active:scale-95"
+                >
+                  <MicIcon className="h-9 w-9" />
+                </button>
+                <TalkMore lang={profile.lang} onScan={() => router.push("/scan")} onType={openTyping} onTip={() => setTipOpen(true)} />
+              </div>
             )}
-            {!thinking && <DailyTip lang={profile.lang} onTry={(q) => { unlockSpeech(); ask(q, null); }} />}
+            <DailyTip
+              lang={profile.lang}
+              open={tipOpen}
+              onClose={() => setTipOpen(false)}
+              onTry={(q) => {
+                unlockSpeech();
+                ask(q, null);
+              }}
+            />
             {phase === "error" && (
               <button
                 onClick={retry}
@@ -509,6 +523,7 @@ export default function Talk() {
       />
 
       {/* The bar right above the tab bar: type a question here, or see the waveform while listening. */}
+      {(listening || thinking || liveOn || typeOpen) && (
       <div className="fixed inset-x-5 bottom-[calc(26px+4rem+0.75rem+env(safe-area-inset-bottom))] z-20 mx-auto max-w-[440px]">
         <VoiceBeam
           type="mobile"
@@ -549,6 +564,8 @@ export default function Talk() {
                   ref={typeRef}
                   value={typed}
                   onChange={(e) => setTyped(e.target.value)}
+                  // Leaving the empty typing bar puts it away again.
+                  onBlur={() => !typed.trim() && setTypeOpen(false)}
                   placeholder={t.typeHere}
                   aria-label={t.typeHere}
                   enterKeyHint="send"
@@ -568,6 +585,7 @@ export default function Talk() {
           </form>
         </VoiceBeam>
       </div>
+      )}
 
       {phase === "done" && (
         <div
