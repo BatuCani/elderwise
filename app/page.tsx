@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, MicIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
+import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
 import { addEntry } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
 import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
@@ -218,6 +219,18 @@ export default function Talk() {
   const thinking = phase === "thinking" || live.status === "thinking";
   // Live conversation text: what was heard while listening, what Claude's answer sounds like while speaking.
   const liveText = live.status === "speaking" ? live.said : live.heard;
+  // What the big orb shows: connecting, listening, thinking (or looking at a photo), speaking, or calm.
+  const lookingAtPhoto = liveOn ? !!photo : !!asked.img;
+  const mood: OrbMood =
+    live.status === "connecting"
+      ? "connecting"
+      : live.status === "speaking" || phase === "done"
+        ? "speaking"
+        : thinking
+          ? lookingAtPhoto ? "looking" : "thinking"
+          : listening || liveOn
+            ? "listening"
+            : "idle";
 
   return (
     <>
@@ -234,6 +247,9 @@ export default function Talk() {
 
         {listening || liveOn ? (
           <>
+            <div className="mb-6">
+              <VoiceOrb mood={mood} lang={profile.lang} compact />
+            </div>
             {liveOn && (
               <div className="mb-8">
                 <p className="text-xl text-muted">
@@ -281,18 +297,13 @@ export default function Talk() {
             <p className="text-greeting text-muted">
               {greeting}, {profile.name}
             </p>
-            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink">{t.headline}</h1>
-            <button
-              type="button"
-              onClick={onTalk}
-              disabled={thinking}
-              aria-label={t.mic}
-              className={`mt-10 flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
-                phase === "error" ? "bg-warn" : "bg-moss"
-              }`}
-            >
-              <MicIcon className="h-20 w-20" />
-            </button>
+            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:620px)]:text-[1.4rem]">
+              {t.headline}
+            </h1>
+            {/* The orb is the talk button: tapping it does the same as the mic button did. */}
+            <div className="mt-10 [@media(max-height:620px)]:mt-5">
+              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
+            </div>
             {phase === "error" && (
               <button
                 onClick={retry}
