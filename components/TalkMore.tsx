@@ -35,14 +35,20 @@ type Props = {
   onScan: () => void;
   onType: () => void;
   onTip: () => void;
+  // Lets the Talk screen hide its hint while the menu is open, so nothing overlaps.
+  onOpenChange?: (open: boolean) => void;
 };
 
 // Talk tab: one round "+" next to the mic. Tapping it melts out the secondary actions
 // (Scan a letter, Type, Tip of the day) as round glass buttons; tap again or outside to melt them back.
 // liquid-gooey snaps instead of animating under prefers-reduced-motion.
-export function TalkMore({ lang, onScan, onType, onTip }: Props) {
+export function TalkMore({ lang, onScan, onType, onTip, onOpenChange }: Props) {
   const c = COPY[lang];
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(false);
+  const setOpen = (next: boolean) => {
+    setOpenState(next);
+    onOpenChange?.(next);
+  };
   const items: { label: string; icon: ReactNode; run: () => void }[] = [
     { label: c.scan, icon: <CameraIcon className="h-6 w-6" />, run: onScan },
     { label: c.type, icon: <KeyboardIcon className="h-6 w-6" />, run: onType },
@@ -88,7 +94,7 @@ export function TalkMore({ lang, onScan, onType, onTip }: Props) {
         <Liquid.Item className="absolute inset-0">
           <button
             type="button"
-            onClick={() => setOpen((o) => !o)}
+            onClick={() => setOpen(!open)}
             aria-expanded={open}
             aria-label={open ? c.close : c.more}
             className="flex h-14 w-14 items-center justify-center rounded-full text-moss"
