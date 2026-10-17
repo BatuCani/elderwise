@@ -126,11 +126,16 @@ export function pushProfile(p: Profile) {
   profileTimer = setTimeout(() => void saveProfile(p), 600);
 }
 
-// Deletes the account's saved answers (used by "Clear history"). Resolves at once when signed out.
-export async function deleteRemoteAnswers() {
+// Deletes the account's saved answers (used by "Clear history"). Resolves true at once when signed out, false when the delete failed.
+export async function deleteRemoteAnswers(): Promise<boolean> {
   const sb = supabase();
-  if (!sb || !userId) return;
-  await sb.from("answers").delete().eq("user_id", userId);
+  if (!sb || !userId) return true;
+  try {
+    const { error } = await sb.from("answers").delete().eq("user_id", userId);
+    return !error;
+  } catch {
+    return false;
+  }
 }
 
 // Signs out and removes this account's data from the device; it stays safe in the account.

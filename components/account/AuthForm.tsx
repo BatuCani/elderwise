@@ -43,6 +43,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ErrorKey | null>(null);
+  const [checkEmail, setCheckEmail] = useState(false);
   const sb = supabase();
   const signUp = mode === "signup";
   const other = `${signUp ? "/signin" : "/signup"}?next=${encodeURIComponent(next)}`;
@@ -54,10 +55,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
     if (signUp && password.length < 6) return setError("shortPassword");
     setBusy(true);
     setError(null);
+    setCheckEmail(false);
     const credentials = { email: email.trim(), password };
-    const { error } = signUp ? await sb.auth.signUp(credentials) : await sb.auth.signInWithPassword(credentials);
+    const { data, error } = signUp ? await sb.auth.signUp(credentials) : await sb.auth.signInWithPassword(credentials);
     setBusy(false);
     if (error) return setError(errorKey(error));
+    if (!data.session) return setCheckEmail(true);
     router.replace(next);
   }
 
@@ -119,6 +122,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 </p>
               )}
             </div>
+
+            {checkEmail && (
+              <p role="status" className="rounded-3xl bg-moss/10 px-5 py-4 text-[20px] leading-snug font-bold text-ink">
+                {a.checkEmail}
+              </p>
+            )}
 
             {error && (
               <p role="alert" className="rounded-3xl bg-warn/10 px-5 py-4 text-[20px] leading-snug font-bold text-warn">

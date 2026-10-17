@@ -9,6 +9,7 @@ import { CARD_TEXT } from "./labels";
 export function ClearHistory({ lang }: { lang: Lang }) {
   const L = CARD_TEXT[lang];
   const [asking, setAsking] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   if (!asking) {
     return (
@@ -25,6 +26,11 @@ export function ClearHistory({ lang }: { lang: Lang }) {
   return (
     <div role="alertdialog" aria-label={L.clearConfirm} className="glass flex flex-col gap-4 rounded-3xl p-5">
       <p className="text-center text-xl font-bold text-ink">{L.clearConfirm}</p>
+      {failed && (
+        <p role="alert" className="text-center text-lg font-bold text-warn">
+          {L.clearFailed}
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
@@ -33,7 +39,7 @@ export function ClearHistory({ lang }: { lang: Lang }) {
         >
           {L.cancel}
         </button>
-        <button type="button" onClick={clearEntries} className="min-h-14 rounded-full bg-warn text-lg font-bold text-white">
+        <button type="button" onClick={async () => setFailed(!(await clearEntries()))} className="min-h-14 rounded-full bg-warn text-lg font-bold text-white">
           {L.clearYes}
         </button>
       </div>
