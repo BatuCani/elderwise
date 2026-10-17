@@ -1,6 +1,6 @@
 """Build the soundtrack and scene timing for the Grace demo video.
 
-Usage: python tools/make_audio.py <dir with s1.wav ... s10.wav>
+Usage: python tools/make_audio.py <dir with one <id>.wav per line of voiceover.txt>
 
 Writes:
   assets/soundtrack.m4a  voiceover + a soft music bed + whooshes, music ducked under the voice
@@ -19,9 +19,9 @@ from pathlib import Path
 import numpy as np
 
 SR = 44100
-LEAD = 0.5  # silence before each voice line
-TAIL = 0.7  # silence after each voice line
-END_HOLD = 3.0  # extra time on the closing card
+LEAD = 0.25  # silence before each voice line
+TAIL = 0.35  # silence after each voice line
+END_HOLD = 1.8  # extra time on the closing card
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -34,7 +34,12 @@ def read_wav(path):
     # Resample to SR with linear interpolation (good enough for speech).
     t_old = np.arange(len(data)) / sr
     t_new = np.arange(int(len(data) * SR / sr)) / SR
-    return np.interp(t_new, t_old, data).astype(np.float32)
+    data = np.interp(t_new, t_old, data).astype(np.float32)
+    # Trim the silence the TTS leaves at both ends, so the gaps between scenes stay short.
+    loud = np.nonzero(np.abs(data) > 0.01)[0]
+    if len(loud):
+        data = data[max(0, loud[0] - int(0.03 * SR)) : loud[-1] + int(0.08 * SR)]
+    return data
 
 
 def music_bed(seconds):
@@ -90,11 +95,12 @@ def whoosh(length=0.7):
 
 def main():
     vo_dir = Path(sys.argv[1])
-    lines = [read_wav(vo_dir / f"s{i}.wav") for i in range(1, 11)]
+    ids = [ln.split("|", 1)[0] for ln in (ROOT / "voiceover.txt").read_text().splitlines() if ln.strip()]
+    lines = [read_wav(vo_dir / f"{i}.wav") for i in ids]
     scenes, cursor = [], 0.0
-    for i, line in enumerate(lines):
+    for i, (sid, line) in enumerate(zip(ids, lines)):
         dur = LEAD + len(line) / SR + TAIL + (END_HOLD if i == len(lines) - 1 else 0)
-        scenes.append({"start": round(cursor, 3), "duration": round(dur, 3), "voice": round(len(line) / SR, 3)})
+        scenes.append({"id": sid, "start": round(cursor, 3), "duration": round(dur, 3), "voice": round(len(line) / SR, 3)})
         cursor += dur
     total = cursor
 
@@ -106,7 +112,10 @@ def main():
     # Duck the music under the voice: follow the voice envelope, smoothed.
     env = np.abs(voice)
     win = int(0.25 * SR)
-    env = np.convolve(env, np.ones(win) / win, mode="same")
+    csum = np.concatenate([[0.0], np.cumsum(env, dtype=np.float64)])
+    idx = np.arange(len(env))
+    lo, hi = np.clip(idx - win // 2, 0, len(env)), np.clip(idx + win // 2, 0, len(env))
+    env = ((csum[hi] - csum[lo]) / win).astype(np.float32)
     duck = 1 - 0.65 * np.clip(env / 0.03, 0, 1)
     music = music_bed(len(voice) / SR) * duck
 

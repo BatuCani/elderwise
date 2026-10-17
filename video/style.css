@@ -331,3 +331,19 @@ body.landscape {
 .landscape .url {
   margin-top: 44px;
 }
+
+.portrait .statement {
+  font-size: 80px;
+}
+.landscape .statement {
+  font-size: 96px;
+}
+.statement-sub {
+  margin-top: 48px;
+}
+.portrait .statement-sub {
+  font-size: 46px;
+}
+.landscape .statement-sub {
+  font-size: 46px;
+}

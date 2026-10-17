@@ -10,18 +10,25 @@ const timingSrc = readFileSync(join(root, "timing.js"), "utf8");
 const TIMING = JSON.parse(timingSrc.slice(timingSrc.indexOf("{"), timingSrc.lastIndexOf("}") + 1));
 
 // Headline words: wrap a word in <a> to colour it moss. "|" breaks the line.
+// Scene ids match the line ids in voiceover.txt; timing.js holds each scene's start and length.
 const SCENES = [
   { id: "hook", kind: "hook" },
+  { id: "problem", kind: "statement", head: "Apps assume you can read|dense screens and <a>type fast.</a>", sub: "So most older adults never try AI at all." },
   { id: "meet", head: "Meet <a>Grace.</a>", sub: "One button. One calm voice.", shots: ["talk"], logo: true },
+  { id: "welcome", head: "Calm from the|<a>first screen.</a>", sub: "A short welcome. Accounts are optional.", shots: ["welcome"] },
   { id: "scam", head: "Is this text <a>real?</a>", sub: "Grace checks it with Claude.", shots: ["typed", "scam-steps", "scam-card"] },
+  { id: "slower", head: "Read aloud.|<a>Slower if needed.</a>", sub: "\u201cSay it again, slower.\u201d", shots: ["scam-card"] },
   { id: "anna", head: "Tell Anna,|<a>in one tap.</a>", sub: "A ready-written message to family.", shots: ["tell-anna"] },
   { id: "scan", head: "Scan a letter.|<a>Understand it.</a>", sub: "Key facts highlighted, then explained.", shots: ["scan", "scan-reading", "scan-found", "scan-explained"] },
+  { id: "qr", head: "Check a QR code|<a>before you pay.</a>", sub: "Payment codes get a scam check too.", shots: ["qr-found", "qr-explained"] },
   { id: "learn", head: "One AI skill,|<a>every time.</a>", sub: "24 short lessons. My AI skills.", shots: ["learn", "skills"] },
   { id: "listen", head: "Listen for me|<a>at the doctor.</a>", sub: "Grace writes it down and sums it up.", shots: ["listen"] },
+  { id: "textsize", head: "Text as big|<a>as you need.</a>", sub: "The whole app grows. Nothing gets cut off.", shots: ["text-xl"] },
   { id: "voice", head: "A voice that|<a>feels right.</a>", sub: "Pick the assistant's voice.", shots: ["voice"] },
   { id: "tech", kind: "tech" },
   { id: "close", kind: "close" },
 ];
+const timing = (id) => TIMING.scenes.find((x) => x.id === id);
 
 const words = (head) =>
   head
@@ -36,8 +43,8 @@ const words = (head) =>
     )
     .join("");
 
-function sceneHtml(s, i) {
-  const t = TIMING.scenes[i];
+function sceneHtml(s) {
+  const t = timing(s.id);
   const attrs = `id="sc-${s.id}" class="clip scene" data-start="${t.start}" data-duration="${t.duration}" data-track-index="1"`;
   if (s.kind === "hook") {
     return `<section ${attrs}>
@@ -45,6 +52,14 @@ function sceneHtml(s, i) {
     <div class="big"><span class="num">1</span> <span class="in">in</span> <span class="num">5</span></div>
     <p class="hl hook-l1">${words("older adults have been|targeted by <a>a scam.</a>")}</p>
     <p class="hl hook-l2 small">${words("AI could help them. But it was|<a>never built for them.</a>")}</p>
+  </div>
+</section>`;
+  }
+  if (s.kind === "statement") {
+    return `<section ${attrs}>
+  <div class="center">
+    <p class="hl statement">${words(s.head)}</p>
+    <p class="sub statement-sub">${s.sub}</p>
   </div>
 </section>`;
   }
@@ -86,7 +101,7 @@ function sceneHtml(s, i) {
 function timelineJs() {
   const lines = [];
   SCENES.forEach((s, i) => {
-    const { start: t0, duration: d } = TIMING.scenes[i];
+    const { start: t0, duration: d } = timing(s.id);
     const sel = `#sc-${s.id}`;
     lines.push(`// ${s.id}`);
     lines.push(`tl.fromTo("${sel} .w", { y: 40, opacity: 0, filter: "blur(10px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out", stagger: 0.09 }, ${t0 + 0.25});`);
@@ -94,6 +109,8 @@ function timelineJs() {
       lines.push(`tl.fromTo("${sel} .big", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.6)" }, ${t0 + 0.1});`);
       lines.push(`tl.set("${sel} .hook-l2 .w", { opacity: 0 }, ${t0});`);
       lines.push(`tl.fromTo("${sel} .hook-l2 .w", { y: 40, opacity: 0, filter: "blur(10px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out", stagger: 0.09 }, ${t0 + 4.3});`);
+    } else if (s.kind === "statement") {
+      lines.push(`tl.fromTo("${sel} .sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, ${t0 + 3.4});`);
     } else if (s.kind === "tech") {
       lines.push(`tl.fromTo("${sel} .kicker", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, ${t0 + 0.2});`);
       lines.push(`tl.fromTo("${sel} .c1", { opacity: 0, y: 80, rotateX: 30, transformPerspective: 1200 }, { opacity: 1, y: 0, rotateX: 0, duration: 0.8, ease: "power3.out" }, ${t0 + 0.6});`);

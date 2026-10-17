@@ -1,0 +1,15 @@
+hook|One in five older adults has been targeted by a scam. A.I. could help them. But most A.I. tools were never built for them, and scammers exploit that gap.
+problem|Apps and chatbots assume you can read dense screens and type fast. So most older adults never try A.I. at all.
+meet|Meet Grace. A patient A.I. companion you simply talk to. One big button, one calm voice. No typing, no jargon.
+welcome|Getting started is calm and simple. A short welcome, and an account is optional.
+scam|Ingrid gets a text from "DHL", asking for a small customs fee. She asks Grace. In seconds: a clear scam alert. Don't click, don't pay, and here is why.
+slower|Every answer is read aloud. Too fast? Tap: say it again, slower.
+anna|One tap on Tell Anna, and a ready-written message goes to her daughter. The family knows, before any money is gone.
+scan|A confusing letter? Scan it. Grace reads it, highlights the sender, the date and the amounts, then explains it in plain words. Your pension goes up.
+qr|Even a payment QR code gets checked before Ingrid pays. A surprise redelivery fee? Grace says: do not pay this code.
+learn|Every answer teaches one A.I. skill. In the Learn hub, Ingrid grows her A.I. skills, one short lesson at a time.
+listen|At the doctor, Listen for me writes down what is said, so Grace can sum it up afterwards.
+textsize|Hard to read? Make the text extra large. The whole app grows, and nothing gets cut off.
+voice|And Ingrid picks the voice that feels right for her.
+tech|Under the hood, Claude by Anthropic is Grace's brain, and Gemini Live gives her a real-time voice.
+close|Grace. A.I. that's patient with you. Built by Sam, Ahmet, MaRie, Endrik and Batu, at the Claude Impact Lab Berlin. Try it live today.
