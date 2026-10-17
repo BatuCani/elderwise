@@ -7,9 +7,10 @@ import { CameraIcon, CheckIcon, MicIcon, RetryIcon, SendIcon } from "@/component
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
+import { askElderwise } from "@/lib/ask";
 import { useProfile } from "@/lib/profile";
-import { getRecognition, LOCALE, speak, spokenText, toJpeg, unlockSpeech, type Recognition } from "@/lib/speech";
-import type { Answer } from "@/prompts/elderwise";
+import { followUpQuestion, getSolve, setFollowUp, setStuck, startSolve } from "@/lib/solve";
+import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
@@ -27,7 +28,7 @@ function thinkingMotion() {
 }
 
 // Talk tab: one big talk button. While listening: waveform, "Start camera" and "Done talking",
-// and the voice glow along the bottom. Answers open on the Answers tab.
+// and the voice glow along the bottom. The answer opens on the Steps page.
 export default function Talk() {
   const router = useRouter();
   const profile = useProfile();
@@ -37,6 +38,7 @@ export default function Talk() {
   const [question, setQuestion] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const typeRef = useRef<HTMLInputElement>(null);
+  const talkRef = useRef<HTMLButtonElement>(null);
   const [typed, setTyped] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
@@ -62,6 +64,27 @@ export default function Talk() {
     [],
   );
 
+  // Coming from "Stuck?" on the Steps page: start listening right away. This runs each time Talk
+  // is shown (Next keeps it alive, hidden). Leaving Talk without asking drops the "stuck" mode.
+  const stuckRef = useRef(false);
+  const shownRef = useRef(false);
+  useEffect(() => {
+    shownRef.current = true;
+    if (getSolve()?.stuck) {
+      stuckRef.current = true;
+      setStuck(false);
+    }
+    const id = stuckRef.current ? setTimeout(() => talkRef.current?.click(), 300) : undefined;
+    return () => {
+      clearTimeout(id);
+      shownRef.current = false;
+      // Only when Talk is really left (not React's quick dev re-run).
+      setTimeout(() => {
+        if (!shownRef.current) stuckRef.current = false;
+      });
+    };
+  }, []);
+
   function setNewPhoto(src: string | null) {
     if (photoRef.current?.startsWith("blob:")) URL.revokeObjectURL(photoRef.current);
     photoRef.current = src;
@@ -78,27 +101,20 @@ export default function Talk() {
     setAsked({ q, img });
     setPhase("thinking");
     try {
-      const body = new FormData();
-      body.append("lang", profile.lang);
-      body.append("question", q);
-      body.append("name", profile.name);
-      body.append("trustedName", profile.trusted.name);
-      body.append("trustedRelation", profile.trusted.relation);
-      body.append(
-        "today",
-        new Date().toLocaleDateString(LOCALE[profile.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-      );
-      if (img) body.append("image", await toJpeg(img), "photo.jpg");
-      const res = await fetch("/api/ask", { method: "POST", body });
-      if (!res.ok) throw new Error(String(res.status));
-      const answer: Answer = await res.json();
+      // When stuck on a step, Claude also gets the problem and the step, so it answers about that.
+      const solve = getSolve();
+      const followUp = stuckRef.current && solve ? solve : null;
+      const answer = await askElderwise(followUp ? followUpQuestion(followUp, q) : q, img, profile);
+      stuckRef.current = false;
+      if (followUp) setFollowUp(q || t.inputPlaceholder, answer);
+      else startSolve(q, answer);
       addEntry(q || t.inputPlaceholder, answer);
       speak(spokenText(answer), profile.lang, profile.speechRate);
       setPhase("done");
       setQuestion("");
       setNewPhoto(null);
-      // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
-      doneTimer.current = setTimeout(() => router.push("/answers"), 1500);
+      // Let the "Done" toast show for a moment, then open the steps while the answer is read aloud.
+      doneTimer.current = setTimeout(() => router.push("/steps"), 1500);
     } catch {
       setPhase("error");
       speak(t.error, profile.lang, profile.speechRate);
@@ -240,6 +256,7 @@ export default function Talk() {
             </p>
             <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink">{t.headline}</h1>
             <button
+              ref={talkRef}
               type="button"
               onClick={onTalk}
               disabled={thinking}
