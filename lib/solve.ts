@@ -14,7 +14,8 @@ export type Solve = {
   followUp: { question: string; answer: Answer } | null;
 };
 
-const KEY = "elderwise.solve";
+// v2: steps have a title and a detail; older saves are ignored.
+const KEY = "elderwise.solve.v2";
 const listeners = new Set<() => void>();
 let cache: Solve | null | undefined;
 
