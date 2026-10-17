@@ -69,7 +69,7 @@ Public link: <Add the Drive or YouTube link here.>
 - [Google Gen AI SDK](https://github.com/googleapis/js-genai) (Apache-2.0) and the Gemini Live API for the real-time voice.
 - [Orbs / micro-intent](https://github.com/Orb-agent/micro-intent), our team's earlier hackathon project: the PCM capture worklet, the barge-in and reconnect patterns, and the voice rules for older adults are adapted from it.
 - [voice-glow](https://www.npmjs.com/package/voice-glow) (MIT) for the voice-reactive glow around the input.
-- [thinking-orbs](https://www.npmjs.com/package/thinking-orbs) ([libraries.dev](https://libraries.dev/orbs.html)) for the animated talking orb on the Talk tab.
+- [thinking-orbs](https://www.npmjs.com/package/thinking-orbs) (MIT, [libraries.dev](https://libraries.dev/orbs.html)) for the animated talking orb on the Talk tab.
 - [bot-avatars](https://www.npmjs.com/package/bot-avatars) (MIT, [libraries.dev](https://libraries.dev/bots.html)) for the animated avatar of each assistant personality.
 - [Supabase](https://supabase.com) (`@supabase/ssr`, `@supabase/supabase-js`, MIT) for accounts and saving answers.
 - [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (OFL) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL) via Google Fonts.
