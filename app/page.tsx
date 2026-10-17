@@ -49,8 +49,15 @@ export default function Talk() {
   const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [asked, setAsked] = useState<{ q: string; img: string | null }>({ q: "", img: null });
 
-  // Leaving the Talk tab while the toast shows must not pull the person back to Answers later.
-  useEffect(() => () => clearTimeout(doneTimer.current), []);
+  // Leaving the Talk tab (Next keeps it alive, hidden) clears the toast and must not pull the
+  // person back to Answers later.
+  useEffect(
+    () => () => {
+      clearTimeout(doneTimer.current);
+      setPhase((p) => (p === "done" ? "idle" : p));
+    },
+    [],
+  );
 
   function setNewPhoto(src: string | null) {
     if (photoRef.current?.startsWith("blob:")) URL.revokeObjectURL(photoRef.current);
@@ -88,7 +95,7 @@ export default function Talk() {
       setQuestion("");
       setNewPhoto(null);
       // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
-      doneTimer.current = setTimeout(() => router.push("/answers"), 1600);
+      doneTimer.current = setTimeout(() => router.push("/answers"), 1500);
     } catch {
       setPhase("error");
       speak(t.error, profile.lang, profile.speechRate);
@@ -180,11 +187,11 @@ export default function Talk() {
   return (
     <>
       <main
-        className={`relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col items-center px-6 pt-8 text-center ${
-          listening ? "pb-[261px]" : "pb-[171px]"
+        className={`relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center px-6 pt-[calc(28px+env(safe-area-inset-top))] text-center ${
+          listening ? "pb-[calc(200px+env(safe-area-inset-bottom))]" : "pb-[calc(150px+env(safe-area-inset-bottom))]"
         }`}
       >
-        <p className="self-start font-serif text-2xl font-medium text-moss">Elderwise</p>
+        <p className="self-start font-serif text-wordmark font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
 
         {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
@@ -222,25 +229,25 @@ export default function Talk() {
           </>
         ) : (
           <>
-            <p className="text-xl text-muted">
+            <p className="text-greeting text-muted">
               {greeting}, {profile.name}
             </p>
-            <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
+            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink">{t.headline}</h1>
             <button
               type="button"
               onClick={onTalk}
               disabled={thinking}
               aria-label={t.mic}
-              className={`mt-10 flex h-[200px] w-[200px] shrink-0 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
+              className={`mt-10 flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
                 phase === "error" ? "bg-warn" : "bg-moss"
               }`}
             >
-              <MicIcon className="h-[80px] w-[80px]" />
+              <MicIcon className="h-20 w-20" />
             </button>
             {phase === "error" && (
               <button
                 onClick={retry}
-                className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-7 text-xl font-bold text-moss"
+                className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-7 text-status font-bold text-moss"
               >
                 <RetryIcon className="h-7 w-7" />
                 {t.tryAgain}
@@ -268,7 +275,7 @@ export default function Talk() {
       {(listening || thinking) && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-x-5 bottom-[calc(104px+env(safe-area-inset-bottom))] z-10 mx-auto max-w-xl"
+          className="pointer-events-none fixed inset-x-5 bottom-[calc(26px+4rem+0.75rem+env(safe-area-inset-bottom))] z-10 mx-auto max-w-xl"
         >
           <VoiceBeam
             type="mobile"
@@ -293,10 +300,10 @@ export default function Talk() {
       {phase === "done" && (
         <div
           role="status"
-          className="toast-in glass fixed inset-x-0 bottom-[calc(135px+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2.5 pl-2.5 pr-6 text-xl font-bold text-ink"
+          className="toast-in glass fixed inset-x-0 bottom-[calc(190px+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2 pl-2 pr-5 text-toast font-bold text-ink"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss text-white">
-            <CheckIcon className="h-6 w-6" />
+            <CheckIcon className="h-5 w-5" />
           </span>
           {t.done}
         </div>

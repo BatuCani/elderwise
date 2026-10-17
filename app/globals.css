@@ -11,6 +11,19 @@
   --color-learn-bg: #e4ebdd;
   --font-sans: var(--font-atkinson), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  /* Sizes (h-12, p-2, gap-3, ...) are fixed pixels so the layout keeps native iOS proportions;
+     only text follows the Profile text-size setting through rem. */
+  --spacing: 4px;
+  --container-app: 480px;
+  /* Fluid type, drawn at 390px wide: shrinks on small phones (320px), stops growing past ~430px. */
+  --text-wordmark: clamp(1rem, 5.6vw, 1.2rem);
+  --text-greeting: clamp(0.9rem, 4.6vw, 1rem);
+  --text-display: clamp(1.65rem, 10vw, 2.15rem);
+  --text-transcript: clamp(1.5rem, 8.7vw, 1.9rem);
+  --text-asked: clamp(1.25rem, 6.4vw, 1.5rem);
+  --text-status: clamp(1rem, 5.1vw, 1.1rem);
+  --text-toast: 0.9rem;
+  --text-tab: 0.72rem;
 }
 
 :root {
@@ -19,17 +32,35 @@
   font-size: 19px;
 }
 
+html {
+  /* Same paper color behind Safari's bars and iOS rubber-band overscroll, so no band shows. */
+  background: var(--color-paper);
+}
+
 body {
-  /* Soft fixed color blobs behind the glass surfaces (iOS 26 "Liquid Glass" look). */
-  background:
-    radial-gradient(circle at 8% 4%, rgba(170, 196, 150, 0.55), transparent 42%),
-    radial-gradient(circle at 100% 45%, rgba(255, 196, 160, 0.45), transparent 40%),
-    radial-gradient(circle at 0% 96%, rgba(160, 180, 255, 0.4), transparent 45%),
-    var(--color-paper);
-  background-attachment: fixed;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
+}
+
+/* Soft color blobs behind the glass surfaces (iOS 26 "Liquid Glass" look). A fixed full-screen
+   layer instead of background-attachment: fixed, which iOS Safari ignores. 100lvh keeps it
+   covering the screen while Safari's toolbars collapse and expand. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100lvh;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 4%, rgba(170, 196, 150, 0.55), transparent 42%),
+    radial-gradient(circle at 100% 45%, rgba(255, 196, 160, 0.45), transparent 40%),
+    radial-gradient(circle at 0% 96%, rgba(160, 180, 255, 0.4), transparent 45%);
 }
 
 .glass {

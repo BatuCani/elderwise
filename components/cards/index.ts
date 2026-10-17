@@ -1,7 +1,11 @@
 export { CardBody } from "./CardBody";
+export { ClearHistory } from "./ClearHistory";
 export { EmptyAnswers } from "./EmptyAnswers";
 export { ExplainCard } from "./ExplainCard";
+export { friendlyTime, todayKey } from "./friendlyTime";
 export { InfoCard } from "./InfoCard";
+export { CARD_TEXT } from "./labels";
+export { ReadAloudButton } from "./ReadAloudButton";
 export { ReminderCard } from "./ReminderCard";
 export { StepsCard } from "./StepsCard";
 export type { CardProps } from "./types";

@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const nextFont = FONT_ORDER[(FONT_ORDER.indexOf(profile.fontSize) + 1) % FONT_ORDER.length];
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-[190px] pt-8">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-40 pt-8">
       <header className="flex items-center gap-4">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white">
           {profile.name[0]}
