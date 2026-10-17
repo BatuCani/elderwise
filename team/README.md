@@ -13,7 +13,7 @@ Claude does the coding; you check the result in the browser and tell Claude what
 
 Live app: https://elderwise-beryl.vercel.app
 Design: https://app.paper.design/file/01M54P2AW7DMM9SRH5B5DKTZ5M
-Deadline: everything merged by **15:00**.
+Deadline: everything merged by **15:30** (submission is 16:00).
 
 ## Golden rules
 
