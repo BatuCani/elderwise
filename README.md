@@ -1,79 +1,97 @@
-# <img src="public/grace-logo.svg" alt="" width="40" align="top"> Grace
+<p align="center">
+  <img src="public/grace-logo.svg" alt="Grace logo" width="64">
+</p>
 
-**Try it:** https://elderwise-beryl.vercel.app (best on a phone; tap Share → Add to Home Screen on iPhone)
+<h1 align="center">Grace</h1>
 
-![Grace: Talk, a scam alert, the ready-written message to Anna, and the Learn tab](docs/screenshots.jpg)
+<p align="center"><b>A patient voice AI companion that helps older adults use AI, and learn it while they do.</b></p>
 
-**One line:** a patient voice AI companion for older adults: say what you need (and show a photo if you like), and get a simple visual answer that is read aloud, plus one AI skill learned each time.
+<p align="center">
+  <a href="https://graceapp.vercel.app"><b>Live app</b></a> ·
+  <a href="https://github.com/BatuCani/grace/releases/tag/demo-video-v1"><b>Demo video</b></a> ·
+  Built at Claude Impact Lab Berlin, 17 October 2026
+</p>
 
-- **Audience:** older adults (65+) and the family members who help them.
-- **Their problem with AI today:** apps and chatbots assume you can read dense screens and type well, so most older adults never try AI, and scammers exploit the gap.
-- **What the demo lets them do:** press one button, ask out loud about a letter, text message or appointment, and get a big, calm answer card with a "You learned" tip.
+<p align="center">
+  <img src="docs/screenshots/talk.jpg" alt="Talk: How can I help? and one big button" width="22%">
+  <img src="docs/screenshots/answers.jpg" alt="Answers: a red scam alert with three reasons and Tell my daughter Anna" width="22%">
+  <img src="docs/screenshots/scan.jpg" alt="Scan a letter: upload, take a picture or scan a code" width="22%">
+  <img src="docs/screenshots/learn.jpg" alt="Learn with Grace: topics and My AI skills" width="22%">
+</p>
 
-## What it does
-A 9-step welcome (calm, skippable screens: who you are, your name, help topics, how Grace explains, tip rhythm, text size and voice, trusted person, optional free account, summary), then four tabs and one guided flow, nothing more:
-- **Talk:** "How can I help?" and one big talking orb: "Tap once, then speak" (holding it works too). Grace, the assistant, has a natural hands-free conversation, and while you speak the **last 3 words you said appear very big**, so you can see that Grace really hears you. Below the orb sits an AI tip of the day. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
-- **Scan a letter:** a guided flow from the Talk screen (the "Scan a letter" button, or the camera sheet). Photograph or upload a letter or bill, or try an example, then watch it being read and see the key facts and a plain explanation. It also scans QR codes and barcodes, including GiroCode payments, with a scam check.
-- **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points. On a scam alert, **"Tell my daughter Anna"** opens a ready-written message to the trusted person (SMS, WhatsApp/share or a call), so the family knows in one tap. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
-- **Learn:** "Learn with Grace", 8 everyday topics (like spotting scams, letters and forms) with 24 short lessons you can try with Grace right away, plus "My AI skills".
-- **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), the assistant's name, voice and personality, the trusted person (editable) and your account.
+## Why Grace
+- **Who it's for:** older adults (65+), and the son or daughter who helps them.
+- **The problem:** AI apps assume you can read dense screens, type well and know what to ask, so most older adults never try AI, while scammers already use it against them.
+- **What Grace does:** you just say what you need (and show a letter or text message if you like); Grace answers with one big, calm card that is read aloud, and tells you which AI skill you just used.
 
-**Accounts (optional):** create a free account with email and password (`/signup`, `/signin`) and your answers and settings are saved in it, so they come back after signing in on any phone.
-"Continue without account" is always there; without an account everything stays in the browser.
-Accounts use Supabase Auth; the tables and row level security rules are in `supabase/migrations/`, the sync code in `lib/sync.ts`.
-The demo uses fake data (Ingrid and her daughter Anna).
+Our demo person is Ingrid, 78 (fictional). She gets a text: her parcel is held, pay a small fee via a link. She taps one button and asks "Is this message real?". Grace shows a deep red scam alert with three plain reasons, reads it aloud, and one tap tells her daughter Anna. The "You learned" card says: you can ask AI to check any message, letter or email.
+
+## Features
+| | What it does |
+|---|---|
+| **Talk** | One big button: tap once, then speak. A real-time, hands-free conversation; your last words appear very big so you know Grace hears you. Typing and photos sit behind the "+". |
+| **Answers** | Every answer is one visual card (scam alert, explanation, steps, reminder with "Add to calendar", place or link), max 3 points, read aloud, "Say it again, slower". Ends with **"You learned"**. |
+| **Scan a letter** | Photograph or upload a letter or bill, see the key facts and a plain explanation. Also reads QR codes and GiroCode payment codes, with a scam check. |
+| **Listen for me** | At the doctor's or a counter: live captions in very large text, then Claude sums up what was said and what to do next. Only text is kept, never sound. |
+| **Learn** | 8 everyday topics with 24 short lessons you try with Grace right away, a 5-question practice quiz, and "My AI skills" that grow with every real use. |
+| **Family** | **"Tell my daughter Anna"** opens a ready-written message (SMS, WhatsApp/share or call). A family view shows the trusted person what was asked and which scams were caught. |
+| **Made for older eyes and ears** | Text size up to Extra large without anything cut off, speaking speed, English or German, assistant name, voice and personality, a calm 9-step welcome. |
+| **Berlin buses and trains** | "When does my bus leave?" Claude checks live BVG departures and routes. |
+| **Accounts (optional)** | Free account (Supabase) so answers and settings come back on any phone. Without one, everything stays on the device. |
 
 ## How Claude is used
-`app/api/ask/route.ts` sends the photo (as an image block) and the spoken question to `claude-sonnet-5-5` with the official Anthropic TypeScript SDK.
-The system prompt in `prompts/elderwise.ts` asks for plain language, scam warnings, and numbers copied exactly from the photo.
-Structured output (`output_config.format`, JSON schema) returns the card type, a headline of at most 6 words, one sentence, up to 3 points, an optional action, and the "You learned" text.
-Server-side refusal fallback (`fallbacks: "default"`) is enabled so a declined request is retried on a fallback model.
+**Claude is the brain. Every answer, warning, explanation and lesson on screen comes from Claude.**
 
-Hands-free voice: tapping the mic opens a real-time conversation with the Gemini Live API, which listens and speaks in a warm voice.
-Gemini is only the voice. Every real question goes to Claude through one tool, `ask_elderwise` (`prompts/live.ts`), which calls `/api/ask`, saves the card to Answers, and hands Claude's headline and sentence back for Gemini to say.
-`app/api/live-token/route.ts` creates a short-lived, single-use Gemini token on the server, so `GEMINI_API_KEY` never reaches the browser.
-If Live is not available, the mic falls back to push-to-talk with the browser's speech recognition.
-The voice uses `gemini-3.8-live`, with `gemini-3.1-flash-live-preview` as automatic fallback. Dropped connections resume the same conversation, and talking over the answer stops it at once.
-During a conversation, the camera button shares the back camera live: one JPEG frame per second goes into the Live session, so Gemini sees what the person points at, and Claude gets the latest frame as the photo for the answer card.
+- `app/api/ask/route.ts` sends the spoken question and the photo (vision) to **Claude Sonnet 5.5** with the Anthropic TypeScript SDK.
+- **Structured output** (JSON schema) turns every reply into a card instead of a wall of text: type, headline of at most 6 words, one sentence, up to 3 points, steps, an action, and the "You learned" text.
+- **Tool use:** a `berlin_transit` tool lets Claude look up live BVG departures and journeys.
+- `app/api/listen/route.ts` turns a "Listen for me" transcript into one card (reminder, steps or explanation).
+- All prompts live in `prompts/` (`elderwise.ts` for answers, `live.ts` for the voice). A server-side fallback model is enabled, and errors show a friendly message.
+- **Gemini Live is only the voice.** It listens and speaks in real time, but for every real question it calls one tool, `ask_elderwise`, which asks Claude. Gemini then reads Claude's answer aloud. The Gemini key stays on the server (`app/api/live-token`). Without it, the button falls back to push-to-talk with the browser's speech recognition.
 
-## How to run it
-```bash
-cp .env.example .env    # paste your ANTHROPIC_API_KEY (and optionally GEMINI_API_KEY, and the Supabase URL and anon key) into .env
-npm install
-npm run dev             # open http://localhost:3000
 ```
-On a phone in the same Wi-Fi, open `http://<your-laptop-ip>:3000`.
-Voice input uses the browser Web Speech API (Chrome, Safari on iPhone). The microphone needs HTTPS or localhost, so on a phone over plain http the typed field is the fallback.
+Voice (Gemini Live) or typing ─▶ /api/ask ─▶ Claude Sonnet 5.5 (vision + tools + JSON schema) ─▶ answer card ─▶ read aloud + "You learned"
+```
 
-**Live link:** https://elderwise-beryl.vercel.app
+## Run it locally
+```bash
+git clone https://github.com/BatuCani/grace && cd grace
+cp .env.example .env   # paste ANTHROPIC_API_KEY (required); GEMINI_API_KEY and NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are optional
+npm install
+npm run dev            # open http://localhost:3000
+```
+Best in a phone-sized window, or on a phone (Safari: Share → Add to Home Screen).
+The microphone needs HTTPS or localhost; on plain http the typing field works the same.
+Accounts need the table and security rules in `supabase/migrations/`.
+
+**Stack:** Next.js (App Router, TypeScript), Tailwind CSS, Anthropic API, Gemini Live API, Supabase, browser Web Speech API. Deployed on Vercel.
 
 ## Demo video
-<Add the link to the 2-minute demo video here.>
-
-A 91-second product demo, made with [HyperFrames](https://hyperframes.heygen.com) from real screens of the live app, is in [`video/`](video/script.md) (script, style notes and how to rebuild it).
-Rendered files (team Google Drive): `Content/Grace-Hackathon/grace-demo-9x16.mp4` (1080x1920, for phones) and `Content/Grace-Hackathon/grace-demo-16x9.mp4` (1920x1080).
-Public link: <Add the Drive or YouTube link here.>
+- Release page: https://github.com/BatuCani/grace/releases/tag/demo-video-v1
+- Direct file (16:9): https://github.com/BatuCani/grace/releases/download/demo-video-v1/grace-demo-16x9.mp4
+- Made from real screens of the app with HyperFrames; script and sources in [`video/`](video/script.md).
 
 ## Team
-| Name | Role in this project |
+| Name | Role |
 |---|---|
-| Batu | Builder: voice flow, Claude API route, Liquid Glass design, layout |
-| Sam | Claude prompts and answer quality, Talk screen |
-| Ahmet | Demo photos and the "Add a photo" flow |
+| Batu | Builder: voice flow, Claude API route, design, layout |
+| Sam | Claude prompts and answer quality, Talk screen, practice quiz |
 | MaRie | Answer cards, answer history, pitch deck |
-| Endrik | Profile tab, accessibility and large-text QA |
+| Ahmet | Demo photos, the "Add a photo" flow and photo questions |
+| Endrik | Tell Anna, Profile, accessibility and large-text QA, README |
+
+More: [pitch](docs/PITCH.md) · [5-minute presentation](docs/PRESENTATION.md) · [demo script](docs/demo-script.md) · [accessibility QA](docs/qa.md) · [answer test cases](docs/test-cases.md)
 
 ## Credits
-- [Next.js](https://nextjs.org) (MIT), [React](https://react.dev) (MIT), [Tailwind CSS](https://tailwindcss.com) (MIT).
+- [Next.js](https://nextjs.org), [React](https://react.dev), [Tailwind CSS](https://tailwindcss.com) (MIT).
 - [Anthropic TypeScript SDK](https://github.com/anthropics/anthropic-sdk-typescript) (MIT) and the Claude API.
 - [Google Gen AI SDK](https://github.com/googleapis/js-genai) (Apache-2.0) and the Gemini Live API for the real-time voice.
-- [Orbs / micro-intent](https://github.com/Orb-agent/micro-intent), our team's earlier hackathon project: the PCM capture worklet, the barge-in and reconnect patterns, and the voice rules for older adults are adapted from it.
-- [voice-glow](https://www.npmjs.com/package/voice-glow) (MIT) for the voice-reactive glow around the input.
-- [bot-avatars](https://www.npmjs.com/package/bot-avatars) (MIT, [libraries.dev](https://libraries.dev/bots.html)) for the animated avatar of each assistant personality.
-- [Supabase](https://supabase.com) (`@supabase/ssr`, `@supabase/supabase-js`, MIT) for accounts and saving answers.
-- [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (OFL) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL) via Google Fonts.
-- [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) (MIT) reads QR codes and barcodes in "Scan a letter" when the browser has no built-in BarcodeDetector.
-- Browser Web Speech API (SpeechRecognition and speechSynthesis).
-- Demo video: [HyperFrames](https://github.com/heygen-com/hyperframes) and [GSAP](https://gsap.com); voiceover by [ElevenLabs](https://elevenlabs.io); music and whooshes are synthesized in `video/tools/make_audio.py` (no third-party audio).
-- Sample images in `public/samples/` are fictional mocks made for this demo; no real personal data.
-- The "Scan a letter" flow is inspired by the Dribbble shot [Onboarding flow (Upload your bill)](https://dribbble.com/shots/27784869) by Eugen Esanu (patterns only, no assets copied).
+- From [libraries.dev](https://libraries.dev): [voice-glow](https://www.npmjs.com/package/voice-glow), [thinking-orbs](https://www.npmjs.com/package/thinking-orbs), [liquid-gooey](https://www.npmjs.com/package/liquid-gooey) and [bot-avatars](https://www.npmjs.com/package/bot-avatars) (MIT).
+- [Supabase](https://supabase.com) (`@supabase/ssr`, `@supabase/supabase-js`, MIT) for accounts.
+- [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) (MIT) for QR codes and barcodes.
+- [BVG REST API](https://v6.bvg.transport.rest) (free, no key) for Berlin departures.
+- Fonts: [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL), via Google Fonts.
+- [Orbs / micro-intent](https://github.com/Orb-agent/micro-intent), our team's earlier hackathon project: the audio capture, barge-in and reconnect patterns and the voice rules for older adults are adapted from it.
+- Demo video: [HyperFrames](https://github.com/heygen-com/hyperframes) and [GSAP](https://gsap.com), voiceover by [ElevenLabs](https://elevenlabs.io), music synthesized in `video/tools/make_audio.py`.
+- "Scan a letter" is inspired by the Dribbble shot [Onboarding flow (Upload your bill)](https://dribbble.com/shots/27784869) by Eugen Esanu (patterns only, no assets copied).
+- All people, letters and messages in the demo (Ingrid, Anna, `public/samples/`) are fictional. No real personal data.

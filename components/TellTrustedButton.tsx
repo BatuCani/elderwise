@@ -27,7 +27,7 @@ const COPY: Record<Lang, {
     cancel: "Cancel",
     hint: "The message is written for you. You can still change it before you send it.",
     text: ({ trusted, me, helper, headline, sentence, warning }) =>
-      `Hi ${trusted}, ${warning ? `${helper} from Elderwise warned me about a message` : `I asked ${helper} from Elderwise for help`}: "${headline}". ${sentence} Can you call me when you have a moment? - ${me}`,
+      `Hi ${trusted}, ${warning ? `${helper} warned me about a message` : `I asked ${helper} for help`}: "${headline}". ${sentence} Can you call me when you have a moment? - ${me}`,
   },
   de: {
     title: (n) => `${n} Bescheid geben`,
@@ -37,7 +37,7 @@ const COPY: Record<Lang, {
     cancel: "Abbrechen",
     hint: "Die Nachricht ist schon geschrieben. Sie können sie vor dem Senden noch ändern.",
     text: ({ trusted, me, helper, headline, sentence, warning }) =>
-      `Hallo ${trusted}, ${warning ? `${helper} von Elderwise hat mich vor einer Nachricht gewarnt` : `ich habe ${helper} von Elderwise um Hilfe gebeten`}: „${headline}“. ${sentence} Kannst du mich anrufen, wenn du Zeit hast? - ${me}`,
+      `Hallo ${trusted}, ${warning ? `${helper} hat mich vor einer Nachricht gewarnt` : `ich habe ${helper} um Hilfe gebeten`}: „${headline}“. ${sentence} Kannst du mich anrufen, wenn du Zeit hast? - ${me}`,
   },
 };
 

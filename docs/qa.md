@@ -22,4 +22,5 @@ Checked at iPhone SE (375×667) and iPhone 14 (390×844) size, English and Germa
 
 ## Open (for Batu)
 - At Extra large on a small phone (iPhone SE), the listening waveform bar sits right against the camera / done buttons. It does not cover them, but it is tight.
+- The old name is still visible in one place: `components/account/copy.ts` ("You can keep using Elderwise without one", EN and DE), shown when accounts are not available. (The "Tell Anna" message no longer says "from Elderwise".)
 - Older saved answers keep the action label Claude wrote at the time ("Tell my daughter Anna") after the trusted person changes; new answers use the new name.

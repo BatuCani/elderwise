@@ -50,7 +50,7 @@ Build on the day. Claude must be part of the solution, not just the tool that wr
 
 Note: our `CLAUDE.md` also mentions a Tally form (https://tally.so/r/1WPr9Q). Ask the organisers which one counts, or submit through both to be safe.
 
-## Where Elderwise stands and how we reach full marks
+## Where Grace stands and how we reach full marks
 
 **Impact.** Strong audience and problem. Missing: proof that older people want it, and visible learning. Actions: one real voice over 65 in the video or pitch; make learning cumulative (an "Aha" card per answer and a "My skills" list), not a single sentence.
 

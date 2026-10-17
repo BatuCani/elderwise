@@ -19,7 +19,7 @@ There is a substantial naming finding: **Ask Grace already exists as an AI compa
 
 ## 1. Product truth and evidence
 
-The original exploration inspected [commit 6a78789](https://github.com/BatuCani/elderwise/tree/6a78789fe1093515e59089d074a350335ef541ea), including the README, pitch documents, prompts, API routes, screens, voice implementation, answer cards, and storage. The deployed onboarding and a typed question-to-answer flow were checked successfully. Voice, photo interpretation, and calendar export were inspected in code rather than tested end to end.
+The original exploration inspected [commit 6a78789](https://github.com/BatuCani/grace/tree/6a78789fe1093515e59089d074a350335ef541ea), including the README, pitch documents, prompts, API routes, screens, voice implementation, answer cards, and storage. The deployed onboarding and a typed question-to-answer flow were checked successfully. Voice, photo interpretation, and calendar export were inspected in code rather than tested end to end.
 
 Before saving this proposal, the repository was refreshed to **273816d**. That newer snapshot already includes Grace branding, editable profile details, assistant preferences, trusted-person message sharing, and generated place/link cards. The capability table below reflects that source snapshot. These additions received code inspection, not a new end-to-end deployment test. This corrects statements in the earlier exploration that the trusted contact was fixed and place/link cards were preview-only.
 
