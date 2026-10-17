@@ -27,7 +27,7 @@ export default function ProfilePage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-40 pt-8">
       <header className="flex items-center gap-4">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white">
+        <div aria-hidden className="flex h-20 w-20 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white">
           {profile.name[0]}
         </div>
         <h1 className="font-serif text-4xl font-medium text-ink">{profile.name}</h1>
@@ -54,6 +54,8 @@ export default function ProfilePage() {
             max={1.2}
             step={0.05}
             value={profile.speechRate}
+            // Screen readers say "Slow / Normal / Fast" instead of "0.9".
+            aria-valuetext={profile.speechRate < 0.8 ? t.slow : profile.speechRate > 1 ? t.fast : t.fontSizes.normal}
             onChange={(e) => updateProfile({ speechRate: Number(e.target.value) })}
             className="rate-slider mt-3 w-full"
           />
@@ -73,7 +75,7 @@ export default function ProfilePage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold text-muted">{t.trustedTitle}</h2>
         <div className="flex flex-wrap items-center gap-4 glass rounded-[20px] p-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-paper font-serif text-2xl font-medium text-ink">
+          <div aria-hidden className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-paper font-serif text-2xl font-medium text-ink">
             {profile.trusted.name[0]}
           </div>
           <div className="min-w-0 flex-[1_1_auto]">
