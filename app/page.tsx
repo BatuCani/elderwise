@@ -1,16 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, MicIcon, SendIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
+import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
 import { addEntry } from "@/lib/answers";
-import { askElderwise } from "@/lib/ask";
+import { askClaude } from "@/lib/ask";
+import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
 import { useProfile } from "@/lib/profile";
-import { followUpQuestion, getSolve, setFollowUp, setPending, setStuck, startSolve, type Solve } from "@/lib/solve";
+import { followUpQuestion, getSolve, setFollowUp, setPending, setStuck, startSolve, useSolve, type Solve } from "@/lib/solve";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
+import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
@@ -28,7 +31,7 @@ function thinkingMotion() {
 }
 
 // Talk tab: one big talk button. While listening: waveform, "Start camera" and "Done talking",
-// and the voice glow along the bottom. The answer opens on the Steps page.
+// and the voice glow along the bottom. Answers open on the Answers tab.
 export default function Talk() {
   const router = useRouter();
   const profile = useProfile();
@@ -38,7 +41,6 @@ export default function Talk() {
   const [question, setQuestion] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const typeRef = useRef<HTMLInputElement>(null);
-  const talkRef = useRef<HTMLButtonElement>(null);
   const [typed, setTyped] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
@@ -51,20 +53,40 @@ export default function Talk() {
   const listeningRef = useRef(false);
   const finishingRef = useRef(false);
   const busyRef = useRef(false);
+  const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [asked, setAsked] = useState<{ q: string; img: string | null }>({ q: "", img: null });
+  const live = useLive();
+  const liveOn = live.status !== "idle";
+  const liveFailed = useRef(false);
 
-  // Coming from "Stuck?" on the Steps page: start listening right away. This runs each time Talk
-  // is shown (Next keeps it alive, hidden). Leaving Talk without asking drops the "stuck" mode.
+  // Leaving the Talk tab (Next keeps it alive, hidden) clears the toast and must not pull the
+  // person back to Answers later.
+  useEffect(
+    () => () => {
+      clearTimeout(doneTimer.current);
+      setPhase((p) => (p === "done" ? "idle" : p));
+    },
+    [],
+  );
+
+  // Coming from "Stuck?" on the Steps page: start listening right away. Talk reacts to the flag
+  // changing, because Next may keep Talk alive (hidden) instead of mounting it again.
+  // Leaving Talk without asking drops the "stuck" mode.
   const stuckRef = useRef(false);
   const shownRef = useRef(false);
+  const stuckNow = useSolve()?.stuck ?? false;
+  const autoTalk = useEffectEvent(() => {
+    if (shownRef.current) onTalk();
+  });
+  useEffect(() => {
+    if (!stuckNow) return;
+    stuckRef.current = true;
+    setStuck(false);
+    setTimeout(autoTalk, 300);
+  }, [stuckNow]);
   useEffect(() => {
     shownRef.current = true;
-    if (getSolve()?.stuck) {
-      stuckRef.current = true;
-      setStuck(false);
-    }
-    const id = stuckRef.current ? setTimeout(() => talkRef.current?.click(), 300) : undefined;
     return () => {
-      clearTimeout(id);
       shownRef.current = false;
       // Only when Talk is really left (not React's quick dev re-run).
       setTimeout(() => {
@@ -86,6 +108,7 @@ export default function Talk() {
   // Open the Steps page right away; it shows "Thinking…" until Claude's answer is in.
   function ask(q: string, img: string | null) {
     if (busyRef.current) return;
+    setAsked({ q, img });
     // When stuck on a step, Claude also gets the problem and the step, so it answers about that.
     const solve = getSolve();
     send(q, img, stuckRef.current && solve ? solve : null);
@@ -99,10 +122,8 @@ export default function Talk() {
     busyRef.current = true;
     setPending({ question: q, status: "thinking", followUp: !!followUp }, () => send(q, img, followUp));
     try {
-      const answer = await askElderwise(followUp ? followUpQuestion(followUp, q) : q, img, profile);
-      if (followUp) setFollowUp(q || t.inputPlaceholder, answer);
-      else startSolve(q, answer);
-      addEntry(q || t.inputPlaceholder, answer);
+      const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, img, profile);
+      saveAnswer(q, answer, followUp);
       setPending(null);
       setNewPhoto(null);
       speak(spokenText(answer), profile.lang, profile.speechRate);
@@ -114,6 +135,18 @@ export default function Talk() {
     }
   }
 
+  // Keep the answer for the Steps page (new problem, or help with the step the person is stuck on).
+  function saveAnswer(q: string, answer: Answer, followUp: Solve | null) {
+    if (followUp) setFollowUp(q || t.inputPlaceholder, answer);
+    else startSolve(q, answer);
+    addEntry(q || t.inputPlaceholder, answer);
+  }
+
+  function retry() {
+    unlockSpeech();
+    ask(asked.q, asked.img);
+  }
+
   function finish() {
     listeningRef.current = false;
     mic.stop();
@@ -122,6 +155,32 @@ export default function Talk() {
     else setPhase("idle");
   }
 
+  // Hands-free conversation: Gemini Live listens and speaks, Claude answers through the tool.
+  async function startConversation() {
+    try {
+      await startLive({
+        lang: profile.lang,
+        name: profile.name,
+        ask: async (q) => {
+          const solve = getSolve();
+          const followUp = stuckRef.current && solve ? solve : null;
+          const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, photoRef.current, profile);
+          stuckRef.current = false;
+          saveAnswer(q, answer, followUp);
+          setNewPhoto(null);
+          setPhase("done");
+          doneTimer.current = setTimeout(() => router.push("/steps"), 1600);
+          return answer;
+        },
+      });
+    } catch (err) {
+      console.warn("Live conversation unavailable, using push-to-talk:", err);
+      liveFailed.current = true;
+      startPushToTalk();
+    }
+  }
+
+  // Fallback: the browser's own speech recognition, restarted until "Done talking".
   function startRecognition() {
     const Ctor = getRecognition();
     if (!Ctor) return;
@@ -157,8 +216,7 @@ export default function Talk() {
     rec.start();
   }
 
-  function onTalk() {
-    unlockSpeech();
+  function startPushToTalk() {
     if (!getRecognition()) {
       // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
       typeRef.current?.focus();
@@ -184,15 +242,41 @@ export default function Talk() {
     ask(q, null);
   }
 
+  function onTalk() {
+    unlockSpeech();
+    setPhase("idle");
+    if (liveSupported() && !liveFailed.current) startConversation();
+    else startPushToTalk();
+  }
+
   function onFinish() {
     unlockSpeech();
+    if (liveOn) {
+      stopLive();
+      setPhase("idle");
+      return;
+    }
     finishingRef.current = true;
     if (recRef.current) recRef.current.stop();
     else finish();
   }
 
   const listening = phase === "listening";
-  const thinking = phase === "thinking";
+  const thinking = phase === "thinking" || live.status === "thinking";
+  // Live conversation text: what was heard while listening, what Claude's answer sounds like while speaking.
+  const liveText = live.status === "speaking" ? live.said : live.heard;
+  // What the big orb shows: connecting, listening, thinking (or looking at a photo), speaking, or calm.
+  const lookingAtPhoto = liveOn ? !!photo : !!asked.img;
+  const mood: OrbMood =
+    live.status === "connecting"
+      ? "connecting"
+      : live.status === "speaking" || phase === "done"
+        ? "speaking"
+        : thinking
+          ? lookingAtPhoto ? "looking" : "thinking"
+          : listening || liveOn
+            ? "listening"
+            : "idle";
 
   return (
     <>
@@ -204,11 +288,30 @@ export default function Talk() {
 
         {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
         <p aria-live="polite" className="sr-only">
-          {listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
+          {liveOn ? liveText || t.listening : listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
         </p>
 
-        {listening ? (
+        {listening || liveOn ? (
           <>
+            <div className="mb-6">
+              <VoiceOrb mood={mood} lang={profile.lang} compact />
+            </div>
+            {liveOn && (
+              <div className="mb-8">
+                <p className="text-xl text-muted">
+                  {live.status === "connecting" ? t.liveConnecting : live.status === "speaking" ? t.liveSays : live.status === "thinking" ? t.youSaid : t.listening}
+                </p>
+                {liveText && (
+                  <p
+                    className={`mt-3 font-serif font-medium leading-[1.12] ${
+                      live.status === "listening" ? "text-[40px] text-ink" : live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
+                    }`}
+                  >
+                    {live.status === "speaking" ? liveText : `“${liveText}”`}
+                  </p>
+                )}
+              </div>
+            )}
             {photo && (
               <div className="mb-6 glass rounded-2xl p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -240,19 +343,22 @@ export default function Talk() {
             <p className="text-greeting text-muted">
               {greeting}, {profile.name}
             </p>
-            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink">{t.headline}</h1>
-            <button
-              ref={talkRef}
-              type="button"
-              onClick={onTalk}
-              disabled={thinking}
-              aria-label={t.mic}
-              className={`mt-10 flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
-                phase === "error" ? "bg-warn" : "bg-moss"
-              }`}
-            >
-              <MicIcon className="h-20 w-20" />
-            </button>
+            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:620px)]:text-[1.4rem]">
+              {t.headline}
+            </h1>
+            {/* The orb is the talk button: tapping it does the same as the mic button did. */}
+            <div className="mt-10 [@media(max-height:620px)]:mt-5">
+              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
+            </div>
+            {phase === "error" && (
+              <button
+                onClick={retry}
+                className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-7 text-status font-bold text-moss"
+              >
+                <RetryIcon className="h-7 w-7" />
+                {t.tryAgain}
+              </button>
+            )}
 
           </>
         )}
@@ -273,10 +379,10 @@ export default function Talk() {
           type="mobile"
           stream={listening ? mic.stream : null}
           motion={thinking ? thinkingMotion : null}
-          level={listening && !mic.stream ? 0.7 : undefined}
-          idle={listening || thinking ? undefined : 0}
-          sensitivity={listening ? 5 : undefined}
-          reach={listening ? 1.8 : undefined}
+          level={liveOn ? liveLevel : listening && !mic.stream ? 0.7 : undefined}
+          idle={listening || thinking || liveOn ? undefined : 0}
+          sensitivity={listening || liveOn ? 5 : undefined}
+          reach={listening || liveOn ? 1.8 : undefined}
           colorVariant="colorful"
           theme="light"
         >
@@ -287,7 +393,9 @@ export default function Talk() {
               onSendTyped();
             }}
           >
-            {listening ? (
+            {liveOn ? (
+              <p className="min-h-12 flex-1 pr-3 text-left text-status leading-[3rem] font-bold text-moss">{t.liveActive}</p>
+            ) : listening ? (
               <div className="flex-1 pr-3">
                 <VoiceBars stream={mic.stream} className="h-12" />
               </div>
@@ -317,6 +425,17 @@ export default function Talk() {
         </VoiceBeam>
       </div>
 
+      {phase === "done" && (
+        <div
+          role="status"
+          className="toast-in glass fixed inset-x-0 bottom-[calc(26px+4rem+6rem+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2 pl-2 pr-5 text-toast font-bold text-ink"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss text-white">
+            <CheckIcon className="h-5 w-5" />
+          </span>
+          {t.done}
+        </div>
+      )}
     </>
   );
 }

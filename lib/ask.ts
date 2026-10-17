@@ -4,8 +4,8 @@ import type { Profile } from "@/lib/profile";
 import { LOCALE, toJpeg } from "@/lib/speech";
 import type { Answer } from "@/prompts/elderwise";
 
-// Send one question (and optional photo) to /api/ask and return Claude's structured answer.
-export async function askElderwise(question: string, image: string | null, profile: Profile): Promise<Answer> {
+// One question (and optional photo) to Claude through /api/ask. Throws if it fails.
+export async function askClaude(question: string, photo: string | null, profile: Profile): Promise<Answer> {
   const body = new FormData();
   body.append("lang", profile.lang);
   body.append("question", question);
@@ -16,7 +16,7 @@ export async function askElderwise(question: string, image: string | null, profi
     "today",
     new Date().toLocaleDateString(LOCALE[profile.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
   );
-  if (image) body.append("image", await toJpeg(image), "photo.jpg");
+  if (photo) body.append("image", await toJpeg(photo), "photo.jpg");
   const res = await fetch("/api/ask", { method: "POST", body });
   if (!res.ok) throw new Error(String(res.status));
   return res.json();

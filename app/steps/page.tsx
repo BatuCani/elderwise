@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BackIcon, CheckIcon, CloseIcon, MicIcon, RetryIcon, NextIcon, SendIcon, SpeakerIcon } from "@/components/icons";
 import { addEntry } from "@/lib/answers";
-import { askElderwise } from "@/lib/ask";
+import { askClaude } from "@/lib/ask";
 import { useProfile } from "@/lib/profile";
 import { clearFollowUp, followUpQuestion, getSolve, setFollowUp, retryPending, setStep, setStuck, startExample, stepsOf, usePending, useSolve } from "@/lib/solve";
 import { speak, spokenText, unlockSpeech } from "@/lib/speech";
@@ -99,7 +99,7 @@ export default function Steps() {
     unlockSpeech();
     setPhase("thinking");
     try {
-      const answer = await askElderwise(followUpQuestion(cur, q), null, profile);
+      const answer = await askClaude(followUpQuestion(cur, q), null, profile);
       setFollowUp(q, answer);
       addEntry(q, answer);
       setTyped("");
