@@ -1,136 +1,97 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useRef, useState, useSyncExternalStore } from "react";
-import { AnswerCard, type Answer } from "@/components/AnswerCard";
-import { OrbButton } from "@/components/OrbButton";
-import { SAMPLES, TEXT } from "./copy";
+import { useMicrophone } from "voice-glow";
+import { ChatInput } from "@/components/ChatInput";
+import { addEntry } from "@/lib/answers";
+import { useProfile } from "@/lib/profile";
+import { getRecognition, LOCALE, speak, spokenText, toJpeg, unlockSpeech, type Recognition } from "@/lib/speech";
+import type { Answer } from "@/prompts/elderwise";
+import { TEXT } from "./copy";
 
-type Lang = "de" | "en";
-type Phase = "idle" | "listening" | "thinking" | "answer" | "error";
+type Phase = "idle" | "listening" | "thinking" | "done" | "error";
 
-// Minimal typing for the Web Speech API (not in TypeScript's DOM lib everywhere).
-type Recognition = {
-  lang: string;
-  interimResults: boolean;
-  continuous: boolean;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-};
-type RecognitionCtor = new () => Recognition;
+const noSubscribe = () => () => {};
 
-function getRecognition(): RecognitionCtor | null {
-  if (typeof window === "undefined") return null;
-  const w = window as unknown as { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+function greetingKey(): "morning" | "afternoon" | "evening" {
+  const h = new Date().getHours();
+  return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
 }
 
-// Re-encode any picked image (camera JPEG, HEIC-as-JPEG, SVG sample) as a JPEG of sensible size.
-async function toJpeg(src: string): Promise<Blob> {
-  const img = new Image();
-  img.src = src;
-  await img.decode();
-  const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(img.naturalWidth * scale);
-  canvas.height = Math.round(img.naturalHeight * scale);
-  const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode"))), "image/jpeg", 0.85),
-  );
-}
-
-function speak(text: string, lang: Lang) {
-  if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang === "en" ? "en-US" : "de-DE";
-  u.rate = 0.9;
-  const voice = window.speechSynthesis.getVoices().find((v) => v.lang.startsWith(lang));
-  if (voice) u.voice = voice;
-  window.speechSynthesis.speak(u);
-}
-
-export default function Home() {
-  const [lang, setLang] = useState<Lang>("de");
+// Talk tab: only the voice interface. Answers open on the Answers tab.
+export default function Talk() {
+  const router = useRouter();
+  const profile = useProfile();
+  const t = TEXT[profile.lang];
+  const mic = useMicrophone();
   const [phase, setPhase] = useState<Phase>("idle");
-  const [photo, setPhoto] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
-  const [result, setResult] = useState<Answer | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
   const recRef = useRef<Recognition | null>(null);
   const heardRef = useRef("");
-  const fileRef = useRef<HTMLInputElement>(null);
-  const answerRef = useRef<HTMLElement>(null);
-  const t = TEXT[lang];
+  const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
 
-  const canListen = useSyncExternalStore(
-    () => () => {},
-    () => getRecognition() !== null,
-    () => false,
-  );
-
-  function pickFile(file: File | undefined) {
-    if (!file) return;
+  function setNewPhoto(src: string | null) {
     if (photo?.startsWith("blob:")) URL.revokeObjectURL(photo);
-    setPhoto(URL.createObjectURL(file));
-    setResult(null);
-    setPhase("idle");
+    setPhoto(src);
   }
 
   async function ask(q: string) {
     setPhase("thinking");
-    setResult(null);
     try {
       const body = new FormData();
-      body.append("lang", lang);
+      body.append("lang", profile.lang);
       body.append("question", q);
+      body.append("name", profile.name);
+      body.append("trustedName", profile.trusted.name);
+      body.append("trustedRelation", profile.trusted.relation);
+      body.append(
+        "today",
+        new Date().toLocaleDateString(LOCALE[profile.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
+      );
       if (photo) body.append("image", await toJpeg(photo), "photo.jpg");
       const res = await fetch("/api/ask", { method: "POST", body });
       if (!res.ok) throw new Error(String(res.status));
-      const data: Answer = await res.json();
-      setResult(data);
-      setPhase("answer");
-      requestAnimationFrame(() => answerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-      speak(data.answer, lang);
+      const answer: Answer = await res.json();
+      addEntry(q || t.inputPlaceholder, answer);
+      speak(spokenText(answer), profile.lang, profile.speechRate);
+      setPhase("done");
+      setQuestion("");
+      setNewPhoto(null);
+      setTimeout(() => router.push("/answers"), 1200);
     } catch {
       setPhase("error");
-      speak(t.error, lang);
+      speak(t.error, profile.lang, profile.speechRate);
     }
   }
 
-  function onOrb() {
-    // Unlock speech output on iOS: it must start inside a user gesture.
-    if ("speechSynthesis" in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
-
+  function onMic() {
+    unlockSpeech();
     if (phase === "listening") {
       recRef.current?.stop();
       return;
     }
-    if (phase === "thinking") return;
-
     const Ctor = getRecognition();
     if (!Ctor) {
-      ask(question);
+      // No speech recognition in this browser: typing is the fallback.
+      document.querySelector<HTMLInputElement>("form input:not([type=file])")?.focus();
       return;
     }
+    mic.start();
     const rec = new Ctor();
-    rec.lang = lang === "en" ? "en-US" : "de-DE";
+    rec.lang = LOCALE[profile.lang];
     rec.interimResults = true;
     rec.continuous = false;
     heardRef.current = "";
     rec.onresult = (e) => {
-      const text = Array.from(e.results, (r) => r[0].transcript).join(" ");
-      heardRef.current = text;
-      setQuestion(text);
+      heardRef.current = Array.from(e.results, (r) => r[0].transcript).join(" ");
+      setQuestion(heardRef.current);
     };
     rec.onerror = () => setPhase("idle");
     rec.onend = () => {
       recRef.current = null;
+      mic.stop();
       if (heardRef.current.trim() || photo) ask(heardRef.current);
       else setPhase("idle");
     };
@@ -140,113 +101,59 @@ export default function Home() {
     rec.start();
   }
 
-  const orbLabel =
-    phase === "listening" ? t.orbListening : phase === "thinking" ? t.orbThinking : canListen ? t.orbSpeak : t.orbAsk;
+  const status =
+    phase === "listening"
+      ? question || t.listening
+      : phase === "thinking"
+        ? t.thinking
+        : phase === "error"
+          ? t.error
+          : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 pb-10 pt-6">
-      <header className="flex items-center justify-between">
-        <h1 className="flex items-center gap-3 text-4xl font-bold tracking-tight">
-          <span aria-hidden className="orb orb-logo inline-block h-10 w-10 rounded-full" />
-          Elderwise
-        </h1>
-        <button
-          onClick={() => setLang(lang === "de" ? "en" : "de")}
-          className="min-h-14 rounded-2xl border-2 border-black px-5 text-xl font-semibold"
-          aria-label={t.langSwitchLabel}
-        >
-          {lang === "de" ? "English" : "Deutsch"}
-        </button>
-      </header>
-
-      <p className="text-2xl leading-snug">{t.intro}</p>
-
-      <section className="flex flex-col gap-3">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => pickFile(e.target.files?.[0])}
-        />
-        {photo ? (
-          <div className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo} alt={t.photoAlt} className="max-h-72 w-full rounded-3xl border-4 border-black object-contain bg-white" />
-            <button
-              onClick={() => setPhoto(null)}
-              className="absolute right-3 top-3 min-h-14 rounded-2xl bg-black px-5 text-xl font-semibold text-white"
-            >
-              {t.removePhoto}
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="min-h-20 rounded-3xl border-4 border-dashed border-black px-4 text-xl font-semibold"
-          >
-            📷 {t.takePhoto}
-          </button>
-        )}
-        <div className="flex flex-col gap-2">
-          <span className="text-lg text-zinc-700">{t.samplesLabel}</span>
-          <div className="grid grid-cols-3 gap-2">
-            {SAMPLES.map((s) => (
-              <button
-                key={s.src}
-                onClick={() => {
-                  setPhoto(s.src);
-                  setResult(null);
-                  setPhase("idle");
-                }}
-                className="min-h-16 rounded-2xl border-2 border-black bg-zinc-100 px-1 text-base font-semibold leading-tight [overflow-wrap:anywhere]"
-              >
-                {s.label[lang]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="flex flex-col items-center gap-4 py-2">
-        <OrbButton
-          state={phase === "listening" || phase === "thinking" ? phase : "idle"}
-          label={orbLabel}
-          onPress={onOrb}
-        />
-        <form
-          className="flex w-full gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            ask(question);
-          }}
-        >
-          <input
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder={t.typePlaceholder}
-            className="min-h-16 min-w-0 flex-1 rounded-2xl border-2 border-black px-4 text-xl"
-          />
-          <button
-            type="submit"
-            disabled={phase === "thinking"}
-            className="min-h-16 rounded-2xl bg-black px-5 text-xl font-semibold text-white disabled:opacity-40"
-          >
-            {t.send}
-          </button>
-        </form>
-      </section>
-
-      {phase === "error" && (
-        <p role="alert" className="rounded-3xl border-4 border-red-700 bg-red-50 p-5 text-2xl font-semibold text-red-900">
-          {t.error}
+    <>
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-6 pb-56 pt-10">
+        <p className="text-xl text-muted">
+          {greeting}, {profile.name}
         </p>
+        <h1 className="mt-2 font-serif text-[2.8rem] font-medium leading-[1.08] text-ink">{t.headline}</h1>
+        <p
+          aria-live="polite"
+          className={`mt-8 min-h-[4.5rem] text-2xl leading-snug ${phase === "error" ? "font-bold text-warn" : "text-ink"}`}
+        >
+          {status && (phase === "listening" && question ? `“${status}”` : status)}
+        </p>
+      </main>
+
+      {phase === "done" && (
+        <div
+          role="status"
+          className="fixed inset-x-0 top-[calc(1.5rem+env(safe-area-inset-top))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
+        >
+          ✓ {t.done}
+        </div>
       )}
 
-      {result && (
-        <AnswerCard ref={answerRef} result={result} labels={t} onReadAgain={() => speak(result.answer, lang)} />
-      )}
-    </main>
+      <div className="fixed inset-x-0 bottom-[calc(4.2rem+env(safe-area-inset-bottom))] z-10 px-4 pb-4">
+        <div className="mx-auto max-w-xl">
+          <ChatInput
+            value={phase === "listening" ? "" : question}
+            onChange={setQuestion}
+            onSubmit={() => {
+              unlockSpeech();
+              ask(question);
+            }}
+            onMic={onMic}
+            onPhoto={(f) => setNewPhoto(URL.createObjectURL(f))}
+            onRemovePhoto={() => setNewPhoto(null)}
+            photo={photo}
+            listening={phase === "listening"}
+            thinking={phase === "thinking"}
+            stream={mic.stream}
+            t={t}
+          />
+        </div>
+      </div>
+    </>
   );
 }

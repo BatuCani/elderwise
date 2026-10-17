@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { ANSWER_SCHEMA, defaultQuestion, systemPrompt, type Lang } from "@/prompts/elderwise";
+import { ANSWER_SCHEMA, contextNote, defaultQuestion, systemPrompt, type Answer, type Lang } from "@/prompts/elderwise";
 
 const MODEL = "claude-sonnet-5-5";
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
@@ -7,10 +7,14 @@ type ImageType = (typeof IMAGE_TYPES)[number];
 
 const client = new Anthropic();
 
+function field(form: FormData, key: string, fallback: string, max = 200): string {
+  return String(form.get(key) ?? "").trim().slice(0, max) || fallback;
+}
+
 export async function POST(req: Request) {
   const form = await req.formData();
-  const lang: Lang = form.get("lang") === "en" ? "en" : "de";
-  const question = String(form.get("question") ?? "").trim() || defaultQuestion(lang);
+  const lang: Lang = form.get("lang") === "de" ? "de" : "en";
+  const question = field(form, "question", defaultQuestion(lang), 2000);
   const image = form.get("image");
 
   const content: Anthropic.Beta.BetaContentBlockParam[] = [];
@@ -21,7 +25,13 @@ export async function POST(req: Request) {
     const data = Buffer.from(await image.arrayBuffer()).toString("base64");
     content.push({ type: "image", source: { type: "base64", media_type: image.type as ImageType, data } });
   }
-  content.push({ type: "text", text: question });
+  const note = contextNote({
+    name: field(form, "name", "Ingrid"),
+    trustedName: field(form, "trustedName", "Anna"),
+    trustedRelation: field(form, "trustedRelation", "daughter"),
+    today: field(form, "today", new Date().toDateString()),
+  });
+  content.push({ type: "text", text: `${note}\n\nQuestion: ${question}` });
 
   try {
     const response = await client.beta.messages.create({
@@ -41,7 +51,9 @@ export async function POST(req: Request) {
     if (!text || text.type !== "text") {
       return Response.json({ error: "empty" }, { status: 502 });
     }
-    return Response.json(JSON.parse(text.text));
+    const answer: Answer = JSON.parse(text.text);
+    answer.points = answer.points.slice(0, 3);
+    return Response.json(answer);
   } catch (err) {
     console.error("Claude request failed:", err);
     return Response.json({ error: "api" }, { status: 502 });
