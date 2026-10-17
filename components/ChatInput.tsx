@@ -32,7 +32,7 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
   return (
     <div className="flex flex-col gap-2">
       {photo && (
-        <div className="flex items-center gap-3 self-start rounded-2xl border border-line bg-white p-2 pr-3">
+        <div className="flex items-center gap-3 self-start glass rounded-2xl p-2 pr-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={photo} alt="" className="h-14 w-14 rounded-xl object-cover" />
           <button onClick={onRemovePhoto} aria-label={t.removePhoto} className="flex h-12 w-12 items-center justify-center rounded-full text-muted">
@@ -45,11 +45,13 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
         stream={listening ? stream : null}
         motion={thinking ? thinkingMotion : null}
         level={listening && !stream ? 0.4 : undefined}
+        sensitivity={listening ? 5 : undefined}
+        reach={listening ? 1.8 : undefined}
         colorVariant="colorful"
         theme="light"
       >
         <form
-          className="flex items-center gap-1 rounded-full border border-line bg-white p-2 shadow-[0_8px_30px_rgba(30,36,32,0.08)]"
+          className="glass flex items-center gap-1 rounded-full p-2"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
@@ -71,7 +73,7 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
             type="button"
             onClick={() => fileRef.current?.click()}
             aria-label={t.attachPhoto}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-paper text-ink"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/70 text-ink"
           >
             <CameraIcon className="h-7 w-7" />
           </button>

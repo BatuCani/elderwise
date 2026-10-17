@@ -19,7 +19,7 @@ export function AnswerView({ answer, t, phone, time }: Props) {
 
   return (
     <section className="flex flex-col gap-3">
-      <div className={`rounded-3xl p-6 ${warning ? "bg-warn text-white" : "bg-white text-ink"}`}>
+      <div className={`rounded-3xl p-6 ${warning ? "bg-warn text-white shadow-[0_16px_40px_rgba(142,36,36,0.35)]" : "bg-white text-ink"}`}>
         <p className={`mb-3 text-base font-bold uppercase tracking-[0.08em] ${warning ? "text-white/85" : "text-muted"}`}>
           {t.kinds[type]} · {time}
         </p>
@@ -63,7 +63,7 @@ export function AnswerView({ answer, t, phone, time }: Props) {
         )}
       </div>
 
-      <div className="rounded-3xl bg-learn-bg p-5 text-learn">
+      <div className="glass-moss rounded-3xl p-5 text-learn">
         <p className="text-lg font-bold">{t.learned}</p>
         <p className="mt-1 text-lg leading-snug">{answer.learned}</p>
         <p className="mt-2 text-lg leading-snug">{answer.tip}</p>
