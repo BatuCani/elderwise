@@ -1,8 +1,8 @@
 # Elderwise
 
-### Show it. Ask it. Learn it.
+### Just say it.
 
-A patient voice AI companion that helps people 65+ use AI on their own real problems, and learn how AI works while doing it.
+A patient voice AI companion for people 65+. Say what you need, show a photo if you like, and get one calm answer that is read aloud. Every answer teaches one AI skill.
 
 *Claude Impact Lab Berlin, 17 October 2026*
 
@@ -28,7 +28,7 @@ Meanwhile scammers already use AI against them.
 | **1 in 18** | older adults fall victim to fraud or scams every year |
 | **$4.9 bn** | lost by Americans over 60 to reported online fraud in 2024 |
 
-Behind most of these sits the same moment: a letter, an SMS or a leaflet that nobody explains.
+Behind most of these sits the same moment: a letter, a text message or a medication box that nobody explains.
 
 ---
 
@@ -38,41 +38,33 @@ Older adults don't learn AI from tutorials. They learn it by solving a problem t
 
 Psychology calls this a mastery experience: succeeding at something yourself is the strongest source of confidence that you can do it again.
 
-**Elderwise solves the problem first. Then it shows you how you did it.**
+**Elderwise solves the problem first. Then it shows you what you just did.**
 
 ---
 
 ## How it works
 
-**Show it.** Hold up a letter, an SMS, a medication box or a timetable.
+**Talk.** One question on the screen: "How can I help?" One glowing button: just say it. Add a photo of the letter or text if you like.
 
-**Ask it.** Press the big glowing orb and ask out loud. No typing, no menus, no prompts.
+**Answers.** One big, calm card: a scam alert, an explanation, steps or a reminder. A headline of six words at most, one sentence, three points at most. Read aloud.
 
-**Understand it.** Claude answers in simple words, in very large text, and reads the answer aloud.
+**You learned.** Every answer ends with what you just did with AI, and one tip to ask even better next time.
 
-**Learn it.** A short card explains what you just did with AI, so next time you know you can.
-
----
-
-## Learning built in
-
-**Guided exercises** teach real skills in a few minutes each: spotting a scam SMS, understanding a doctor's letter, asking a good question.
-
-**A family view** lets a son or daughter see what was asked and get a warning when Claude suspects a scam.
-
-The goal is independence, not dependence. Every answer makes the next question easier to ask alone.
+**Profile.** Text size, speaking speed, English or German, and a trusted person one tap away.
 
 ---
 
-## Design principles
+## Designed with psychology
 
-**See and hear.** Every answer is spoken and shown in large text, because one in four users has hearing loss.
+**One screen, one job.** No menus, no chat history to scroll through.
 
-**One button.** One orb, huge tap targets, minimum 20px text.
+**Plain words.** No "online", no "upload", no jargon. Numbers and amounts are copied exactly from the photo, never invented.
 
-**Simple, never childish.** Plain language that respects adults.
+**See and hear.** Every answer is shown in large text and read aloud, because one in four users has hearing loss.
 
-**Honest about limits.** No certainty claims on fraud, medicine or law. When unsure, Elderwise says who to ask. It never acts without a clear yes.
+**Calm, never shaming.** A scam alert says what to do, not what you did wrong.
+
+**The person decides.** Elderwise explains and suggests. Calling the trusted person is always one tap, never automatic.
 
 ---
 
@@ -80,25 +72,25 @@ The goal is independence, not dependence. Every answer makes the next question e
 
 <!-- Keep in sync with docs/demo-script.md -->
 
-Ingrid gets an SMS: "Your parcel is held, pay €1.99 here." She shows it to Elderwise and asks: "Is this real?"
+Ingrid gets a text: her parcel is held, she should pay a small fee via a link.
 
-Elderwise warns her, points out the warning signs, and reads it aloud.
+She opens Elderwise, taps the glowing button and asks: "Is this real?" The button glows with her voice.
 
-The learning card: "You just asked AI to check a message. You can do this with any message."
+The Answers card turns deep red: a scam alert, three plain reasons, read aloud. One tap: "Tell my daughter Anna".
 
-Her daughter sees the scam warning in the family view.
+The "You learned" card: she just asked AI to check a message, and she can do this with any text, letter or email.
 
 ---
 
 ## Under the hood
 
-<!-- Update this slide to match what we actually built -->
+Next.js and Tailwind in the phone's browser. No install.
 
-Next.js and Tailwind, running in Safari on any phone. No install.
+Claude Sonnet 5.5 with vision reads the photo and the spoken question.
 
-Claude Sonnet 5.5 with vision reads the photo and answers in plain language. All prompts live in `prompts/`.
+Structured output (a JSON schema) turns every answer into a visual card instead of a wall of text: type, headline, sentence, points, action, "You learned" and tip.
 
-Browser Web Speech API for listening and speaking. German first, any language next.
+All prompts live in one file, `prompts/elderwise.ts`. Browser speech in and out, voice-glow for the live voice effect, English and German.
 
 ---
 
@@ -114,6 +106,18 @@ Y Combinator lists *AI for the Aging Population* in its Requests for Startups.
 **Cities and senior organisations:** digital inclusion at scale.
 
 *Hypotheses we want to validate, not signed customers.*
+
+---
+
+## What comes next
+
+**Family code word.** Elderwise helps the family agree on a secret word, so Ingrid can tell a fake "grandchild" call from a real one.
+
+**Step by step.** For letters that need action, one step per screen, with two buttons only: "Done" or "I don't understand".
+
+**Practise.** Short exercises like "Real or fake?" with harmless sample messages.
+
+**My skills.** Every solved problem becomes a skill Ingrid keeps: "I can check if a message is real."
 
 ---
 
