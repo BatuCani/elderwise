@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { AccountCard } from "@/components/AccountCard";
 import { AssistantSettings } from "@/components/AssistantSettings";
+import { SkillsCard } from "@/components/SkillsCard";
 import { GlobeIcon, PhoneIcon, SpeakerIcon, TextSizeIcon } from "@/components/icons";
 import { updateProfile, useProfile, type FontSize } from "@/lib/profile";
 import { TEXT } from "../copy";
@@ -56,6 +57,8 @@ export default function ProfilePage() {
           <EditPill onClick={() => setEditing("me")} label={editLabel(profile.lang)} />
         </div>
       </header>
+
+      <SkillsCard lang={profile.lang} />
 
       <section className="flex flex-col gap-3">
         <Row

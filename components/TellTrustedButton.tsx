@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAssistant } from "@/lib/assistant";
 import { useProfile } from "@/lib/profile";
+import { earnSkill } from "@/lib/skills";
 import type { Answer, Lang } from "@/prompts/elderwise";
 import { GlassSheet } from "./GlassSheet";
 import { ChatIcon, PhoneIcon } from "./icons";
@@ -75,11 +76,11 @@ export function TellTrustedButton({ answer, label, warning }: Props) {
 
         <div className="flex flex-col gap-3">
           {/* "?&body=" works on both iPhone and Android. */}
-          <a href={`sms:${phone}?&body=${encodeURIComponent(text)}`} onClick={() => setOpen(false)} className={`${big} bg-moss text-white`}>
+          <a href={`sms:${phone}?&body=${encodeURIComponent(text)}`} onClick={() => { earnSkill("family"); setOpen(false); }} className={`${big} bg-moss text-white`}>
             <ChatIcon className="h-8 w-8 shrink-0" />
             {c.message(trusted)}
           </a>
-          <a href={`tel:${phone}`} onClick={() => setOpen(false)} className={`${big} bg-white/75 text-ink active:bg-white`}>
+          <a href={`tel:${phone}`} onClick={() => { earnSkill("family"); setOpen(false); }} className={`${big} bg-white/75 text-ink active:bg-white`}>
             <PhoneIcon className="h-8 w-8 shrink-0 text-moss" />
             {c.call(trusted)}
           </a>
@@ -87,6 +88,7 @@ export function TellTrustedButton({ answer, label, warning }: Props) {
             <button
               type="button"
               onClick={() => {
+                earnSkill("family");
                 navigator.share({ text }).catch(() => {
                   // Closing the share sheet without sharing is fine.
                 });

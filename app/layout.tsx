@@ -4,6 +4,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { FirstRun } from "@/components/FirstRun";
 import { LiveBar } from "@/components/LiveBar";
 import { ProfileRoot } from "@/components/ProfileRoot";
+import { SkillToast } from "@/components/SkillToast";
 import "./globals.css";
 
 const atkinson = Atkinson_Hyperlegible({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-atkinson" });
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${atkinson.variable} ${fraunces.variable} antialiased`}>
       <body className="flex flex-col">
         <ProfileRoot />
+        <SkillToast />
         <FirstRun />
         {/* On tablets and desktop the app sits in a phone-width column; the background stays full-bleed. */}
         <div data-page className="mx-auto flex w-full max-w-app flex-1 flex-col">

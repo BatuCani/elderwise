@@ -182,7 +182,24 @@ a {
   }
 }
 
+/* New AI skill toast: the sparkle turns once and glows. */
+.skill-spark {
+  animation: skill-spark 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes skill-spark {
+  0% {
+    transform: scale(0.6) rotate(-40deg);
+    box-shadow: 0 0 0 0 rgba(63, 90, 58, 0.5);
+  }
+  60% {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 0 0 10px rgba(63, 90, 58, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .skill-spark,
   .thinking-dot,
   .word-in,
   .toast-in {
