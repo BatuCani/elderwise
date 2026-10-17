@@ -11,9 +11,13 @@ export function LiveWords({ text, placeholder }: Props) {
 
   return (
     // Fixed height for 3 lines, so the buttons below never jump while words come in.
-    <div aria-hidden className="mb-8 flex h-[calc(3*1.15*var(--text-live))] w-full flex-col items-center justify-end overflow-hidden">
+    // Short phones (iPhone SE) have no room to reserve: there the box only grows once words arrive.
+    <div
+      aria-hidden
+      className="mb-8 flex w-full flex-col items-center justify-end overflow-hidden [@media(min-height:721px)]:h-[calc(3*1.15*var(--text-live))]"
+    >
       {words.length === 0 ? (
-        <p className="font-serif text-transcript font-medium text-muted">{placeholder}</p>
+        <p className="font-serif text-transcript font-medium text-muted [@media(max-height:720px)]:hidden">{placeholder}</p>
       ) : (
         words.map((w, i) => {
           const age = words.length - 1 - i; // 0 = newest

@@ -3,14 +3,18 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, MicIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
-import { addEntry } from "@/lib/answers";
+import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
+import { addEntry, setPending } from "@/lib/answers";
+import { askClaude } from "@/lib/ask";
+import { haptic } from "@/lib/haptics";
+import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
+import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
-import { getRecognition, LOCALE, speak, spokenText, toJpeg, unlockSpeech, type Recognition } from "@/lib/speech";
-import type { Answer } from "@/prompts/elderwise";
+import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
@@ -52,6 +56,9 @@ export default function Talk() {
   const busyRef = useRef(false);
   const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [asked, setAsked] = useState<{ q: string; img: string | null }>({ q: "", img: null });
+  const live = useLive();
+  const liveOn = live.status !== "idle";
+  const liveFailed = useRef(false);
 
   // Leaving the Talk tab (Next keeps it alive, hidden) clears the toast and must not pull the
   // person back to Answers later.
@@ -78,33 +85,22 @@ export default function Talk() {
     busyRef.current = true;
     setAsked({ q, img });
     setPhase("thinking");
+    setPending(true);
     try {
-      const body = new FormData();
-      body.append("lang", profile.lang);
-      body.append("question", q);
-      body.append("name", profile.name);
-      body.append("trustedName", profile.trusted.name);
-      body.append("trustedRelation", profile.trusted.relation);
-      body.append(
-        "today",
-        new Date().toLocaleDateString(LOCALE[profile.lang], { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-      );
-      if (img) body.append("image", await toJpeg(img), "photo.jpg");
-      const res = await fetch("/api/ask", { method: "POST", body });
-      if (!res.ok) throw new Error(String(res.status));
-      const answer: Answer = await res.json();
+      const answer = await askClaude(q, img, profile);
       addEntry(q || t.inputPlaceholder, answer);
       speak(spokenText(answer), profile.lang, profile.speechRate);
       setPhase("done");
       setQuestion("");
       setNewPhoto(null);
       // Let the "Done" toast show for a moment, then open the answer while it is read aloud.
-      doneTimer.current = setTimeout(() => router.push("/answers"), 1500);
+      doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1500);
     } catch {
       setPhase("error");
       speak(t.error, profile.lang, profile.speechRate);
     } finally {
       busyRef.current = false;
+      setPending(false);
     }
   }
 
@@ -121,6 +117,30 @@ export default function Talk() {
     else setPhase("idle");
   }
 
+  // Hands-free conversation: Gemini Live listens and speaks, Claude answers through the tool.
+  async function startConversation() {
+    try {
+      await startLive({
+        lang: profile.lang,
+        name: profile.name,
+        ask: async (q) => {
+          setPending(true);
+          const answer = await askClaude(q, photoRef.current, profile).finally(() => setPending(false));
+          addEntry(q, answer);
+          setNewPhoto(null);
+          setPhase("done");
+          doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/answers"), 1600);
+          return answer;
+        },
+      });
+    } catch (err) {
+      console.warn("Live conversation unavailable, using push-to-talk:", err);
+      liveFailed.current = true;
+      startPushToTalk();
+    }
+  }
+
+  // Fallback: the browser's own speech recognition, restarted until "Done talking".
   function startRecognition() {
     const Ctor = getRecognition();
     if (!Ctor) return;
@@ -156,8 +176,7 @@ export default function Talk() {
     rec.start();
   }
 
-  function onTalk() {
-    unlockSpeech();
+  function startPushToTalk() {
     if (!getRecognition()) {
       // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
       typeRef.current?.focus();
@@ -183,32 +202,93 @@ export default function Talk() {
     ask(q, null);
   }
 
+  function onTalk() {
+    unlockSpeech();
+    haptic();
+    setPhase("idle");
+    if (liveSupported() && !liveFailed.current) startConversation();
+    else startPushToTalk();
+  }
+
   function onFinish() {
     unlockSpeech();
+    haptic();
+    if (liveOn) {
+      stopLive();
+      setPhase("idle");
+      return;
+    }
     finishingRef.current = true;
     if (recRef.current) recRef.current.stop();
     else finish();
   }
 
   const listening = phase === "listening";
-  const thinking = phase === "thinking";
+  const thinking = phase === "thinking" || live.status === "thinking";
+  // Live conversation text: what was heard while listening, what Claude's answer sounds like while speaking.
+  const liveText = live.status === "speaking" ? live.said : live.heard;
+  // What the big orb shows: connecting, listening, thinking (or looking at a photo), speaking, or calm.
+  const lookingAtPhoto = liveOn ? !!photo : !!asked.img;
+  const mood: OrbMood =
+    live.status === "connecting"
+      ? "connecting"
+      : live.status === "speaking" || phase === "done"
+        ? "speaking"
+        : thinking
+          ? lookingAtPhoto ? "looking" : "thinking"
+          : listening || liveOn
+            ? "listening"
+            : "idle";
+
+  const hasWords = Boolean((listening && !liveOn && question.trim()) || (liveOn && live.status === "listening" && liveText));
 
   return (
     <>
       <main
         className="relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center px-6 pt-[calc(28px+env(safe-area-inset-top))] pb-[calc(26px+4rem+6.5rem+env(safe-area-inset-bottom))] text-center"
       >
-        <p className="self-start font-serif text-wordmark font-medium text-moss">Elderwise</p>
+        <p className="flex items-center gap-2 self-start font-serif text-wordmark font-medium text-moss">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/grace-mark-moss.svg" alt="" width={28} height={28} className="h-7 w-7" />
+          Grace
+        </p>
         <div className="flex-1" />
 
         {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
         <p aria-live="polite" className="sr-only">
-          {listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
+          {liveOn ? liveText || t.listening : listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
         </p>
 
-        {listening ? (
+        {listening || liveOn ? (
           <>
-            <LiveWords text={question} placeholder={t.listening} />
+            {/* On short phones the orb steps aside once words show, so the buttons stay clear of the bar. */}
+            <div className={`mb-6 ${hasWords ? "[@media(max-height:720px)]:hidden" : ""}`}>
+              <VoiceOrb mood={mood} lang={profile.lang} compact />
+            </div>
+            {liveOn && (
+              <div className="mb-8">
+                <p className="text-xl text-muted">
+                  {live.status === "connecting" ? t.liveConnecting : live.status === "speaking" ? t.liveSays : live.status === "thinking" ? t.youSaid : t.listening}
+                </p>
+                {/* While you speak: the last 3 words, very big. Elderwise's reply stays as full text. */}
+                {liveText && live.status === "listening" && (
+                  <div className="mt-3">
+                    <LiveWords text={liveText} placeholder={t.listening} />
+                  </div>
+                )}
+                {liveText && live.status !== "listening" && (
+                  <p
+                    className={`mt-3 font-serif font-medium leading-[1.12] ${
+                      live.status === "speaking" ? "text-[30px] text-moss" : "text-[30px] text-ink/70"
+                    }`}
+                  >
+                    {live.status === "speaking" ? liveText : `“${liveText}”`}
+                  </p>
+                )}
+              </div>
+            )}
+            {/* Normal speech mode: the last 3 words, very big, for reassurance while talking. */}
+            {listening && !liveOn && <LiveWords text={question} placeholder={t.listening} />}
             {photo && (
               <div className="mb-6 glass rounded-2xl p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -240,18 +320,13 @@ export default function Talk() {
             <p className="text-greeting text-muted">
               {greeting}, {profile.name}
             </p>
-            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink">{t.headline}</h1>
-            <button
-              type="button"
-              onClick={onTalk}
-              disabled={thinking}
-              aria-label={t.mic}
-              className={`mt-10 flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
-                phase === "error" ? "bg-warn" : "bg-moss"
-              }`}
-            >
-              <MicIcon className="h-20 w-20" />
-            </button>
+            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:620px)]:text-[1.4rem]">
+              {t.headline}
+            </h1>
+            {/* The orb is the talk button: tapping it does the same as the mic button did. */}
+            <div className="mt-10 [@media(max-height:620px)]:mt-5">
+              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
+            </div>
             {phase === "error" && (
               <button
                 onClick={retry}
@@ -281,10 +356,10 @@ export default function Talk() {
           type="mobile"
           stream={listening ? mic.stream : null}
           motion={thinking ? thinkingMotion : null}
-          level={listening && !mic.stream ? 0.7 : undefined}
-          idle={listening || thinking ? undefined : 0}
-          sensitivity={listening ? 5 : undefined}
-          reach={listening ? 1.8 : undefined}
+          level={liveOn ? liveLevel : listening && !mic.stream ? 0.7 : undefined}
+          idle={listening || thinking || liveOn ? undefined : 0}
+          sensitivity={listening || liveOn ? 5 : undefined}
+          reach={listening || liveOn ? 1.8 : undefined}
           colorVariant="colorful"
           theme="light"
         >
@@ -295,7 +370,9 @@ export default function Talk() {
               onSendTyped();
             }}
           >
-            {listening ? (
+            {liveOn ? (
+              <p className="min-h-12 flex-1 pr-3 text-left text-status leading-[3rem] font-bold text-moss">{t.liveActive}</p>
+            ) : listening ? (
               <div className="flex-1 pr-3">
                 <VoiceBars stream={mic.stream} className="h-12" />
               </div>

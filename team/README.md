@@ -19,7 +19,8 @@ Deadline: everything merged by **15:30** (submission is 16:00).
 
 1. Only touch the files listed in your guide. That way nobody breaks anybody else.
 2. Commit and push small steps, at least every 30 minutes.
-3. When your part works, open a Pull Request and tell Batu. Batu merges it and the live app updates.
+3. When your part works, open a Pull Request. If `npm run lint` and `npm run build` pass and it works in the browser, **merge it yourself** (squash: `gh pr merge --squash`), then `git checkout main && git pull`. Batu redeploys the live app.
+6. After merging, let your Claude look at the live app and the code and **suggest 1-3 new improvements** as a new GitHub issue (title starts with your name), then build the best one.
 4. Never put an API key into a file that gets committed. Keys only go in `.env`.
 5. Stuck for more than 10 minutes? Tell Claude exactly what you see (copy the error), or ask Batu.
 

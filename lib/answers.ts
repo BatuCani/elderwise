@@ -41,3 +41,22 @@ function subscribe(listener: () => void) {
 export function useAnswers(): Entry[] {
   return useSyncExternalStore(subscribe, read, () => EMPTY);
 }
+
+// True while Claude is working on a new answer, so the Answers tab can hold its place with a skeleton.
+let pending = false;
+const pendingListeners = new Set<() => void>();
+
+export function setPending(next: boolean) {
+  if (pending === next) return;
+  pending = next;
+  pendingListeners.forEach((l) => l());
+}
+
+function subscribePending(listener: () => void) {
+  pendingListeners.add(listener);
+  return () => pendingListeners.delete(listener);
+}
+
+export function usePending(): boolean {
+  return useSyncExternalStore(subscribePending, () => pending, () => false);
+}

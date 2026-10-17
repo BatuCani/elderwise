@@ -1,8 +1,8 @@
-# Elderwise
+# <img src="public/grace-logo.svg" alt="" width="40" align="top"> Grace
 
 **Try it:** https://elderwise-beryl.vercel.app (best on a phone; tap Share → Add to Home Screen on iPhone)
 
-![Elderwise: welcome, Talk, Answers and Profile screens](docs/screenshots.jpg)
+![Grace: welcome, Talk, Answers and Profile screens](docs/screenshots.jpg)
 
 **One line:** a patient voice AI companion for older adults: say what you need (and show a photo if you like), and get a simple visual answer that is read aloud, plus one AI skill learned each time.
 
@@ -12,7 +12,7 @@
 
 ## What it does
 A short welcome (three calm screens, skippable), then three tabs, nothing more:
-- **Talk:** "How can I help?" and one big microphone button. Tap it and speak; the live transcript shows while Elderwise listens and the screen glows with your voice. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
+- **Talk:** "How can I help?" and one big microphone button. Tap it and speak; the live transcript shows while Grace listens and the screen glows with your voice. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
 - **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points and an optional "Tell my daughter Anna" call button. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
 - **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), and the trusted person with a call button.
 
@@ -24,9 +24,15 @@ The system prompt in `prompts/elderwise.ts` asks for plain language, scam warnin
 Structured output (`output_config.format`, JSON schema) returns the card type, a headline of at most 6 words, one sentence, up to 3 points, an optional action, and the "You learned" text.
 Server-side refusal fallback (`fallbacks: "default"`) is enabled so a declined request is retried on a fallback model.
 
+Hands-free voice: tapping the mic opens a real-time conversation with the Gemini Live API, which listens and speaks in a warm voice.
+Gemini is only the voice. Every real question goes to Claude through one tool, `ask_elderwise` (`prompts/live.ts`), which calls `/api/ask`, saves the card to Answers, and hands Claude's headline and sentence back for Gemini to say.
+`app/api/live-token/route.ts` creates a short-lived, single-use Gemini token on the server, so `GEMINI_API_KEY` never reaches the browser.
+If Live is not available, the mic falls back to push-to-talk with the browser's speech recognition.
+The voice uses `gemini-3.8-live`, with `gemini-3.1-flash-live-preview` as automatic fallback. Dropped connections resume the same conversation, and talking over the answer stops it at once.
+
 ## How to run it
 ```bash
-cp .env.example .env    # paste your ANTHROPIC_API_KEY into .env
+cp .env.example .env    # paste your ANTHROPIC_API_KEY (and optionally GEMINI_API_KEY) into .env
 npm install
 npm run dev             # open http://localhost:3000
 ```
@@ -50,6 +56,8 @@ Voice input uses the browser Web Speech API (Chrome, Safari on iPhone). The micr
 ## Credits
 - [Next.js](https://nextjs.org) (MIT), [React](https://react.dev) (MIT), [Tailwind CSS](https://tailwindcss.com) (MIT).
 - [Anthropic TypeScript SDK](https://github.com/anthropics/anthropic-sdk-typescript) (MIT) and the Claude API.
+- [Google Gen AI SDK](https://github.com/googleapis/js-genai) (Apache-2.0) and the Gemini Live API for the real-time voice.
+- [Orbs / micro-intent](https://github.com/Orb-agent/micro-intent), our team's earlier hackathon project: the PCM capture worklet, the barge-in and reconnect patterns, and the voice rules for older adults are adapted from it.
 - [voice-glow](https://www.npmjs.com/package/voice-glow) (MIT) for the voice-reactive glow around the input.
 - [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (OFL) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL) via Google Fonts.
 - Browser Web Speech API (SpeechRecognition and speechSynthesis).

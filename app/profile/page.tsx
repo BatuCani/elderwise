@@ -1,9 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { AssistantSettings } from "@/components/AssistantSettings";
 import { GlobeIcon, PhoneIcon, SpeakerIcon, TextSizeIcon } from "@/components/icons";
 import { updateProfile, useProfile, type FontSize } from "@/lib/profile";
 import { TEXT } from "../copy";
+import { EditDetails, editLabel, type EditWhat } from "./EditDetails";
 
 const FONT_ORDER: FontSize[] = ["normal", "large", "xlarge"];
 
@@ -18,10 +20,28 @@ function Row({ icon, label, value, onClick }: { icon: ReactNode; label: string; 
   );
 }
 
+function EditPill({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button onClick={onClick} className="glass mt-2 flex min-h-12 w-fit items-center gap-2 rounded-full px-5 text-lg font-bold text-moss">
+      <PencilIcon className="h-5 w-5" />
+      {label}
+    </button>
+  );
+}
+
+const PencilIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </svg>
+);
+
 // Profile tab: who you are, three settings, and your trusted person.
 export default function ProfilePage() {
   const profile = useProfile();
   const t = TEXT[profile.lang];
+  const [editing, setEditing] = useState<EditWhat>(null);
+  const relation = t.relations[profile.trusted.relation] ?? profile.trusted.relation;
   const nextFont = FONT_ORDER[(FONT_ORDER.indexOf(profile.fontSize) + 1) % FONT_ORDER.length];
 
   return (
@@ -30,7 +50,10 @@ export default function ProfilePage() {
         <div aria-hidden className="flex h-20 w-20 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white">
           {profile.name[0]}
         </div>
-        <h1 className="font-serif text-4xl font-medium text-ink">{profile.name}</h1>
+        <div className="min-w-0 flex-1">
+          <h1 className="break-words font-serif text-4xl font-medium text-ink">{profile.name}</h1>
+          <EditPill onClick={() => setEditing("me")} label={editLabel(profile.lang)} />
+        </div>
       </header>
 
       <section className="flex flex-col gap-3">
@@ -72,6 +95,8 @@ export default function ProfilePage() {
         />
       </section>
 
+      <AssistantSettings />
+
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold text-muted">{t.trustedTitle}</h2>
         <div className="flex flex-wrap items-center gap-4 glass rounded-[20px] p-4">
@@ -80,7 +105,7 @@ export default function ProfilePage() {
           </div>
           <div className="min-w-0 flex-[1_1_auto]">
             <p className="text-xl font-bold text-ink">{profile.trusted.name}</p>
-            <p className="text-lg text-muted">{t.relations[profile.trusted.relation] ?? profile.trusted.relation}</p>
+            <p className="text-lg text-muted">{relation}</p>
           </div>
           <a
             href={`tel:${profile.trusted.phone.replace(/\s/g, "")}`}
@@ -90,7 +115,10 @@ export default function ProfilePage() {
             {t.call}
           </a>
         </div>
+        <EditPill onClick={() => setEditing("trusted")} label={editLabel(profile.lang)} />
       </section>
+
+      <EditDetails what={editing} relationLabel={relation} onClose={() => setEditing(null)} />
     </main>
   );
 }
