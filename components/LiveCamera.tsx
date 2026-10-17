@@ -11,18 +11,21 @@ type Props = {
   facing: "environment" | "user";
   // Latest frame as a JPEG data URL, so Claude's card can match what the camera sees.
   onFrame: (dataUrl: string) => void;
+  onReady: () => void;
   onError: () => void;
 };
 
 // Live camera inside a Gemini Live conversation: preview on screen, one JPEG frame per second
 // into the session so Gemini sees what the person points at.
-export function LiveCamera({ facing, onFrame, onError }: Props) {
+export function LiveCamera({ facing, onFrame, onReady, onError }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [ready, setReady] = useState(false);
   const frameCb = useRef(onFrame);
+  const readyCb = useRef(onReady);
   const errorCb = useRef(onError);
   useEffect(() => {
     frameCb.current = onFrame;
+    readyCb.current = onReady;
     errorCb.current = onError;
   });
 
@@ -41,6 +44,7 @@ export function LiveCamera({ facing, onFrame, onError }: Props) {
         video.srcObject = s;
         await video.play().catch(() => {});
         setReady(true);
+        readyCb.current();
         timer = setInterval(() => {
           if (!video.videoWidth) return;
           const scale = Math.min(1, MAX_SIDE / Math.max(video.videoWidth, video.videoHeight));

@@ -68,6 +68,9 @@ export default function Talk() {
   const path = usePathname();
   const cameraOn = camera !== null && liveOn && path === "/";
   useEffect(() => {
+    if (!liveOn || path !== "/") setCamera(null);
+  }, [liveOn, path]);
+  useEffect(() => {
     cameraOnRef.current = cameraOn;
     if (!cameraOn) frameRef.current = null;
   }, [cameraOn]);
@@ -230,6 +233,9 @@ export default function Talk() {
     }
     setCameraError(false);
     setCamera("environment");
+  }
+
+  function countCameras() {
     navigator.mediaDevices
       .enumerateDevices()
       .then((d) => setCameraCount(d.filter((x) => x.kind === "videoinput").length))
@@ -279,7 +285,7 @@ export default function Talk() {
         </p>
         {cameraOn ? (
           <div className="relative mt-4 mb-6 w-full">
-            <LiveCamera facing={camera} onFrame={(f) => (frameRef.current = f)} onError={() => (setCamera(null), setCameraError(true))} />
+            <LiveCamera facing={camera} onFrame={(f) => (frameRef.current = f)} onReady={countCameras} onError={() => (setCamera(null), setCameraError(true))} />
             {cameraCount > 1 && (
               <button
                 type="button"
