@@ -148,7 +148,7 @@ export function PhotoSheet({ open, lang, onClose, onFile }: Props) {
               </div>
 
               {showExamples ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="tile-grid gap-3">
                   {EXAMPLES.map((ex) => (
                     <button
                       key={ex.src}
@@ -159,7 +159,7 @@ export function PhotoSheet({ open, lang, onClose, onFile }: Props) {
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={ex.src} alt="" className="aspect-[4/5] w-full object-cover" />
-                      <span className="min-h-14 px-3 py-3 text-[19px] font-bold leading-tight text-ink">{ex[lang]}</span>
+                      <span className="tile-title min-h-14 px-3 py-3 text-[19px] font-bold leading-tight text-ink">{ex[lang]}</span>
                     </button>
                   ))}
                 </div>

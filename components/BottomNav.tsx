@@ -77,7 +77,7 @@ export function BottomNav() {
               }`}
             >
               <Icon className="h-6 w-6 shrink-0" />
-              <span className="max-w-full truncate px-1">{label}</span>
+              <span className="max-w-full truncate px-0.5">{label}</span>
             </Link>
           );
         })}

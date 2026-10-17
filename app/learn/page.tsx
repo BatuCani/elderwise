@@ -25,7 +25,7 @@ export default function LearnPage() {
 
   const quick: { href: string; label: string; icon: ReactNode }[] = [
     { href: "/answers", label: L.quick.answers, icon: <ListIcon className="h-7 w-7" /> },
-    { href: "/profile", label: L.quick.skills, icon: <CheckIcon className="h-7 w-7" /> },
+    { href: "/profile#skills", label: L.quick.skills, icon: <CheckIcon className="h-7 w-7" /> },
     { href: "/", label: L.quick.ask, icon: <ChatIcon className="h-7 w-7" /> },
     { href: "/scan", label: L.quick.scan, icon: <CameraIcon className="h-7 w-7" /> },
   ];
@@ -80,7 +80,7 @@ export default function LearnPage() {
         {topics.length === 0 ? (
           <p className="text-lg leading-snug text-ink">{L.noResults}</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="tile-grid gap-3">
             {topics.map((t) => (
               <Link
                 key={t.id}
@@ -91,7 +91,7 @@ export default function LearnPage() {
                   {L.lessons(t.lessons.length)}
                 </span>
                 <TopicArt id={t.id} className="mt-6 h-16 w-16" />
-                <span className="text-lg font-bold leading-tight">{t.title[lang]}</span>
+                <span className="tile-title text-lg font-bold leading-tight">{t.title[lang]}</span>
               </Link>
             ))}
           </div>
