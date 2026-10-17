@@ -43,8 +43,8 @@ export default function Welcome() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-6 pb-[calc(32px+env(safe-area-inset-bottom))] pt-[calc(24px+env(safe-area-inset-top))]">
-      <div className="flex items-center justify-between">
-        <p className="text-lg text-muted">{w.step(step + 1)}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="whitespace-nowrap text-lg text-muted">{w.step(step + 1)}</p>
         <button onClick={finish} className="glass min-h-12 rounded-full px-6 text-lg font-bold text-ink">
           {w.skip}
         </button>

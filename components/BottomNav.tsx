@@ -29,12 +29,12 @@ export function BottomNav() {
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-16 flex-1 flex-col items-center justify-center gap-0.5 text-tab font-bold ${
+              className={`flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-tab font-bold ${
                 active ? "text-moss" : "text-muted"
               }`}
             >
-              <Icon className="h-6 w-6" />
-              {label}
+              <Icon className="h-6 w-6 shrink-0" />
+              <span className="max-w-full truncate px-1">{label}</span>
             </Link>
           );
         })}
