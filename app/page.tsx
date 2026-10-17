@@ -131,6 +131,7 @@ export default function Talk() {
   // Open the Steps page right away; it shows "Thinking…" until Claude's answer is in.
   function ask(q: string, img: string | null) {
     if (busyRef.current) return;
+    setTypeOpen(false);
     setAsked({ q, img });
     // When stuck on a step, Claude also gets the problem and the step, so it answers about that.
     const solve = getSolve();
@@ -283,7 +284,6 @@ export default function Talk() {
     unlockSpeech();
     setTyped("");
     typeRef.current?.blur();
-    setTypeOpen(false);
     ask(q, null);
   }
 
@@ -291,6 +291,7 @@ export default function Talk() {
     setMicHint(false);
     unlockSpeech();
     haptic();
+    setTypeOpen(false);
     setPhase("idle");
     if (liveSupported() && !liveFailed.current) startConversation();
     else startPushToTalk();
