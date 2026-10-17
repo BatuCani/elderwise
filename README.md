@@ -156,7 +156,7 @@ More: [pitch](docs/PITCH.md) · [5-minute presentation](docs/PRESENTATION.md) ·
 - [Supabase](https://supabase.com) (`@supabase/ssr`, `@supabase/supabase-js`, MIT) for accounts.
 - [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) (MIT) for QR codes and barcodes.
 - [BVG REST API](https://v6.bvg.transport.rest) (free, no key) for Berlin departures.
-- Fonts: [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL), via Google Fonts.
+- Fonts: [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible), [Fraunces](https://fonts.google.com/specimen/Fraunces) and [Instrument Serif](https://fonts.google.com/specimen/Instrument+Serif) (OFL), via Google Fonts. The pitch deck serves its own copies from `public/pitch/fonts/` so it works offline.
 - [Orbs / micro-intent](https://github.com/Orb-agent/micro-intent), our team's earlier hackathon project: the audio capture, barge-in and reconnect patterns and the voice rules for older adults are adapted from it.
 - Demo video: [HyperFrames](https://github.com/heygen-com/hyperframes) and [GSAP](https://gsap.com), voiceover by [ElevenLabs](https://elevenlabs.io), music synthesized in `video/tools/make_audio.py`.
 - "Scan a letter" is inspired by the Dribbble shot [Onboarding flow (Upload your bill)](https://dribbble.com/shots/27784869) by Eugen Esanu (patterns only, no assets copied).
