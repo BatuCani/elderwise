@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAssistant } from "@/lib/assistant";
 import { useProfile } from "@/lib/profile";
 import type { Answer, Lang } from "@/prompts/elderwise";
 import { GlassSheet } from "./GlassSheet";
@@ -15,7 +16,7 @@ const COPY: Record<Lang, {
   call: (name: string) => string;
   cancel: string;
   hint: string;
-  text: (a: { trusted: string; me: string; headline: string; sentence: string; warning: boolean }) => string;
+  text: (a: { trusted: string; me: string; helper: string; headline: string; sentence: string; warning: boolean }) => string;
 }> = {
   en: {
     title: (n) => `Tell ${n}`,
@@ -24,8 +25,8 @@ const COPY: Record<Lang, {
     call: (n) => `Call ${n}`,
     cancel: "Cancel",
     hint: "The message is written for you. You can still change it before you send it.",
-    text: ({ trusted, me, headline, sentence, warning }) =>
-      `Hi ${trusted}, ${warning ? "Elderwise warned me about a message" : "I asked Elderwise for help"}: "${headline}". ${sentence} Can you call me when you have a moment? - ${me}`,
+    text: ({ trusted, me, helper, headline, sentence, warning }) =>
+      `Hi ${trusted}, ${warning ? `${helper} from Elderwise warned me about a message` : `I asked ${helper} from Elderwise for help`}: "${headline}". ${sentence} Can you call me when you have a moment? - ${me}`,
   },
   de: {
     title: (n) => `${n} Bescheid geben`,
@@ -34,8 +35,8 @@ const COPY: Record<Lang, {
     call: (n) => `${n} anrufen`,
     cancel: "Abbrechen",
     hint: "Die Nachricht ist schon geschrieben. Sie können sie vor dem Senden noch ändern.",
-    text: ({ trusted, me, headline, sentence, warning }) =>
-      `Hallo ${trusted}, ${warning ? "Elderwise hat mich vor einer Nachricht gewarnt" : "ich habe Elderwise um Hilfe gebeten"}: „${headline}“. ${sentence} Kannst du mich anrufen, wenn du Zeit hast? - ${me}`,
+    text: ({ trusted, me, helper, headline, sentence, warning }) =>
+      `Hallo ${trusted}, ${warning ? `${helper} von Elderwise hat mich vor einer Nachricht gewarnt` : `ich habe ${helper} von Elderwise um Hilfe gebeten`}: „${headline}“. ${sentence} Kannst du mich anrufen, wenn du Zeit hast? - ${me}`,
   },
 };
 
@@ -43,11 +44,12 @@ const COPY: Record<Lang, {
 // with the text already written from the answer. Name and number come from the Profile tab.
 export function TellTrustedButton({ answer, label, warning }: Props) {
   const profile = useProfile();
+  const helper = useAssistant().name;
   const c = COPY[profile.lang];
   const [open, setOpen] = useState(false);
   const trusted = profile.trusted.name;
   const phone = profile.trusted.phone.replace(/[^\d+]/g, "");
-  const text = c.text({ trusted, me: profile.name, headline: answer.headline, sentence: answer.sentence, warning });
+  const text = c.text({ trusted, me: profile.name, helper, headline: answer.headline, sentence: answer.sentence, warning });
   const canShare = typeof navigator !== "undefined" && "share" in navigator;
 
   const big = "flex min-h-14 w-full items-center gap-4 rounded-2xl px-5 py-3 text-left text-[20px] font-bold";

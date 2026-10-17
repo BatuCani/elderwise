@@ -2,7 +2,7 @@
 
 **Try it:** https://elderwise-beryl.vercel.app (best on a phone; tap Share → Add to Home Screen on iPhone)
 
-![Grace: welcome, Talk, Answers and Profile screens](docs/screenshots.jpg)
+![Grace: Talk, a scam alert, the ready-written message to Anna, and the Learn tab](docs/screenshots.jpg)
 
 **One line:** a patient voice AI companion for older adults: say what you need (and show a photo if you like), and get a simple visual answer that is read aloud, plus one AI skill learned each time.
 
@@ -11,11 +11,12 @@
 - **What the demo lets them do:** press one button, ask out loud about a letter, text message or appointment, and get a big, calm answer card with a "You learned" tip.
 
 ## What it does
-A short welcome (calm, skippable screens, ending with an optional free account), then three tabs and one guided flow, nothing more:
-- **Talk:** "How can I help?" and one big microphone button. Tap it and speak; the live transcript shows while Grace listens and the screen glows with your voice. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
+A short welcome (calm, skippable screens, ending with an optional free account), then four tabs and one guided flow, nothing more:
+- **Talk:** "How can I help?" and one big talking orb: "Tap once, then speak" (holding it works too). Grace, the assistant, has a natural hands-free conversation, and while you speak the **last 3 words you said appear very big**, so you can see that Grace really hears you. Below the orb sits an AI tip of the day. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
 - **Scan a letter:** a guided flow from the Talk screen (the "Scan a letter" button, or the camera sheet). Photograph or upload a letter or bill, or try an example, then watch it being read and see the key facts and a plain explanation. It also scans QR codes and barcodes, including GiroCode payments, with a scam check.
-- **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points and an optional "Tell my daughter Anna" call button. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
-- **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), the trusted person with a call button, and your account.
+- **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points. On a scam alert, **"Tell my daughter Anna"** opens a ready-written message to the trusted person (SMS, WhatsApp/share or a call), so the family knows in one tap. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
+- **Learn:** "Learn with Grace", 8 everyday topics (like spotting scams, letters and forms) with 24 short lessons you can try with Grace right away, plus "My AI skills".
+- **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), the assistant's name, voice and personality, the trusted person (editable) and your account.
 
 **Accounts (optional):** create a free account with email and password (`/signup`, `/signin`) and your answers and settings are saved in it, so they come back after signing in on any phone.
 "Continue without account" is always there; without an account everything stays in the browser.
