@@ -28,11 +28,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${atkinson.variable} ${fraunces.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">
+    <html lang="en" className={`${atkinson.variable} ${fraunces.variable} antialiased`}>
+      <body className="flex flex-col">
         <ProfileRoot />
         <FirstRun />
-        {children}
+        {/* On tablets and desktop the app sits in a phone-width column; the background stays full-bleed. */}
+        <div className="mx-auto flex w-full max-w-app flex-1 flex-col">{children}</div>
         <BottomNav />
       </body>
     </html>

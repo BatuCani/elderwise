@@ -20,7 +20,7 @@ export function BottomNav() {
   if (path === "/welcome") return null;
 
   return (
-    <nav className="fixed inset-x-5 bottom-[calc(26px+env(safe-area-inset-bottom))] z-20 mx-auto max-w-xl rounded-[34px] glass-nav">
+    <nav className="fixed inset-x-5 bottom-[calc(26px+env(safe-area-inset-bottom))] z-20 mx-auto max-w-[440px] rounded-[32px] glass-nav">
       <div className="flex px-2">
         {tabs.map(({ href, label, Icon }) => {
           const active = path === href;
@@ -29,11 +29,11 @@ export function BottomNav() {
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-16 flex-1 flex-col items-center justify-center gap-0.5 text-base font-bold ${
+              className={`flex min-h-16 flex-1 flex-col items-center justify-center gap-0.5 text-tab font-bold ${
                 active ? "text-moss" : "text-muted"
               }`}
             >
-              <Icon className="h-7 w-7" />
+              <Icon className="h-6 w-6" />
               {label}
             </Link>
           );
