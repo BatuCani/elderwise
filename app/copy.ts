@@ -36,7 +36,7 @@ export const TEXT = {
   de: {
     greeting: { morning: "Guten Morgen", afternoon: "Guten Tag", evening: "Guten Abend" },
     headline: "Wobei kann ich helfen?",
-    inputPlaceholder: "Sagen Sie es einfach",
+    inputPlaceholder: "Einfach sagen",
     listening: "Ich höre zu…",
     thinking: "Ich schaue nach…",
     done: "Fertig - siehe Antworten",

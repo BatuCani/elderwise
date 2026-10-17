@@ -9,10 +9,11 @@ const FONT_ORDER: FontSize[] = ["normal", "large", "xlarge"];
 
 function Row({ icon, label, value, onClick }: { icon: ReactNode; label: string; value: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex min-h-16 w-full items-center gap-4 glass rounded-[20px] px-5 text-left">
-      <span className="text-muted">{icon}</span>
-      <span className="flex-1 text-lg font-bold text-ink">{label}</span>
-      <span className="text-lg font-bold text-moss">{value}</span>
+    // flex-wrap: with very large text the value moves to its own line instead of running off the screen.
+    <button onClick={onClick} className="flex min-h-16 w-full flex-wrap items-center gap-x-4 gap-y-1 glass rounded-[20px] px-5 py-3 text-left">
+      <span className="shrink-0 text-muted">{icon}</span>
+      <span className="min-w-0 flex-[1_1_auto] break-words text-lg font-bold text-ink">{label}</span>
+      <span className="ml-auto text-lg font-bold text-moss">{value}</span>
     </button>
   );
 }
@@ -24,7 +25,7 @@ export default function ProfilePage() {
   const nextFont = FONT_ORDER[(FONT_ORDER.indexOf(profile.fontSize) + 1) % FONT_ORDER.length];
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-40 pt-8">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-7 px-5 pb-[190px] pt-8">
       <header className="flex items-center gap-4">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-moss font-serif text-4xl font-medium text-white">
           {profile.name[0]}
@@ -71,19 +72,19 @@ export default function ProfilePage() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold text-muted">{t.trustedTitle}</h2>
-        <div className="flex items-center gap-4 glass rounded-[20px] p-4">
+        <div className="flex flex-wrap items-center gap-4 glass rounded-[20px] p-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-paper font-serif text-2xl font-medium text-ink">
             {profile.trusted.name[0]}
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-[1_1_auto]">
             <p className="text-xl font-bold text-ink">{profile.trusted.name}</p>
             <p className="text-lg text-muted">{t.relations[profile.trusted.relation] ?? profile.trusted.relation}</p>
           </div>
           <a
             href={`tel:${profile.trusted.phone.replace(/\s/g, "")}`}
-            className="flex min-h-12 items-center gap-2 rounded-full bg-moss px-5 text-lg font-bold text-white"
+            className="ml-auto flex min-h-12 items-center gap-2 rounded-full bg-moss px-5 text-lg font-bold text-white"
           >
-            <PhoneIcon className="h-6 w-6" />
+            <PhoneIcon className="h-6 w-6 shrink-0" />
             {t.call}
           </a>
         </div>

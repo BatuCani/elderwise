@@ -25,18 +25,19 @@ function thinkingMotion() {
 }
 
 // The pill at the bottom of the Talk tab: camera, text field, and the black mic button.
+// Fixed px sizes (not rem) so it keeps the same size and position at every text size.
 export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemovePhoto, photo, listening, thinking, stream, t }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const showSend = value.trim().length > 0 && !listening;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-[8px]">
       {photo && (
-        <div className="flex items-center gap-3 self-start glass rounded-2xl p-2 pr-3">
+        <div className="flex items-center gap-3 self-start glass rounded-[16px] p-[8px] pr-[12px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo} alt="" className="h-14 w-14 rounded-xl object-cover" />
-          <button onClick={onRemovePhoto} aria-label={t.removePhoto} className="flex h-12 w-12 items-center justify-center rounded-full text-muted">
-            <CloseIcon className="h-6 w-6" />
+          <img src={photo} alt="" className="h-[56px] w-[56px] rounded-[12px] object-cover" />
+          <button onClick={onRemovePhoto} aria-label={t.removePhoto} className="flex h-[48px] w-[48px] items-center justify-center rounded-full text-muted">
+            <CloseIcon className="h-[24px] w-[24px]" />
           </button>
         </div>
       )}
@@ -51,7 +52,7 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
         theme="light"
       >
         <form
-          className="glass flex items-center gap-1 rounded-full p-2"
+          className="glass flex items-center gap-[4px] rounded-full p-[8px]"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
@@ -73,25 +74,25 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
             type="button"
             onClick={() => fileRef.current?.click()}
             aria-label={t.attachPhoto}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/70 text-ink"
+            className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-white/70 text-ink"
           >
-            <CameraIcon className="h-7 w-7" />
+            <CameraIcon className="h-[28px] w-[28px]" />
           </button>
           <input
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={listening ? t.listening : thinking ? t.thinking : t.inputPlaceholder}
             aria-label={t.inputPlaceholder}
-            className="min-h-12 min-w-0 flex-1 bg-transparent px-1 text-lg text-ink outline-none placeholder:text-muted"
+            className="min-h-[48px] min-w-0 flex-1 text-ellipsis bg-transparent px-[4px] text-[21px] text-ink outline-none placeholder:text-muted"
           />
           {showSend ? (
             <button
               type="submit"
               disabled={thinking}
               aria-label={t.send}
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
+              className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
             >
-              <SendIcon className="h-7 w-7" />
+              <SendIcon className="h-[28px] w-[28px]" />
             </button>
           ) : (
             <button
@@ -99,9 +100,9 @@ export function ChatInput({ value, onChange, onSubmit, onMic, onPhoto, onRemoveP
               onClick={onMic}
               disabled={thinking}
               aria-label={listening ? t.stopMic : t.mic}
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
+              className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-full bg-moss text-white disabled:opacity-40"
             >
-              {listening ? <StopIcon className="h-7 w-7" /> : <MicIcon className="h-7 w-7" />}
+              {listening ? <StopIcon className="h-[28px] w-[28px]" /> : <MicIcon className="h-[28px] w-[28px]" />}
             </button>
           )}
         </form>

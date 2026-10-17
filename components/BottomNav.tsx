@@ -17,8 +17,9 @@ export function BottomNav() {
   ];
 
   return (
+    // Fixed px sizes (not rem): the navbar stays the same size at every text size, so it never covers the page.
     <nav className="fixed inset-x-5 bottom-[calc(26px+env(safe-area-inset-bottom))] z-20 mx-auto max-w-xl rounded-[34px] glass-nav">
-      <div className="flex px-2">
+      <div className="flex px-[8px]">
         {tabs.map(({ href, label, Icon }) => {
           const active = path === href;
           return (
@@ -26,12 +27,12 @@ export function BottomNav() {
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-16 flex-1 flex-col items-center justify-center gap-0.5 text-base font-bold ${
+              className={`flex min-h-[64px] min-w-0 flex-1 flex-col items-center justify-center gap-[2px] text-[18px] font-bold ${
                 active ? "text-moss" : "text-muted"
               }`}
             >
-              <Icon className="h-7 w-7" />
-              {label}
+              <Icon className="h-[28px] w-[28px] shrink-0" />
+              <span className="max-w-full truncate px-[4px]">{label}</span>
             </Link>
           );
         })}

@@ -112,7 +112,7 @@ export default function Talk() {
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 pb-56 pt-8">
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 pb-[266px] pt-8">
         <p className="font-serif text-2xl font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
         <p className="text-xl text-muted">
@@ -137,13 +137,13 @@ export default function Talk() {
       {phase === "done" && (
         <div
           role="status"
-          className="fixed inset-x-0 bottom-[calc(40px+9rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
+          className="fixed inset-x-0 bottom-[calc(211px+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
         >
           ✓ {t.done}
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-[calc(40px+4rem+env(safe-area-inset-bottom))] z-10 px-5">
+      <div className="fixed inset-x-0 bottom-[calc(116px+env(safe-area-inset-bottom))] z-10 px-5">
         <div className="mx-auto max-w-xl">
           <ChatInput
             value={phase === "listening" ? "" : question}

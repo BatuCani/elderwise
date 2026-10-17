@@ -15,7 +15,7 @@ export default function AnswersPage() {
   const clock = (at: number) => new Date(at).toLocaleTimeString(LOCALE[profile.lang], { hour: "numeric", minute: "2-digit" });
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-5 pb-40 pt-8">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-5 pb-[190px] pt-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-serif text-4xl font-medium text-ink">{t.tabAnswers}</h1>
         {latest && (

@@ -53,11 +53,11 @@ export function AnswerView({ answer, t, phone, time }: Props) {
         {action && (
           <a
             href={`tel:${phone.replace(/\s/g, "")}`}
-            className={`mt-6 flex min-h-14 items-center justify-center gap-2 rounded-full px-5 text-lg font-bold ${
+            className={`mt-6 flex min-h-14 items-center justify-center gap-2 rounded-[28px] px-5 py-3 text-center text-lg font-bold ${
               warning ? "bg-white text-warn" : "bg-moss text-white"
             }`}
           >
-            <PhoneIcon className="h-6 w-6" />
+            <PhoneIcon className="h-6 w-6 shrink-0" />
             {action.label}
           </a>
         )}
