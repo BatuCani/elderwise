@@ -1,8 +1,15 @@
 import type { Copy } from "@/app/copy";
 import type { Answer, AnswerType, Lang } from "@/prompts/elderwise";
 import { CardBody } from "./cards";
+import { LinkCard, PlaceCard } from "./cards-extra";
 import { AlertIcon, BookIcon, CalendarIcon, InfoIcon, ListIcon } from "./icons";
 import { TellTrustedButton } from "./TellTrustedButton";
+
+// Labels for the two newer card types ("place" and "link"), which app/copy.ts does not list yet.
+const EXTRA_TEXT: Record<Lang, { place: string; link: string; open: string }> = {
+  en: { place: "Show me the way", link: "Useful link", open: "Open" },
+  de: { place: "Wegbeschreibung", link: "Nützlicher Link", open: "Öffnen" },
+};
 
 export function TypeIcon({ type, className }: { type: AnswerType; className?: string }) {
   if (type === "warning") return <AlertIcon className={`${className} text-warn`} />;
@@ -20,12 +27,28 @@ type Props = { answer: Answer; t: Copy; phone?: string; time: string; lang: Lang
 export function AnswerView({ answer, t, time, lang, at }: Props) {
   const { type, headline, sentence, points, action } = answer;
   const warning = type === "warning";
+  const kind = (t.kinds as Record<string, string>)[type] ?? (type === "place" ? EXTRA_TEXT[lang].place : EXTRA_TEXT[lang].link);
+  // Place and link cards bring their own glass card. Without usable data they fall back to the normal card.
+  const place = type === "place" && answer.place?.name ? answer.place : null;
+  const link = type === "link" && answer.link && /^https:\/\//i.test(answer.link.url) ? answer.link : null;
+  const extra = place !== null || link !== null;
 
   return (
     <section className="flex flex-col gap-3">
-      <div className={`rounded-3xl p-6 ${warning ? "bg-warn text-white shadow-[0_16px_40px_rgba(142,36,36,0.35)]" : "bg-white text-ink"}`}>
-        {!warning ? (
-          <CardBody answer={answer} kicker={`${t.kinds[type]} · ${time}`} lang={lang} at={at} />
+      <div
+        className={`rounded-3xl ${extra ? "" : "p-6"} ${
+          warning ? "bg-warn text-white shadow-[0_16px_40px_rgba(142,36,36,0.35)]" : extra ? "" : "bg-white text-ink"
+        }`}
+      >
+        {place ? (
+          <>
+            <PlaceCard name={place.name} address={place.address ?? undefined} kicker={`${kind} · ${time}`} />
+            {sentence && <p className="mt-4 px-2 text-xl leading-snug text-ink">{sentence}</p>}
+          </>
+        ) : link ? (
+          <LinkCard title={link.title} sentence={sentence} href={link.url} kicker={`${kind} · ${time}`} buttonLabel={EXTRA_TEXT[lang].open} />
+        ) : !warning ? (
+          <CardBody answer={answer} kicker={`${kind} · ${time}`} lang={lang} at={at} />
         ) : (
         <>
         <p className={`mb-3 text-base font-bold uppercase tracking-[0.08em] ${warning ? "text-white/85" : "text-muted"}`}>

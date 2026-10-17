@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { AssistantSettings } from "@/components/AssistantSettings";
 import { GlobeIcon, PhoneIcon, SpeakerIcon, TextSizeIcon } from "@/components/icons";
 import { updateProfile, useProfile, type FontSize } from "@/lib/profile";
 import { TEXT } from "../copy";
@@ -93,6 +94,8 @@ export default function ProfilePage() {
           onClick={() => updateProfile({ lang: profile.lang === "en" ? "de" : "en" })}
         />
       </section>
+
+      <AssistantSettings />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold text-muted">{t.trustedTitle}</h2>
