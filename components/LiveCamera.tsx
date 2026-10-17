@@ -43,6 +43,7 @@ export function LiveCamera({ facing, onFrame, onReady, onError }: Props) {
         const video = videoRef.current!;
         video.srcObject = s;
         await video.play().catch(() => {});
+        if (cancelled) return;
         setReady(true);
         readyCb.current();
         timer = setInterval(() => {
