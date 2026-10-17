@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { SKILLS, useSkills, type SkillIcon } from "@/lib/skills";
 import type { Lang } from "@/prompts/elderwise";
 import { AlertIcon, BookIcon, CalendarIcon, CameraIcon, ChatIcon, CheckIcon, ListIcon, MicIcon, PhoneIcon } from "./icons";
+import { CARD } from "./profile/ui";
 
 const ICONS: Record<SkillIcon, (p: { className?: string }) => ReactNode> = {
   mic: MicIcon,
@@ -50,7 +51,7 @@ export function SkillsCard({ lang }: { lang: Lang }) {
   const NextIcon = next ? ICONS[next.icon] : null;
 
   return (
-    <section id="skills" aria-labelledby="skills-title" className="glass rounded-[24px] p-5">
+    <section id="skills" aria-labelledby="skills-title" className={`${CARD} p-5`}>
       <h2 id="skills-title" className="font-serif text-[28px] font-medium leading-tight text-ink">
         {c.title}
       </h2>

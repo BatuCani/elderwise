@@ -5,6 +5,7 @@ import { PERSONALITIES, SPEEDS, updateAssistant, useAssistant, VOICES, type Pers
 import { updateProfile, useProfile } from "@/lib/profile";
 import { LOCALE } from "@/lib/speech";
 import { SpeakerIcon } from "./icons";
+import { CARD, Section } from "./profile/ui";
 
 // "Your assistant" on the Profile tab: name, voice, personality and speaking speed of the voice agent.
 // Patterns from Grok's voice settings (voice row that opens a list, round personality tiles)
@@ -118,9 +119,8 @@ export function AssistantSettings() {
   }
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-bold text-muted">{L.title}</h2>
-      <div className="glass flex flex-col gap-7 rounded-[24px] p-5">
+    <Section title={L.title}>
+      <div className={`${CARD} flex flex-col gap-6 p-5`}>
         {/* Name */}
         <div className="flex flex-col gap-2">
           <label htmlFor="assistant-name" className="text-lg font-bold text-ink">
@@ -136,7 +136,7 @@ export function AssistantSettings() {
             onKeyDown={(e) => {
               if (e.key === "Enter") e.currentTarget.blur();
             }}
-            className="min-h-14 w-full rounded-2xl border-2 border-white/80 bg-white/70 px-4 font-serif text-2xl text-ink outline-none focus:border-moss"
+            className="min-h-14 w-full rounded-2xl border-2 border-[#e6e1d6] bg-paper/60 px-4 font-serif text-2xl text-ink outline-none focus:border-moss"
           />
         </div>
 
@@ -148,7 +148,7 @@ export function AssistantSettings() {
             aria-expanded={voicesOpen}
             aria-controls="assistant-voices"
             onClick={() => setVoicesOpen((o) => !o)}
-            className="flex min-h-16 w-full items-center gap-4 rounded-2xl bg-white/70 px-4 py-3 text-left"
+            className="flex min-h-16 w-full items-center gap-4 rounded-2xl border border-[#e6e1d6] bg-paper/60 px-4 py-3 text-left"
           >
             <SpeakerIcon className="h-7 w-7 shrink-0 text-moss" />
             <span className="min-w-0 flex-1">
@@ -162,7 +162,7 @@ export function AssistantSettings() {
               {VOICES.map((v) => {
                 const selected = v.id === assistant.voice;
                 return (
-                  <li key={v.id} className={`flex items-center gap-2 rounded-2xl p-2 ${selected ? "bg-white" : "bg-white/40"}`}>
+                  <li key={v.id} className={`flex items-center gap-2 rounded-2xl p-2 ${selected ? "bg-learn-bg" : "bg-paper/60"}`}>
                     <button
                       type="button"
                       aria-pressed={selected}
@@ -216,7 +216,7 @@ export function AssistantSettings() {
                 >
                   <span
                     className={`relative flex h-16 w-16 items-center justify-center rounded-full ${
-                      selected ? "bg-white text-moss shadow-[0_6px_18px_rgba(30,36,32,0.14)]" : "bg-white/40 text-muted"
+                      selected ? "bg-learn-bg text-moss ring-2 ring-moss" : "bg-paper text-muted"
                     }`}
                   >
                     {PERSONALITY_ICONS[p.id]}
@@ -246,7 +246,7 @@ export function AssistantSettings() {
                   aria-pressed={selected}
                   onClick={() => updateProfile({ speechRate: s })}
                   className={`min-h-12 min-w-16 rounded-full px-4 text-lg font-bold ${
-                    selected ? "bg-moss text-white" : "bg-white/60 text-ink"
+                    selected ? "bg-moss text-white" : "bg-paper text-ink"
                   }`}
                 >
                   {s === 1 ? "1.0" : String(s)}x
@@ -256,6 +256,6 @@ export function AssistantSettings() {
           </div>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
