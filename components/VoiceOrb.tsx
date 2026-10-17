@@ -62,10 +62,11 @@ type Props = {
   onTap?: () => void;
   disabled?: boolean;
   label?: string;
+  hideHint?: boolean;
 };
 
 // The big animated "face" of Elderwise on the Talk tab (orbs from thinking-orbs, libraries.dev).
-export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label }: Props) {
+export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label, hideHint = false }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const reduced = useSyncExternalStore(subscribeReduced, () => matchMedia(reducedQuery).matches, () => false);
@@ -171,7 +172,7 @@ export function VoiceOrb({ mood, lang, compact = false, onTap, disabled, label }
       ) : (
         orb
       )}
-      <p aria-live="polite" className={`${compact ? "mt-3" : "mt-5 [@media(max-height:720px)]:mt-3"} text-[18px] font-bold text-moss`}>
+      <p aria-live="polite" className={`${compact ? "mt-3" : "mt-5 [@media(max-height:720px)]:mt-3"} text-[18px] font-bold text-moss transition-opacity duration-200 ${hideHint ? "opacity-0" : "opacity-100"}`}>
         {holding ? HOLD_HINT[lang] : COPY[lang][mood]}
       </p>
     </div>

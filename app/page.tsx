@@ -48,6 +48,7 @@ export default function Talk() {
   // Typing and the tip of the day live behind the "+" next to the mic, so the orb has the screen to itself.
   const [typeOpen, setTypeOpen] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const recRef = useRef<Recognition | null>(null);
   // Speech recognition stops after pauses; we keep restarting it until "Done talking",
   // so the text heard so far is kept in `baseRef` and the current run in `sessionRef`.
@@ -475,7 +476,7 @@ export default function Talk() {
             {/* The orb is the talk button too: tapping it does the same as the mic button. */}
             {/* With a photo attached the orb gets smaller (hidden on iPhone SE) to make room for the questions. */}
             <div className={photo && !thinking ? "[@media(max-height:720px)]:hidden" : "mt-10 [@media(max-height:720px)]:mt-5"}>
-              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} compact={!!photo && !thinking} />
+              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} compact={!!photo && !thinking} hideHint={moreOpen} />
             </div>
             {/* A photo is attached (camera while talking): one tap asks about it, without speaking. */}
             {photo && !thinking && (
@@ -502,7 +503,7 @@ export default function Talk() {
                 >
                   <MicIcon className="h-9 w-9" />
                 </button>
-                <TalkMore lang={profile.lang} onScan={() => router.push("/scan")} onType={openTyping} onTip={() => setTipOpen(true)} />
+                <TalkMore lang={profile.lang} onScan={() => router.push("/scan")} onType={openTyping} onTip={() => setTipOpen(true)} onOpenChange={setMoreOpen} />
               </div>
             )}
             <DailyTip
