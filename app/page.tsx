@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
-import { CameraIcon, CheckIcon, MicIcon, RetryIcon } from "@/components/icons";
+import { CameraIcon, CheckIcon, MicIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
 import { useProfile } from "@/lib/profile";
@@ -35,7 +36,9 @@ export default function Talk() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [question, setQuestion] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const typeRef = useRef<HTMLInputElement>(null);
+  const [typed, setTyped] = useState("");
+  const [sheetOpen, setSheetOpen] = useState(false);
   const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
   const recRef = useRef<Recognition | null>(null);
   // Speech recognition stops after pauses; we keep restarting it until "Done talking",
@@ -156,11 +159,7 @@ export default function Talk() {
     unlockSpeech();
     if (!getRecognition()) {
       // No speech recognition in this browser (e.g. Firefox): typing is the fallback.
-      const typed = window.prompt(t.inputPlaceholder)?.trim();
-      if (typed) {
-        setQuestion(typed);
-        ask(typed, photoRef.current);
-      }
+      typeRef.current?.focus();
       return;
     }
     mic.start();
@@ -172,6 +171,15 @@ export default function Talk() {
     setNewPhoto(null);
     setPhase("listening");
     startRecognition();
+  }
+
+  function onSendTyped() {
+    const q = typed.trim();
+    if (!q) return;
+    unlockSpeech();
+    setTyped("");
+    typeRef.current?.blur();
+    ask(q, null);
   }
 
   function onFinish() {
@@ -187,9 +195,7 @@ export default function Talk() {
   return (
     <>
       <main
-        className={`relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center px-6 pt-[calc(28px+env(safe-area-inset-top))] text-center ${
-          listening ? "pb-[calc(200px+env(safe-area-inset-bottom))]" : "pb-[calc(150px+env(safe-area-inset-bottom))]"
-        }`}
+        className="relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center px-6 pt-[calc(28px+env(safe-area-inset-top))] pb-[calc(26px+4rem+6.5rem+env(safe-area-inset-bottom))] text-center"
       >
         <p className="self-start font-serif text-wordmark font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
@@ -211,7 +217,7 @@ export default function Talk() {
             <div className="grid w-full max-w-sm grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => fileRef.current?.click()}
+                onClick={() => setSheetOpen(true)}
                 aria-label={t.startCamera}
                 className="glass flex aspect-square items-center justify-center rounded-[32px] text-ink transition-transform active:scale-95"
               >
@@ -253,54 +259,74 @@ export default function Talk() {
                 {t.tryAgain}
               </button>
             )}
+
           </>
         )}
         <div className="flex-1" />
       </main>
 
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) setNewPhoto(URL.createObjectURL(f));
-          e.target.value = "";
-        }}
+      {/* Take a photo, choose one, or try a demo image. */}
+      <PhotoSheet
+        open={sheetOpen}
+        lang={profile.lang}
+        onClose={() => setSheetOpen(false)}
+        onFile={(f) => setNewPhoto(URL.createObjectURL(f))}
       />
 
-      {/* Right above the tab bar: the voice glow, and the waveform while listening. */}
-      {(listening || thinking) && (
-        <div
-          aria-hidden
-          className="pointer-events-none fixed inset-x-5 bottom-[calc(26px+4rem+0.75rem+env(safe-area-inset-bottom))] z-10 mx-auto max-w-xl"
+      {/* The bar right above the tab bar: type a question here, or see the waveform while listening. */}
+      <div className="fixed inset-x-5 bottom-[calc(26px+4rem+0.75rem+env(safe-area-inset-bottom))] z-20 mx-auto max-w-[440px]">
+        <VoiceBeam
+          type="mobile"
+          stream={listening ? mic.stream : null}
+          motion={thinking ? thinkingMotion : null}
+          level={listening && !mic.stream ? 0.7 : undefined}
+          idle={listening || thinking ? undefined : 0}
+          sensitivity={listening ? 5 : undefined}
+          reach={listening ? 1.8 : undefined}
+          colorVariant="colorful"
+          theme="light"
         >
-          <VoiceBeam
-            type="mobile"
-            stream={listening ? mic.stream : null}
-            motion={thinking ? thinkingMotion : null}
-            level={listening && !mic.stream ? 0.7 : undefined}
-            sensitivity={listening ? 5 : undefined}
-            reach={listening ? 1.6 : undefined}
-            colorVariant="colorful"
-            theme="light"
+          <form
+            className="glass flex min-h-[4.25rem] items-center gap-2 rounded-full p-2 pl-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSendTyped();
+            }}
           >
-            <div className="h-32 w-full rounded-[34px]" />
-          </VoiceBeam>
-          {listening && (
-            <div className="absolute inset-x-0 bottom-3 z-10">
-              <VoiceBars stream={mic.stream} />
-            </div>
-          )}
-        </div>
-      )}
+            {listening ? (
+              <div className="flex-1 pr-3">
+                <VoiceBars stream={mic.stream} className="h-12" />
+              </div>
+            ) : (
+              <>
+                <input
+                  ref={typeRef}
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  placeholder={t.typeHere}
+                  aria-label={t.typeHere}
+                  enterKeyHint="send"
+                  disabled={thinking}
+                  className="min-h-12 min-w-0 flex-1 bg-transparent text-status text-ink outline-none placeholder:text-muted"
+                />
+                <button
+                  type="submit"
+                  disabled={!typed.trim() || thinking}
+                  aria-label={t.send}
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-moss text-white transition-opacity disabled:opacity-30"
+                >
+                  <SendIcon className="h-7 w-7" />
+                </button>
+              </>
+            )}
+          </form>
+        </VoiceBeam>
+      </div>
 
       {phase === "done" && (
         <div
           role="status"
-          className="toast-in glass fixed inset-x-0 bottom-[calc(190px+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2 pl-2 pr-5 text-toast font-bold text-ink"
+          className="toast-in glass fixed inset-x-0 bottom-[calc(26px+4rem+6rem+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2 pl-2 pr-5 text-toast font-bold text-ink"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss text-white">
             <CheckIcon className="h-5 w-5" />

@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 const SHAPE = [0.22, 0.6, 0.18, 0.55, 0.2, 0.75, 0.16, 0.48, 1, 0.24];
 
 // Black waveform bars that move with the microphone, so you can see the app hears you.
-export function VoiceBars({ stream }: { stream: MediaStream | null }) {
+export function VoiceBars({ stream, className = "h-20" }: { stream: MediaStream | null; className?: string }) {
   const barsRef = useRef<(HTMLSpanElement | null)[]>([]);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export function VoiceBars({ stream }: { stream: MediaStream | null }) {
   }, [stream]);
 
   return (
-    <div aria-hidden className="flex h-20 items-center justify-center gap-2.5">
+    <div aria-hidden className={`flex items-center justify-center gap-2.5 ${className}`}>
       {SHAPE.map((_, i) => (
         <span
           key={i}
