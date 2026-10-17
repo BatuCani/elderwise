@@ -10,12 +10,12 @@ const atkinson = Atkinson_Hyperlegible({ subsets: ["latin"], weight: ["400", "70
 const fraunces = Fraunces({ subsets: ["latin"], weight: ["500"], variable: "--font-fraunces" });
 
 export const metadata: Metadata = {
-  title: "Elderwise",
+  title: "Grace",
   description: "Show it, say it, understand it: a patient voice AI companion for older adults.",
-  applicationName: "Elderwise",
+  applicationName: "Grace",
   // "Add to Home Screen" on iPhone opens full screen, without Safari's bars.
-  appleWebApp: { capable: true, title: "Elderwise", statusBarStyle: "default" },
-  icons: { apple: "/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Grace", statusBarStyle: "default" },
+  icons: { icon: "/grace-logo.svg", apple: "/apple-touch-icon.png" },
   // Next only emits the newer mobile-web-app-capable tag; older iOS versions still need this one.
   other: { "apple-mobile-web-app-capable": "yes" },
 };
@@ -34,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ProfileRoot />
         <FirstRun />
         {/* On tablets and desktop the app sits in a phone-width column; the background stays full-bleed. */}
-        <div className="mx-auto flex w-full max-w-app flex-1 flex-col">{children}</div>
+        <div data-page className="mx-auto flex w-full max-w-app flex-1 flex-col">
+          {children}
+        </div>
         <LiveBar />
         <BottomNav />
       </body>

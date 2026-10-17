@@ -7,9 +7,11 @@ import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
-import { addEntry } from "@/lib/answers";
+import { addEntry, setPending as setAnswerPending } from "@/lib/answers";
 import { askClaude } from "@/lib/ask";
+import { haptic } from "@/lib/haptics";
 import { liveLevel, liveSupported, startLive, stopLive, useLive } from "@/lib/live";
+import { navigate } from "@/lib/navigate";
 import { useProfile } from "@/lib/profile";
 import { followUpQuestion, getSolve, setFollowUp, setPending, setStuck, startSolve, useSolve, type Solve } from "@/lib/solve";
 import { getRecognition, LOCALE, speak, spokenText, unlockSpeech, type Recognition } from "@/lib/speech";
@@ -115,11 +117,12 @@ export default function Talk() {
     stuckRef.current = false;
     setPhase("idle");
     setQuestion("");
-    router.push("/steps");
+    navigate((to) => router.push(to), "/", "/steps");
   }
 
   async function send(q: string, img: string | null, followUp: Solve | null) {
     busyRef.current = true;
+    setAnswerPending(true);
     setPending({ question: q, status: "thinking", followUp: !!followUp }, () => send(q, img, followUp));
     try {
       const answer = await askClaude(followUp ? followUpQuestion(followUp, q) : q, img, profile);
@@ -132,6 +135,7 @@ export default function Talk() {
       speak(t.error, profile.lang, profile.speechRate);
     } finally {
       busyRef.current = false;
+      setAnswerPending(false);
     }
   }
 
@@ -169,7 +173,7 @@ export default function Talk() {
           saveAnswer(q, answer, followUp);
           setNewPhoto(null);
           setPhase("done");
-          doneTimer.current = setTimeout(() => router.push("/steps"), 1600);
+          doneTimer.current = setTimeout(() => navigate((to) => router.push(to), "/", "/steps"), 1600);
           return answer;
         },
       });
@@ -244,6 +248,7 @@ export default function Talk() {
 
   function onTalk() {
     unlockSpeech();
+    haptic();
     setPhase("idle");
     if (liveSupported() && !liveFailed.current) startConversation();
     else startPushToTalk();
@@ -251,6 +256,7 @@ export default function Talk() {
 
   function onFinish() {
     unlockSpeech();
+    haptic();
     if (liveOn) {
       stopLive();
       setPhase("idle");
@@ -283,7 +289,11 @@ export default function Talk() {
       <main
         className="relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center px-6 pt-[calc(28px+env(safe-area-inset-top))] pb-[calc(26px+4rem+6.5rem+env(safe-area-inset-bottom))] text-center"
       >
-        <p className="self-start font-serif text-wordmark font-medium text-moss">Elderwise</p>
+        <p className="flex items-center gap-2 self-start font-serif text-wordmark font-medium text-moss">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/grace-mark-moss.svg" alt="" width={28} height={28} className="h-7 w-7" />
+          Grace
+        </p>
         <div className="flex-1" />
 
         {/* Status is only announced to screen readers; the start screen shows just the greeting. */}

@@ -11,17 +11,11 @@ import { WELCOME } from "./copy";
 // A gentle, breathing level so the glow on "Just talk" looks like someone speaking.
 const demoLevel = () => 0.45 + 0.25 * Math.sin(performance.now() / 450) * Math.sin(performance.now() / 1300);
 
-// The moss orb: Elderwise's mark, also used for the app icon.
-function Orb({ className }: { className?: string }) {
+// Grace's app icon: white petal flower on the moss gradient squircle.
+function Logo({ className }: { className?: string }) {
   return (
-    <div
-      aria-hidden
-      className={`rounded-full ${className}`}
-      style={{
-        background: "radial-gradient(circle at 35% 30%, #a9c29a 0%, #5d7c55 45%, #3f5a3a 75%, #2c4128 100%)",
-        boxShadow: "0 24px 60px rgba(63, 90, 58, 0.35), inset 0 -8px 24px rgba(0, 0, 0, 0.18), inset 0 6px 16px rgba(255, 255, 255, 0.35)",
-      }}
-    />
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/grace-logo.svg" alt="" width={112} height={112} className={`rounded-[26px] shadow-[0_24px_60px_rgba(63,90,58,0.35)] ${className}`} />
   );
 }
 
@@ -62,7 +56,7 @@ export default function Welcome() {
         <div className="flex flex-1 flex-col justify-center gap-8 py-6">
           {step === 0 && (
             <>
-              <Orb className="h-28 w-28 self-center" />
+              <Logo className="h-28 w-28 self-center" />
               <div className="glass rounded-[32px] p-6">
                 <h1 className="font-serif text-[36px] font-medium leading-[1.05] text-ink">{w.meetTitle}</h1>
                 <p className="mt-3 text-[22px] leading-snug text-ink">{w.meetBody}</p>

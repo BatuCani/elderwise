@@ -11,7 +11,9 @@ export type VoiceId = "Aoede" | "Kore" | "Charon" | "Puck" | "Fenrir";
 export type Personality = "patient" | "cheerful" | "short" | "storyteller";
 export type Assistant = { name: string; voice: VoiceId; personality: Personality };
 
-export const DEFAULT_ASSISTANT: Assistant = { name: "Elderwise", voice: "Aoede", personality: "patient" };
+export const DEFAULT_ASSISTANT: Assistant = { name: "Grace", voice: "Aoede", personality: "patient" };
+// The app was called Elderwise before; a name saved under the old default becomes Grace.
+const OLD_DEFAULT_NAME = "Elderwise";
 
 // Gemini Live prebuilt voices. `pitch` only shapes the preview, which uses the phone's own voice.
 export const VOICES: { id: VoiceId; label: string; en: string; de: string; pitch: number }[] = [
@@ -51,7 +53,10 @@ export function readAssistant(): Assistant {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? "{}");
     cache = {
-      name: typeof raw.name === "string" && raw.name.trim() ? raw.name.trim().slice(0, 30) : DEFAULT_ASSISTANT.name,
+      name:
+        typeof raw.name === "string" && raw.name.trim() && raw.name.trim() !== OLD_DEFAULT_NAME
+          ? raw.name.trim().slice(0, 30)
+          : DEFAULT_ASSISTANT.name,
       voice: isVoice(raw.voice) ? raw.voice : DEFAULT_ASSISTANT.voice,
       personality: isPersonality(raw.personality) ? raw.personality : DEFAULT_ASSISTANT.personality,
     };

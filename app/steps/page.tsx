@@ -114,7 +114,11 @@ export default function Steps() {
   return (
     <>
       <main className="mx-auto flex h-svh w-full max-w-[480px] flex-col px-6 pb-[calc(26px+4rem+6.5rem+env(safe-area-inset-bottom))] pt-[calc(28px+env(safe-area-inset-top))]">
-        <p className="shrink-0 font-serif text-wordmark font-medium text-moss">Elderwise</p>
+        <p className="flex shrink-0 items-center gap-2 font-serif text-wordmark font-medium text-moss">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/grace-mark-moss.svg" alt="" width={28} height={28} className="h-7 w-7" />
+          Grace
+        </p>
 
         {/* Top: the quick explanation, or Claude's answer to "I'm stuck". */}
         <section aria-live="polite" className="mt-4 min-h-[3.5rem] overflow-y-auto">

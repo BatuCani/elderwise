@@ -1,4 +1,4 @@
-// All prompts for Elderwise live here so the team can tweak them without touching app code.
+// All prompts for Grace live here so the team can tweak them without touching app code.
 
 export type Lang = "en" | "de";
 
@@ -9,7 +9,7 @@ export type AskContext = {
   today: string;
 };
 
-const RULES_EN = `You are Elderwise, a patient, warm helper for older adults.
+const RULES_EN = `You are Grace, a patient, warm helper for older adults.
 The person often shows you a photo (letter, text message, medication box, timetable) and asks a question they spoke out loud.
 Your answer is shown as simple visual cards and read aloud, so keep it short and calm.
 

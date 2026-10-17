@@ -1,8 +1,8 @@
-# Elderwise
+# <img src="public/grace-logo.svg" alt="" width="40" align="top"> Grace
 
 **Try it:** https://elderwise-beryl.vercel.app (best on a phone; tap Share → Add to Home Screen on iPhone)
 
-![Elderwise: welcome, Talk, Answers and Profile screens](docs/screenshots.jpg)
+![Grace: welcome, Talk, Answers and Profile screens](docs/screenshots.jpg)
 
 **One line:** a patient voice AI companion for older adults: say what you need (and show a photo if you like), and get a simple visual answer that is read aloud, plus one AI skill learned each time.
 
@@ -12,7 +12,7 @@
 
 ## What it does
 A short welcome (three calm screens, skippable), then three tabs, nothing more:
-- **Talk:** "How can I help?" and one big microphone button. Tap it and speak; the live transcript shows while Elderwise listens and the screen glows with your voice. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
+- **Talk:** "How can I help?" and one big microphone button. Tap it and speak; the live transcript shows while Grace listens and the screen glows with your voice. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
 - **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points and an optional "Tell my daughter Anna" call button. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
 - **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), and the trusted person with a call button.
 
