@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, MicIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { LiveWords } from "@/components/LiveWords";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { addEntry } from "@/lib/answers";
@@ -207,6 +208,7 @@ export default function Talk() {
 
         {listening ? (
           <>
+            <LiveWords text={question} placeholder={t.listening} />
             {photo && (
               <div className="mb-6 glass rounded-2xl p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

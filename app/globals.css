@@ -20,6 +20,8 @@
   --text-greeting: clamp(0.9rem, 4.6vw, 1rem);
   --text-display: clamp(1.65rem, 10vw, 2.15rem);
   --text-transcript: clamp(1.5rem, 8.7vw, 1.9rem);
+  /* Live words while talking: already very big at every text size, so px (not rem). */
+  --text-live: clamp(40px, 12vw, 56px);
   --text-asked: clamp(1.25rem, 6.4vw, 1.5rem);
   --text-status: clamp(1rem, 5.1vw, 1.1rem);
   --text-toast: 0.9rem;
@@ -169,8 +171,20 @@ a {
   }
 }
 
+.word-in {
+  animation: word-in 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .thinking-dot,
+  .word-in,
   .toast-in {
     animation: none;
   }
