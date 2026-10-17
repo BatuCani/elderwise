@@ -49,8 +49,8 @@ Voice input uses the browser Web Speech API (Chrome, Safari on iPhone). The micr
 ## Demo video
 <Add the link to the 2-minute demo video here.>
 
-A 2-minute product demo, made with [HyperFrames](https://hyperframes.heygen.com) from real screens of the live app, is in [`video/`](video/script.md) (script, style notes and how to rebuild it).
-Rendered files (team Google Drive): `Content/Grace-Hackathon/grace-demo-9x16.mp4` (1080x1920, for phones) and `Content/Grace-Hackathon/grace-demo-16x9.mp4` (1920x1080).
+A 1:45 promo with the real app being tested, made with [HyperFrames](https://hyperframes.heygen.com) from real screens of the live app, is in [`video/`](video/script.md) (script, style notes and how to rebuild it).
+Rendered files (team Google Drive): `Content/Grace-Hackathon/grace-promo-16x9.mp4` (1920x1080) and `Content/Grace-Hackathon/grace-promo-9x16.mp4` (1080x1920, for phones), also attached to the GitHub release `demo-video-v1`.
 Public link: <Add the Drive or YouTube link here.>
 
 ## Team
@@ -72,6 +72,6 @@ Public link: <Add the Drive or YouTube link here.>
 - [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (OFL) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL) via Google Fonts.
 - [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) (MIT) reads QR codes and barcodes in "Scan a letter" when the browser has no built-in BarcodeDetector.
 - Browser Web Speech API (SpeechRecognition and speechSynthesis).
-- Demo video: [HyperFrames](https://github.com/heygen-com/hyperframes) and [GSAP](https://gsap.com); voiceover by [ElevenLabs](https://elevenlabs.io); music and whooshes are synthesized in `video/tools/make_audio.py` (no third-party audio).
+- Demo video: [HyperFrames](https://github.com/heygen-com/hyperframes) and [GSAP](https://gsap.com); the music, whoosh and clicks are synthesized in `video/tools/make_music.py` (no third-party audio).
 - Sample images in `public/samples/` are fictional mocks made for this demo; no real personal data.
 - The "Scan a letter" flow is inspired by the Dribbble shot [Onboarding flow (Upload your bill)](https://dribbble.com/shots/27784869) by Eugen Esanu (patterns only, no assets copied).
