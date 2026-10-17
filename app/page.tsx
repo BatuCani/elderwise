@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState, useSyncExternalStore } from "react";
+import { AnswerCard, type Answer } from "@/components/AnswerCard";
+import { OrbButton } from "@/components/OrbButton";
 import { SAMPLES, TEXT } from "./copy";
 
 type Lang = "de" | "en";
 type Phase = "idle" | "listening" | "thinking" | "answer" | "error";
-type Answer = { answer: string; learned: string; tip: string };
 
 // Minimal typing for the Web Speech API (not in TypeScript's DOM lib everywhere).
 type Recognition = {
@@ -209,15 +210,11 @@ export default function Home() {
       </section>
 
       <section className="flex flex-col items-center gap-4 py-2">
-        <button
-          onClick={onOrb}
-          aria-label={orbLabel}
-          className={`orb flex h-56 w-56 items-center justify-center rounded-full text-center text-3xl font-bold text-white ${
-            phase === "listening" ? "orb-listening" : phase === "thinking" ? "orb-thinking" : ""
-          }`}
-        >
-          <span className="px-6">{orbLabel}</span>
-        </button>
+        <OrbButton
+          state={phase === "listening" || phase === "thinking" ? phase : "idle"}
+          label={orbLabel}
+          onPress={onOrb}
+        />
         <form
           className="flex w-full gap-2"
           onSubmit={(e) => {
@@ -248,25 +245,7 @@ export default function Home() {
       )}
 
       {result && (
-        <section ref={answerRef} aria-live="polite" className="flex scroll-mt-4 flex-col gap-4">
-          <div className="rounded-3xl bg-black p-6 text-white">
-            <p className="text-3xl font-semibold leading-snug">{result.answer}</p>
-            <button
-              onClick={() => speak(result.answer, lang)}
-              className="mt-5 min-h-14 rounded-2xl bg-white px-5 text-xl font-semibold text-black"
-            >
-              🔊 {t.readAgain}
-            </button>
-          </div>
-          <div className="rounded-3xl border-4 border-amber-500 bg-amber-50 p-6">
-            <h2 className="text-2xl font-bold">{t.learnedTitle}</h2>
-            <p className="mt-2 text-2xl leading-snug">{result.learned}</p>
-            <p className="mt-4 text-2xl leading-snug">
-              <span className="font-bold">{t.tipLabel} </span>
-              {result.tip}
-            </p>
-          </div>
-        </section>
+        <AnswerCard ref={answerRef} result={result} labels={t} onReadAgain={() => speak(result.answer, lang)} />
       )}
     </main>
   );
