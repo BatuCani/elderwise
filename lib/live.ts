@@ -43,15 +43,21 @@ export function liveSupported(): boolean {
   return typeof window !== "undefined" && "AudioWorkletNode" in window && !!navigator.mediaDevices?.getUserMedia;
 }
 
-// Collects mic samples on the audio thread and posts them in ~100 ms blocks (16 kHz).
+// Turns mic samples into 16-bit PCM on the audio thread and hands over ~100 ms blocks (16 kHz) without
+// copying. The AudioContext's sampleRate does the resampling. Pattern from Orbs (micro-intent pcm-worklet.js).
 const CAPTURE_WORKLET = `
 class Capture extends AudioWorkletProcessor {
-  constructor() { super(); this.buf = new Float32Array(1600); this.n = 0; }
+  constructor() { super(); this.buf = new Int16Array(1600); this.n = 0; }
   process(inputs) {
     const ch = inputs[0][0];
     if (ch) for (let i = 0; i < ch.length; i++) {
-      this.buf[this.n++] = ch[i];
-      if (this.n === this.buf.length) { this.port.postMessage(this.buf.slice()); this.n = 0; }
+      const v = Math.max(-1, Math.min(1, ch[i]));
+      this.buf[this.n++] = v < 0 ? v * 0x8000 : v * 0x7fff;
+      if (this.n === this.buf.length) {
+        this.port.postMessage(this.buf.buffer, [this.buf.buffer]);
+        this.buf = new Int16Array(1600);
+        this.n = 0;
+      }
     }
     return true;
   }
@@ -59,8 +65,18 @@ class Capture extends AudioWorkletProcessor {
 registerProcessor("elderwise-capture", Capture);
 `;
 
+const RECONNECT_TRIES = 3;
+// Live models sometimes call the tool twice for one question; the repeat reuses the first answer.
+const REPEAT_WINDOW_MS = 30_000;
+
 type Conversation = {
+  opts: LiveOptions;
   session: Session | null;
+  model: string;
+  // Latest session resumption handle: a dropped connection continues the same conversation.
+  resume?: string;
+  reconnecting: boolean;
+  lastAsk?: { question: string; at: number; answer: Promise<{ headline: string; sentence: string }> };
   mic: MediaStream;
   input: AudioContext;
   output: AudioContext;
@@ -75,10 +91,8 @@ type Conversation = {
 
 let convo: Conversation | null = null;
 
-function toBase64(samples: Float32Array): string {
-  const pcm = new Int16Array(samples.length);
-  for (let i = 0; i < samples.length; i++) pcm[i] = Math.max(-1, Math.min(1, samples[i])) * 0x7fff;
-  const bytes = new Uint8Array(pcm.buffer);
+function toBase64(pcm: ArrayBuffer): string {
+  const bytes = new Uint8Array(pcm);
   let s = "";
   for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(s);
@@ -126,9 +140,16 @@ export function liveLevel(): number {
   return Math.min(1, v * (speaking ? 5 : 8));
 }
 
-async function handle(c: Conversation, m: LiveServerMessage, opts: LiveOptions) {
+async function handle(c: Conversation, m: LiveServerMessage) {
+  if (m.sessionResumptionUpdate?.resumable && m.sessionResumptionUpdate.newHandle) c.resume = m.sessionResumptionUpdate.newHandle;
+  // The server is about to close this connection: move to a fresh one now, keeping the conversation.
+  if (m.goAway) reconnect(c);
+
   const content = m.serverContent;
   if (content?.inputTranscription?.text) {
+    // Barge-in: the person talks over the answer, so stop playing it at once instead of waiting
+    // for the server's "interrupted" (as Orbs does in hands-free mode).
+    if (state.status === "speaking" && c.playing.size) silence(c);
     // A new person turn starts after Elderwise finished its last one.
     const heard = c.userTurnDone ? content.inputTranscription.text : state.heard + content.inputTranscription.text;
     c.userTurnDone = false;
@@ -156,9 +177,14 @@ async function handle(c: Conversation, m: LiveServerMessage, opts: LiveOptions) 
     set({ status: "thinking", heard: question, said: "" });
     let response: Record<string, unknown>;
     try {
-      const a = await opts.ask(question);
+      const key = question.trim().toLowerCase();
+      const last = c.lastAsk;
+      const repeat = last && last.question === key && Date.now() - last.at < REPEAT_WINDOW_MS;
+      if (!repeat) c.lastAsk = { question: key, at: Date.now(), answer: c.opts.ask(question) };
+      const a = await c.lastAsk!.answer;
       response = { headline: a.headline, sentence: a.sentence, note: "The full card with details is now on the Answers screen." };
     } catch {
+      c.lastAsk = undefined; // a failed question may be asked again
       response = { error: "The expert could not answer right now." };
     }
     if (c.stopped) return;
@@ -168,7 +194,7 @@ async function handle(c: Conversation, m: LiveServerMessage, opts: LiveOptions) 
 }
 
 // Opens one Live session with a fresh single-use token; resolves once Gemini is ready to listen.
-async function open(c: Conversation, model: string, opts: LiveOptions): Promise<Session> {
+async function open(c: Conversation, model: string): Promise<Session> {
   const res = await fetch("/api/live-token", { method: "POST" });
   if (!res.ok) throw new Error(`token ${res.status}`);
   const { token } = await res.json();
@@ -180,7 +206,7 @@ async function open(c: Conversation, model: string, opts: LiveOptions): Promise<
     ai.live
       .connect({
         model,
-        config: liveConfig(opts.lang, opts.name),
+        config: liveConfig(c.opts.lang, c.opts.name, c.resume),
         callbacks: {
           onmessage: (m) => {
             if (m.setupComplete && !ready) {
@@ -193,18 +219,43 @@ async function open(c: Conversation, model: string, opts: LiveOptions): Promise<
               });
               return;
             }
-            if (ready) handle(c, m, opts);
+            // c.session is set only once open() resolves; messages arriving just before that still count.
+            if (ready && (c.session === session || !c.session)) handle(c, m);
           },
           onerror: (e) => console.warn("Gemini Live error:", e.message),
           onclose: (e) => {
             clearTimeout(timer);
             if (!ready) reject(new Error(`closed ${e.code} ${e.reason}`));
-            else if (convo === c && !c.stopped) stopLive();
+            else if (c.session === session) reconnect(c);
           },
         },
       })
       .then((s) => (session = s), reject);
   });
+}
+
+// A dropped connection or goAway: open a new session with a fresh token, resuming the conversation.
+async function reconnect(c: Conversation) {
+  if (c.reconnecting || c.stopped) return;
+  c.reconnecting = true;
+  const old = c.session;
+  c.session = null;
+  old?.close();
+  silence(c);
+  set({ status: "connecting" });
+  for (let i = 0; i < RECONNECT_TRIES && !c.stopped; i++) {
+    try {
+      c.session = await open(c, c.model);
+      break;
+    } catch (err) {
+      console.warn("Gemini Live reconnect failed:", err);
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+  c.reconnecting = false;
+  if (c.stopped) c.session?.close();
+  else if (c.session) set({ status: "listening" });
+  else stopLive();
 }
 
 // Must be called from a tap: audio playback and the mic only unlock inside a user gesture on iOS.
@@ -224,7 +275,10 @@ export async function startLive(opts: LiveOptions): Promise<void> {
     outMeter.connect(output.destination);
     const micMeter = input.createAnalyser();
     const c: Conversation = {
+      opts,
       session: null,
+      model: LIVE_MODELS[0],
+      reconnecting: false,
       mic,
       input,
       output,
@@ -241,7 +295,8 @@ export async function startLive(opts: LiveOptions): Promise<void> {
     let lastError: unknown;
     for (const model of LIVE_MODELS) {
       try {
-        c.session = await open(c, model, opts);
+        c.session = await open(c, model);
+        c.model = model;
         break;
       } catch (err) {
         lastError = err;
@@ -257,7 +312,7 @@ export async function startLive(opts: LiveOptions): Promise<void> {
     const capture = new AudioWorkletNode(input, "elderwise-capture");
     source.connect(micMeter);
     source.connect(capture);
-    capture.port.onmessage = (e: MessageEvent<Float32Array>) => {
+    capture.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
       if (!c.stopped) c.session?.sendRealtimeInput({ audio: { data: toBase64(e.data), mimeType: "audio/pcm;rate=16000" } });
     };
     set({ status: "listening" });

@@ -216,7 +216,6 @@ export default function Talk() {
 
   const listening = phase === "listening";
   const thinking = phase === "thinking" || live.status === "thinking";
-  const handsFree = liveOn && live.status !== "connecting";
   // Live conversation text: what was heard while listening, what Claude's answer sounds like while speaking.
   const liveText = live.status === "speaking" ? live.said : live.heard;
 
