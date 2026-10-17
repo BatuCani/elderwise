@@ -7,6 +7,7 @@ import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, CloseIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
 import { LiveCamera } from "@/components/LiveCamera";
 import { LiveWords } from "@/components/LiveWords";
+import { PhotoQuestions } from "@/components/PhotoQuestions";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { DailyTip } from "@/components/DailyTip";
@@ -271,7 +272,6 @@ export default function Talk() {
     listeningRef.current = true;
     finishingRef.current = false;
     setQuestion("");
-    setNewPhoto(null);
     setPhase("listening");
     startRecognition();
   }
@@ -282,7 +282,7 @@ export default function Talk() {
     unlockSpeech();
     setTyped("");
     typeRef.current?.blur();
-    ask(q, null);
+    ask(q, photoRef.current);
   }
 
   function onTalk() {
@@ -460,7 +460,7 @@ export default function Talk() {
         ) : (
           <>
             {/* Short phones: skip the greeting so the talk hint never hides behind the typing bar. */}
-            <p className="text-greeting text-muted [@media(max-height:720px)]:hidden">
+            <p className={`text-greeting text-muted [@media(max-height:720px)]:hidden ${photo ? "hidden" : ""}`}>
               {greeting}, {profile.name}
             </p>
             {micHint && phase === "idle" ? (
@@ -469,22 +469,35 @@ export default function Talk() {
                 {t.micBlocked}
               </p>
             ) : (
-              <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem]">
+              <h1 className={`mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem] ${photo && !thinking ? "hidden" : ""}`}>
                 {t.headline}
               </h1>
             )}
             {/* The orb is the talk button: tapping it does the same as the mic button did. */}
-            <div className="mt-10 [@media(max-height:720px)]:mt-5">
-              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
+            {/* With a photo attached the orb gets smaller (hidden on iPhone SE) to make room for the questions. */}
+            <div className={photo && !thinking ? "[@media(max-height:720px)]:hidden" : "mt-10 [@media(max-height:720px)]:mt-5"}>
+              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} compact={!!photo && !thinking} />
             </div>
+            {/* A photo is attached (camera while talking): one tap asks about it, without speaking. */}
+            {photo && !thinking && (
+              <PhotoQuestions
+                lang={profile.lang}
+                photo={photo}
+                onRemove={() => setNewPhoto(null)}
+                onAsk={(q) => {
+                  unlockSpeech();
+                  ask(q, photoRef.current);
+                }}
+              />
+            )}
             {/* Scan a letter, bill or code: the guided flow in app/scan. */}
-            {!thinking && (
+            {!photo && !thinking && (
               <Link href="/scan" className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-status font-bold text-moss [@media(max-height:720px)]:mt-3">
                 <CameraIcon className="h-7 w-7" />
                 {t.scanLetter}
               </Link>
             )}
-            {!thinking && <DailyTip lang={profile.lang} onTry={(q) => { unlockSpeech(); ask(q, null); }} />}
+            {!photo && !thinking && <DailyTip lang={profile.lang} onTry={(q) => { unlockSpeech(); ask(q, null); }} />}
             {phase === "error" && (
               <button
                 onClick={retry}
