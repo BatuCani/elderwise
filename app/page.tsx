@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, MicIcon } from "@/components/icons";
 import { VoiceBars } from "@/components/VoiceBars";
@@ -12,13 +12,6 @@ import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
-
-const noSubscribe = () => () => {};
-
-function greetingKey(): "morning" | "afternoon" | "evening" {
-  const h = new Date().getHours();
-  return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
-}
 
 // While Claude is thinking, the glow gathers into one beam that sweeps back and forth.
 function thinkingMotion() {
@@ -44,7 +37,6 @@ export default function Talk() {
   const photoRef = useRef<string | null>(null);
   const listeningRef = useRef(false);
   const finishingRef = useRef(false);
-  const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
 
   function setNewPhoto(src: string | null) {
     if (photoRef.current?.startsWith("blob:")) URL.revokeObjectURL(photoRef.current);
@@ -170,79 +162,51 @@ export default function Talk() {
         <p className="self-start font-serif text-2xl font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
 
+        {/* No visible text: the status is only announced to screen readers. */}
+        <p aria-live="polite" className="sr-only">
+          {listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
+        </p>
+
         {listening ? (
           <>
-            <p className="flex items-center gap-2 rounded-full bg-white/60 px-4 py-1.5 text-lg font-bold text-moss">
-              <span className="relative flex h-3 w-3">
-                <span className="absolute inset-0 animate-ping rounded-full bg-moss/60" />
-                <span className="relative h-3 w-3 rounded-full bg-moss" />
-              </span>
-              {t.listening}
-            </p>
-            <p
-              aria-live="polite"
-              className={`mt-5 min-h-[7rem] font-serif text-[34px] font-medium leading-tight ${question ? "text-ink" : "text-muted/70"}`}
-            >
-              {question ? `“${question}”` : t.inputPlaceholder}
-            </p>
-
             {photo && (
-              <div className="mt-2 flex items-center gap-3 glass rounded-2xl p-2 pr-4">
+              <div className="mb-6 glass rounded-2xl p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo} alt="" className="h-14 w-14 rounded-xl object-cover" />
-                <span className="text-lg font-bold text-ink">✓ {t.photoAdded}</span>
+                <img src={photo} alt={t.photoAdded} className="h-20 w-20 rounded-xl object-cover" />
               </div>
             )}
 
-            <div className="mt-8 grid w-full max-w-sm grid-cols-2 gap-4">
+            <div className="grid w-full max-w-sm grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="glass flex aspect-square flex-col items-center justify-center gap-3 rounded-[32px] p-3 text-xl font-bold leading-tight text-ink transition-transform active:scale-95"
+                aria-label={t.startCamera}
+                className="glass flex aspect-square items-center justify-center rounded-[32px] text-ink transition-transform active:scale-95"
               >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/80 shadow-sm">
-                  <CameraIcon className="h-9 w-9" />
-                </span>
-                {t.startCamera}
+                <CameraIcon className="h-16 w-16" />
               </button>
               <button
                 type="button"
                 onClick={onFinish}
-                className="flex aspect-square flex-col items-center justify-center gap-3 rounded-[32px] bg-moss p-3 text-xl font-bold leading-tight text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
+                aria-label={t.finishTalking}
+                className="flex aspect-square items-center justify-center rounded-[32px] bg-moss text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
               >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
-                  <CheckIcon className="h-9 w-9" />
-                </span>
-                {t.finishTalking}
+                <CheckIcon className="h-16 w-16" />
               </button>
             </div>
           </>
         ) : (
-          <>
-            <p className="text-xl text-muted">
-              {greeting}, {profile.name}
-            </p>
-            <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
-
-            <button
-              type="button"
-              onClick={onTalk}
-              disabled={thinking}
-              aria-label={t.mic}
-              className="mt-10 flex h-44 w-44 items-center justify-center rounded-full bg-moss text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60"
-            >
-              <MicIcon className="h-20 w-20" />
-            </button>
-
-            <p
-              aria-live="polite"
-              className={`mt-10 min-h-[5rem] leading-snug ${
-                phase === "error" ? "text-2xl font-bold text-warn" : "font-serif text-3xl font-medium text-ink"
-              }`}
-            >
-              {thinking ? t.thinking : phase === "error" ? t.error : t.tapToTalk}
-            </p>
-          </>
+          <button
+            type="button"
+            onClick={onTalk}
+            disabled={thinking}
+            aria-label={t.mic}
+            className={`flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
+              phase === "error" ? "bg-warn" : "bg-moss"
+            }`}
+          >
+            <MicIcon className="h-20 w-20" />
+          </button>
         )}
         <div className="flex-1" />
       </main>
@@ -289,9 +253,10 @@ export default function Talk() {
       {phase === "done" && (
         <div
           role="status"
-          className="fixed inset-x-0 bottom-[calc(40px+5rem+env(safe-area-inset-bottom))] z-30 mx-auto w-fit rounded-full bg-moss px-6 py-3 text-lg font-bold text-white shadow-lg"
+          aria-label={t.done}
+          className="fixed inset-x-0 bottom-[calc(40px+5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-moss text-white shadow-lg"
         >
-          ✓ {t.done}
+          <CheckIcon className="h-9 w-9" />
         </div>
       )}
     </>
