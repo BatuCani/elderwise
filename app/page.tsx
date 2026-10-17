@@ -70,6 +70,12 @@ export default function Talk() {
   useEffect(() => {
     if (!liveOn || path !== "/") setCamera(null);
   }, [liveOn, path]);
+  // A hidden Talk tab (Next keeps it alive) runs no effects, so the reset above never fires there:
+  // clear the camera when it stops being on, including when the tab is hidden.
+  useEffect(() => {
+    if (!cameraOn) return;
+    return () => setCamera(null);
+  }, [cameraOn]);
   useEffect(() => {
     cameraOnRef.current = cameraOn;
     if (!cameraOn) frameRef.current = null;
