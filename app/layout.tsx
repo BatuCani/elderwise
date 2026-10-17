@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Fraunces } from "next/font/google";
 import { BottomNav } from "@/components/BottomNav";
+import { FirstRun } from "@/components/FirstRun";
 import { ProfileRoot } from "@/components/ProfileRoot";
 import "./globals.css";
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${atkinson.variable} ${fraunces.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <ProfileRoot />
+        <FirstRun />
         {children}
         <BottomNav />
       </body>
