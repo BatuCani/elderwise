@@ -53,6 +53,8 @@ export default function Talk() {
   const sessionRef = useRef("");
   const photoRef = useRef<string | null>(null);
   const listeningRef = useRef(false);
+  const micBlocked = useRef(false);
+  const [micHint, setMicHint] = useState(false);
   const finishingRef = useRef(false);
   const busyRef = useRef(false);
   const doneTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -155,7 +157,10 @@ export default function Talk() {
     };
     rec.onerror = (e?: { error?: string }) => {
       // No microphone permission: stop instead of restarting forever.
-      if (e?.error === "not-allowed" || e?.error === "service-not-allowed") listeningRef.current = false;
+      if (e?.error === "not-allowed" || e?.error === "service-not-allowed") {
+        listeningRef.current = false;
+        micBlocked.current = true;
+      }
     };
     rec.onend = () => {
       baseRef.current = heard();
@@ -170,6 +175,9 @@ export default function Talk() {
         }
       } else {
         mic.stop();
+        // Blocked microphone: say so and offer "Try again" instead of silently going back to the start.
+        setMicHint(micBlocked.current);
+        micBlocked.current = false;
         setPhase("idle");
       }
     };
@@ -204,6 +212,7 @@ export default function Talk() {
   }
 
   function onTalk() {
+    setMicHint(false);
     unlockSpeech();
     haptic();
     setPhase("idle");
@@ -301,36 +310,45 @@ export default function Talk() {
               <button
                 type="button"
                 onClick={() => setSheetOpen(true)}
-                aria-label={t.startCamera}
-                className="glass flex aspect-square items-center justify-center rounded-[32px] text-ink transition-transform active:scale-95"
+                className="glass flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] px-2 text-ink transition-transform active:scale-95"
               >
-                <CameraIcon className="h-16 w-16" />
+                <CameraIcon className="h-14 w-14" />
+                {/* Visible words, not just icons: older adults should never have to guess. */}
+                <span className="text-[19px] font-bold leading-tight">{t.startCamera}</span>
               </button>
               <button
                 type="button"
                 onClick={onFinish}
-                aria-label={t.finishTalking}
-                className="flex aspect-square items-center justify-center rounded-[32px] bg-moss text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
+                className="flex aspect-square flex-col items-center justify-center gap-2 rounded-[32px] bg-moss px-2 text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
               >
-                <CheckIcon className="h-16 w-16" />
+                <CheckIcon className="h-14 w-14" />
+                <span className="text-[19px] font-bold leading-tight">{t.finishTalking}</span>
               </button>
             </div>
           </>
         ) : (
           <>
-            <p className="text-greeting text-muted">
+            {/* Short phones: skip the greeting so the talk hint never hides behind the typing bar. */}
+            <p className="text-greeting text-muted [@media(max-height:720px)]:hidden">
               {greeting}, {profile.name}
             </p>
-            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:620px)]:text-[1.4rem]">
-              {t.headline}
-            </h1>
+            {micHint && phase === "idle" ? (
+              // Blocked microphone: the message takes the headline's place, right where the eye already is.
+              <p role="alert" className="mt-3 max-w-sm text-[21px] font-bold leading-snug text-warn">
+                {t.micBlocked}
+              </p>
+            ) : (
+              <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem]">
+                {t.headline}
+              </h1>
+            )}
             {/* The orb is the talk button: tapping it does the same as the mic button did. */}
-            <div className="mt-10 [@media(max-height:620px)]:mt-5">
+            <div className="mt-10 [@media(max-height:720px)]:mt-5">
               <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
             </div>
             {/* Scan a letter, bill or code: the guided flow in app/scan. */}
             {!thinking && (
-              <Link href="/scan" className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-status font-bold text-moss [@media(max-height:620px)]:mt-4">
+              <Link href="/scan" className="glass mt-8 flex min-h-14 items-center gap-3 rounded-full px-6 text-status font-bold text-moss [@media(max-height:720px)]:mt-3">
                 <CameraIcon className="h-7 w-7" />
                 {t.scanLetter}
               </Link>

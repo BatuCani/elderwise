@@ -198,6 +198,17 @@ a {
   a {
     -webkit-tap-highlight-color: transparent;
     transition: transform 120ms ease, background-color 120ms ease;
+    /* A long press on a button must never select its text or open the iOS callout menu. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  canvas,
+  img {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
   button:not(:disabled):active,
