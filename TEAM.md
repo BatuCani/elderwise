@@ -19,48 +19,53 @@ A family view lets a son or daughter see what was asked and get a warning when C
 
 ## Stack and structure
 
-Next.js (App Router, TypeScript) + Tailwind, Anthropic API (`claude-sonnet-5-5`, vision), browser Web Speech API for speaking and listening.
-German UI first, simple language, huge tap targets, works on an iPhone in Safari.
+Next.js (App Router, TypeScript) + Tailwind, Anthropic API (`claude-sonnet-5-5`, vision), `voice-glow` for the voice effect, browser Web Speech API.
+English UI, simple language, huge tap targets, works on an iPhone in Safari.
+Design (source of truth): https://app.paper.design/file/01M54P2AW7DMM9SRH5B5DKTZ5M
 
-| Folder | What lives there | Owner |
+Three tabs in a bottom navbar:
+1. **Talk** - only the voice interface (greeting, "How can I help?", the glowing "Just say it" pill). No answer on this screen.
+2. **Answers** - the visual output page: newest answer as one big card (scam warning, explanation, steps, reminder), "Read aloud", the "You learned" card, earlier answers as rows.
+3. **Profile** - name, text size, speaking speed, language, trusted person (Anna).
+
+## Who does what
+
+| Part | Owner | Files |
 |---|---|---|
-| `app/page.tsx`, `app/api/ask/` | Main flow: photo + voice question -> Claude -> big answer + read aloud | Batu (core) |
-| `prompts/` | All Claude prompts, one file per use | whoever owns the feature |
-| `app/learn/`, `prompts/exercises/` | Guided exercises (scam SMS, doctor letter, good questions) | Exercises owner |
-| `app/family/`, `app/api/family/` | Family view: what was asked, scam warnings (fake sample data) | Family owner |
-| `components/`, `app/globals.css` | Orb button, large-text cards, colors, accessibility | Design owner |
-| `public/samples/` | Fake demo images (scam SMS, doctor letter, timetable, medication) | Design owner |
-| `README.md`, `docs/demo-script.md` | Pitch, demo script, how to run, credits | Pitch owner |
+| Core: voice flow, Claude API route, Answers rendering | Batu (+ AI agents) | `app/`, `app/api/ask/`, `components/` |
+| Claude prompts and answer quality: test 10 real situations (scam SMS, doctor letter, pension letter, medication, appointment), tune `prompts/` so answers are short, kind and correct | Domain expert | `prompts/`, `docs/test-cases.md` |
+| Demo sample images: 5 fake but realistic photos/screenshots (scam SMS, doctor letter, pension letter, medication box, appointment card) | Design | `public/samples/` |
+| Pitch, README, 2-minute demo script and video, submission form | Founder / pitch | `README.md`, `docs/demo-script.md` |
+| Profile tab polish + accessibility check (contrast, text size, VoiceOver labels) | Product / design | `app/profile/` |
 
-**Rule: only edit your own folders.** Shared files (`app/layout.tsx`, `package.json`) only after telling the team.
+**Rule: only edit your own files.** Shared files (`app/layout.tsx`, `package.json`) only after telling the team.
 
 ## How to start (everyone)
 
 1. Accept the GitHub invite, then `git clone https://github.com/BatuCani/elderwise && cd elderwise`.
-2. Wait until the skeleton is on `main` (about 12:30, Batu says when), then `git pull`.
+2. `git pull` once Batu says the skeleton is on `main`.
 3. `cp .env.example .env` and paste your Claude API key. Never commit `.env`.
 4. `npm install && npm run dev`, open http://localhost:3000.
 5. Open Claude Code in the repo (`claude`) and paste your prompt from below.
-6. Work on a branch (`git checkout -b <your-name>/<feature>`), commit small steps, push, open a PR to `main`.
-   Pull `main` often.
+6. Work on a branch (`git checkout -b <your-name>/<part>`), commit small steps, push, open a PR to `main`.
 
 ## Copy-paste prompts for your AI agent
 
-### Exercises owner
+### Domain expert (prompts and answer quality)
 
-> Read CLAUDE.md and TEAM.md. Build the guided exercises in `app/learn/` with prompts in `prompts/exercises/`. Three exercises for older adults, German, very simple language, huge buttons: (1) "Ist diese SMS echt?" - show a fake scam SMS, the user guesses, Claude explains the warning signs; (2) "Arztbrief verstehen" - a fake doctor's letter, Claude explains it in plain words and the user learns to ask "Was bedeutet das für mich?"; (3) "Gute Fragen stellen" - the user asks Claude something, Claude gives gentle feedback on how to ask better. Use the existing `/api/ask` route or add `app/api/learn/`. Add a link from the main page. Only edit `app/learn/`, `prompts/exercises/` and the one link. Commit small steps on a branch and open a PR.
+> Read CLAUDE.md and TEAM.md. Own `prompts/`. Write `docs/test-cases.md` with 10 real situations older adults face (scam SMS, phishing email, doctor's letter, pension letter, medication instructions, appointment reminder, utility bill, bank call, delivery notice, grandchild-in-trouble scam). Run each through `/api/ask` and tune the prompt so every answer is: max 6-word headline, one plain sentence, up to 3 reasons or steps, correct type (warning/explain/steps/reminder), and a one-line "You learned" tip. Never give medical or legal advice beyond explaining; suggest calling a trusted person or the doctor. Only edit `prompts/` and `docs/test-cases.md`. PR to main.
 
-### Family owner
+### Design (demo samples)
 
-> Read CLAUDE.md and TEAM.md. Build the family view in `app/family/` (+ `app/api/family/` if needed). A son or daughter sees a simple timeline of what their parent asked Elderwise (use fake sample data in `app/family/sample-data.ts`), with a red warning card when Claude flagged a likely scam, and a one-tap "call Mum" button (tel: link). Claude writes a short daily summary for the family from the sample timeline. Clean, calm design. Only edit `app/family/` and `app/api/family/`. Commit small steps on a branch and open a PR.
+> Read CLAUDE.md and TEAM.md. Create 5 fake but realistic demo images in `public/samples/` (PNG or SVG, phone-screenshot or photo look, no real personal data): DHL scam SMS, doctor's letter, pension letter, medication box with dosage, appointment card. Match the Paper design colors. Only edit `public/samples/`. PR to main.
 
-### Design owner
+### Founder / pitch
 
-> Read CLAUDE.md and TEAM.md. Own the look in `components/` and `app/globals.css`: a big glowing, breathing orb button (CSS animation, pulses while listening, ripples while speaking), very large high-contrast answer cards, calm warm colors, minimum 20px text, 64px tap targets, works in light and dark. Also create 4 fake demo images in `public/samples/` (scam SMS, doctor's letter, train timetable, medication box) as clean SVG or PNG mocks with no real personal data. Only edit `components/`, `app/globals.css` and `public/samples/`. Commit small steps on a branch and open a PR.
+> Read CLAUDE.md and TEAM.md. Own `README.md` and `docs/demo-script.md`. README: Elderwise in one line, who it is for, their problem with AI today, what the demo lets them do (one sentence each), screenshots, how to run, tech stack, credits (voice-glow, Next.js, Anthropic API, Atkinson Hyperlegible, Fraunces), team members. Demo script: a 2-minute story ("Ingrid, 78, gets a suspicious text") - Talk tab, the glow while she speaks, the scam card on Answers, "Tell my daughter Anna", the You learned card. Mention YC's "AI for the Aging Population" Request for Startups as market proof. Only edit `README.md` and `docs/`.
 
-### Pitch owner
+### Product / design (Profile + accessibility)
 
-> Read CLAUDE.md and TEAM.md. Own `README.md` and `docs/demo-script.md`. README: Elderwise in one line, who it is for, their problem with AI today, what the demo lets them do (one sentence each), screenshots, how to run, tech stack, credits for open-source libraries, team members. Demo script: a 2-minute story with one older person (e.g. "Ingrid, 78, gets a suspicious SMS"), showing the orb, the spoken answer, the learning card, one exercise and the family warning. Mention YC's "AI for the Aging Population" Request for Startups as market proof. Only edit `README.md` and `docs/`.
+> Read CLAUDE.md and TEAM.md. Own `app/profile/`. Match the Paper design: avatar + name, row cards for Text size (changes the app font size), Speaking speed (slider Slow-Fast, used by speech synthesis), Language, Trusted person card with call button. Store settings in localStorage. Then check the whole app for accessibility: contrast, min 19px text, 48px tap targets, aria-labels on icon buttons. Only edit `app/profile/` (report other issues to Batu). PR to main.
 
 ## Timeline
 
