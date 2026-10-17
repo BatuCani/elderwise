@@ -17,6 +17,8 @@ A family view lets a son or daughter see what was asked and get a warning when C
 - **What the demo lets them do:** show something, ask out loud, get a clear spoken answer, and learn one AI skill each time.
 - **Why it matters:** YC lists "AI for the Aging Population" as an open Request for Startups (voice interfaces, family caregiver coordination).
 
+Live app: https://elderwise-beryl.vercel.app
+
 ## Stack and structure
 
 Next.js (App Router, TypeScript) + Tailwind, Anthropic API (`claude-sonnet-5-5`, vision), `voice-glow` for the voice effect, browser Web Speech API.
@@ -32,11 +34,11 @@ Three tabs in a bottom navbar:
 
 | Part | Owner | Files |
 |---|---|---|
-| Core: voice flow, Claude API route, Answers rendering | Batu (+ AI agents) | `app/`, `app/api/ask/`, `components/` |
-| Claude prompts and answer quality: test 10 real situations (scam SMS, doctor letter, pension letter, medication, appointment), tune `prompts/` so answers are short, kind and correct | Domain expert | `prompts/`, `docs/test-cases.md` |
-| Demo sample images: 5 fake but realistic photos/screenshots (scam SMS, doctor letter, pension letter, medication box, appointment card) | Design | `public/samples/` |
-| Pitch, README, 2-minute demo script and video, submission form | Founder / pitch | `README.md`, `docs/demo-script.md` |
-| Profile tab polish + accessibility check (contrast, text size, VoiceOver labels) | Product / design | `app/profile/` |
+| Core: voice flow, Claude API route, Answers rendering, Liquid Glass look | Batu (+ AI agents) | `app/`, `app/api/ask/`, `components/` |
+| Claude prompts and answer quality: test 10 real situations (scam SMS, doctor letter, pension letter, medication, appointment), tune `prompts/` so answers are short, kind and correct | **Sam** | `prompts/`, `docs/test-cases.md` |
+| Demo sample images: 5 fake but realistic photos/screenshots (scam SMS, doctor letter, pension letter, medication box, appointment card) | **Ahmet** | `public/samples/` |
+| Pitch, README, 2-minute demo script and video, submission form | **MaRie** | `README.md`, `docs/` |
+| Profile tab polish + accessibility check (contrast, text size, VoiceOver labels) | **Endrik** (start after the glass PR is merged, ~15 min; meanwhile test the live app on your phone and list bugs in `docs/qa.md`) | `app/profile/`, `docs/qa.md` |
 
 **Rule: only edit your own files.** Shared files (`app/layout.tsx`, `package.json`) only after telling the team.
 
@@ -51,19 +53,19 @@ Three tabs in a bottom navbar:
 
 ## Copy-paste prompts for your AI agent
 
-### Domain expert (prompts and answer quality)
+### Sam - prompts and answer quality
 
 > Read CLAUDE.md and TEAM.md. Own `prompts/`. Write `docs/test-cases.md` with 10 real situations older adults face (scam SMS, phishing email, doctor's letter, pension letter, medication instructions, appointment reminder, utility bill, bank call, delivery notice, grandchild-in-trouble scam). Run each through `/api/ask` and tune the prompt so every answer is: max 6-word headline, one plain sentence, up to 3 reasons or steps, correct type (warning/explain/steps/reminder), and a one-line "You learned" tip. Never give medical or legal advice beyond explaining; suggest calling a trusted person or the doctor. Only edit `prompts/` and `docs/test-cases.md`. PR to main.
 
-### Design (demo samples)
+### Ahmet - demo samples
 
 > Read CLAUDE.md and TEAM.md. Create 5 fake but realistic demo images in `public/samples/` (PNG or SVG, phone-screenshot or photo look, no real personal data): DHL scam SMS, doctor's letter, pension letter, medication box with dosage, appointment card. Match the Paper design colors. Only edit `public/samples/`. PR to main.
 
-### Founder / pitch
+### MaRie - pitch, README, video
 
 > Read CLAUDE.md and TEAM.md. Own `README.md` and `docs/demo-script.md`. README: Elderwise in one line, who it is for, their problem with AI today, what the demo lets them do (one sentence each), screenshots, how to run, tech stack, credits (voice-glow, Next.js, Anthropic API, Atkinson Hyperlegible, Fraunces), team members. Demo script: a 2-minute story ("Ingrid, 78, gets a suspicious text") - Talk tab, the glow while she speaks, the scam card on Answers, "Tell my daughter Anna", the You learned card. Mention YC's "AI for the Aging Population" Request for Startups as market proof. Only edit `README.md` and `docs/`.
 
-### Product / design (Profile + accessibility)
+### Endrik - Profile + accessibility + QA
 
 > Read CLAUDE.md and TEAM.md. Own `app/profile/`. Match the Paper design: avatar + name, row cards for Text size (changes the app font size), Speaking speed (slider Slow-Fast, used by speech synthesis), Language, Trusted person card with call button. Store settings in localStorage. Then check the whole app for accessibility: contrast, min 19px text, 48px tap targets, aria-labels on icon buttons. Only edit `app/profile/` (report other issues to Batu). PR to main.
 
