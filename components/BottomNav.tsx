@@ -16,6 +16,9 @@ export function BottomNav() {
     { href: "/profile", label: t.tabProfile, Icon: UserIcon },
   ];
 
+  // The welcome screens are full screen, without tabs.
+  if (path === "/welcome") return null;
+
   return (
     <nav className="fixed inset-x-5 bottom-[calc(26px+env(safe-area-inset-bottom))] z-20 mx-auto max-w-xl rounded-[34px] glass-nav">
       <div className="flex px-2">
