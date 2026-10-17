@@ -11,8 +11,9 @@
 - **What the demo lets them do:** press one button, ask out loud about a letter, text message or appointment, and get a big, calm answer card with a "You learned" tip.
 
 ## What it does
-A short welcome (three calm screens, skippable), then three tabs, nothing more:
+A short welcome (three calm screens, skippable), then three tabs and one guided flow, nothing more:
 - **Talk:** "How can I help?" and one big microphone button. Tap it and speak; the live transcript shows while Grace listens and the screen glows with your voice. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
+- **Scan a letter:** a guided flow from the Talk screen (the "Scan a letter" button, or the camera sheet). Photograph or upload a letter or bill, or try an example, then watch it being read and see the key facts and a plain explanation. It also scans QR codes and barcodes, including GiroCode payments, with a scam check.
 - **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points and an optional "Tell my daughter Anna" call button. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
 - **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), and the trusted person with a call button.
 
