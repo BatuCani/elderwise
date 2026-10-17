@@ -51,4 +51,8 @@ cd elderwise
 claude
 ```
 
+   **Use your own API credits for Claude Code:** the first time Claude Code starts, choose **"Anthropic Console account"** and log in with the Console account where you claimed the $100 credits (not a Claude.ai subscription).
+   Already logged in with something else? Type `/logout` inside Claude Code, quit, start `claude` again and pick the Console account.
+   (Alternative: run `export ANTHROPIC_API_KEY=sk-ant-...your key...` in that Terminal window before `claude`.)
+
 7. Paste the prompt from your guide. Done.
