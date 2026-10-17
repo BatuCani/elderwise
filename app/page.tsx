@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, MicIcon } from "@/components/icons";
 import { VoiceBars } from "@/components/VoiceBars";
@@ -12,6 +12,13 @@ import type { Answer } from "@/prompts/elderwise";
 import { TEXT } from "./copy";
 
 type Phase = "idle" | "listening" | "thinking" | "done" | "error";
+
+const noSubscribe = () => () => {};
+
+function greetingKey(): "morning" | "afternoon" | "evening" {
+  const h = new Date().getHours();
+  return h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
+}
 
 // While Claude is thinking, the glow gathers into one beam that sweeps back and forth.
 function thinkingMotion() {
@@ -29,6 +36,7 @@ export default function Talk() {
   const [question, setQuestion] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const greeting = t.greeting[useSyncExternalStore(noSubscribe, greetingKey, () => "morning" as const)];
   const recRef = useRef<Recognition | null>(null);
   // Speech recognition stops after pauses; we keep restarting it until "Done talking",
   // so the text heard so far is kept in `baseRef` and the current run in `sessionRef`.
@@ -162,7 +170,7 @@ export default function Talk() {
         <p className="self-start font-serif text-2xl font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
 
-        {/* No visible text: the status is only announced to screen readers. */}
+        {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
         <p aria-live="polite" className="sr-only">
           {listening ? question || t.listening : thinking ? t.thinking : phase === "error" ? t.error : ""}
         </p>
@@ -196,17 +204,23 @@ export default function Talk() {
             </div>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={onTalk}
-            disabled={thinking}
-            aria-label={t.mic}
-            className={`flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
-              phase === "error" ? "bg-warn" : "bg-moss"
-            }`}
-          >
-            <MicIcon className="h-20 w-20" />
-          </button>
+          <>
+            <p className="text-xl text-muted">
+              {greeting}, {profile.name}
+            </p>
+            <h1 className="mt-2 font-serif text-[46px] font-medium leading-[1.05] text-ink">{t.headline}</h1>
+            <button
+              type="button"
+              onClick={onTalk}
+              disabled={thinking}
+              aria-label={t.mic}
+              className={`mt-10 flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
+                phase === "error" ? "bg-warn" : "bg-moss"
+              }`}
+            >
+              <MicIcon className="h-20 w-20" />
+            </button>
+          </>
         )}
         <div className="flex-1" />
       </main>
