@@ -61,3 +61,9 @@ export const CloseIcon = ({ className }: P) => (
 export const ListIcon = ({ className }: P) => (
   <svg {...base} className={className}><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" /></svg>
 );
+export const CheckIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M5 12.5 10 17 19 7" /></svg>
+);
+export const RetryIcon = ({ className }: P) => (
+  <svg {...base} className={className}><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" /></svg>
+);
