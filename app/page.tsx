@@ -181,7 +181,7 @@ export default function Talk() {
     <>
       <main
         className={`relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col items-center px-6 pt-8 text-center ${
-          listening ? "pb-[calc(26px+4rem+9rem)]" : "pb-36"
+          listening ? "pb-[261px]" : "pb-[171px]"
         }`}
       >
         <p className="self-start font-serif text-2xl font-medium text-moss">Elderwise</p>
@@ -231,11 +231,11 @@ export default function Talk() {
               onClick={onTalk}
               disabled={thinking}
               aria-label={t.mic}
-              className={`mt-10 flex h-44 w-44 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
+              className={`mt-10 flex h-[200px] w-[200px] shrink-0 items-center justify-center rounded-full text-white shadow-[0_18px_40px_rgba(63,90,58,0.35)] transition-transform active:scale-95 disabled:animate-pulse disabled:opacity-60 ${
                 phase === "error" ? "bg-warn" : "bg-moss"
               }`}
             >
-              <MicIcon className="h-20 w-20" />
+              <MicIcon className="h-[80px] w-[80px]" />
             </button>
             {phase === "error" && (
               <button
@@ -268,7 +268,7 @@ export default function Talk() {
       {(listening || thinking) && (
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-x-5 bottom-[calc(26px+4rem+0.75rem+env(safe-area-inset-bottom))] z-10 mx-auto max-w-xl"
+          className="pointer-events-none fixed inset-x-5 bottom-[calc(104px+env(safe-area-inset-bottom))] z-10 mx-auto max-w-xl"
         >
           <VoiceBeam
             type="mobile"
@@ -293,7 +293,7 @@ export default function Talk() {
       {phase === "done" && (
         <div
           role="status"
-          className="toast-in glass fixed inset-x-0 bottom-[calc(40px+5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2.5 pl-2.5 pr-6 text-xl font-bold text-ink"
+          className="toast-in glass fixed inset-x-0 bottom-[calc(135px+env(safe-area-inset-bottom))] z-30 mx-auto flex w-fit items-center gap-3 rounded-full py-2.5 pl-2.5 pr-6 text-xl font-bold text-ink"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss text-white">
             <CheckIcon className="h-6 w-6" />
