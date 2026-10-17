@@ -55,7 +55,7 @@ export function AnswerView({ answer, t, time, lang, at }: Props) {
           {t.kinds[type]} · {time}
         </p>
         <div className="flex items-start gap-3">
-          {warning ? <AlertIcon className="mt-1 h-9 w-9 shrink-0" /> : <TypeIcon type={type} className="mt-1 h-9 w-9 shrink-0" />}
+          {warning ? <AlertIcon className="alert-pulse mt-1 h-9 w-9 shrink-0" /> : <TypeIcon type={type} className="mt-1 h-9 w-9 shrink-0" />}
           <h2 className="font-serif text-3xl font-medium leading-tight">{headline}</h2>
         </div>
         <p className="mt-4 text-xl leading-snug">{sentence}</p>

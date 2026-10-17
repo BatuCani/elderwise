@@ -7,6 +7,7 @@ import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, CloseIcon, MicIcon, RetryIcon, SendIcon, SwitchCameraIcon } from "@/components/icons";
 import { LiveCamera } from "@/components/LiveCamera";
 import { LiveWords } from "@/components/LiveWords";
+import { PhotoQuestions } from "@/components/PhotoQuestions";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { DailyTip } from "@/components/DailyTip";
@@ -268,7 +269,6 @@ export default function Talk() {
     listeningRef.current = true;
     finishingRef.current = false;
     setQuestion("");
-    setNewPhoto(null);
     setPhase("listening");
     startRecognition();
   }
@@ -284,7 +284,7 @@ export default function Talk() {
     unlockSpeech();
     setTyped("");
     typeRef.current?.blur();
-    ask(q, null);
+    ask(q, photoRef.current);
   }
 
   function onTalk() {
@@ -468,17 +468,30 @@ export default function Talk() {
                 {t.micBlocked}
               </p>
             ) : (
-              <h1 className="font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem]">
+              <h1 className={`font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:720px)]:text-[1.4rem] ${photo && !thinking ? "hidden" : ""}`}>
                 {thinking ? t.thinking : t.headline}
               </h1>
             )}
             {/* The orb is the talk button too: tapping it does the same as the mic button. */}
-            <div className="mt-10 [@media(max-height:720px)]:mt-5">
-              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
+            {/* With a photo attached the orb gets smaller (hidden on iPhone SE) to make room for the questions. */}
+            <div className={photo && !thinking ? "[@media(max-height:720px)]:hidden" : "mt-10 [@media(max-height:720px)]:mt-5"}>
+              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} compact={!!photo && !thinking} />
             </div>
+            {/* A photo is attached (camera while talking): one tap asks about it, without speaking. */}
+            {photo && !thinking && (
+              <PhotoQuestions
+                lang={profile.lang}
+                photo={photo}
+                onRemove={() => setNewPhoto(null)}
+                onAsk={(q) => {
+                  unlockSpeech();
+                  ask(q, photoRef.current);
+                }}
+              />
+            )}
             {/* One big mic, and one small "+" for everything else (scan, type, tip of the day).
                 While typing, the bar takes their place; the orb still starts talking. */}
-            {!thinking && !typeOpen && (
+            {!photo && !thinking && !typeOpen && (
               <div className="mt-8 grid w-full max-w-[15rem] grid-cols-[3.5rem_1fr_3.5rem] items-center [@media(max-height:720px)]:mt-4">
                 <span />
                 <button

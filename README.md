@@ -11,9 +11,9 @@
 - **What the demo lets them do:** press one button, ask out loud about a letter, text message or appointment, and get a big, calm answer card with a "You learned" tip.
 
 ## What it does
-A short welcome (calm, skippable screens, ending with an optional free account), then four tabs and one guided flow, nothing more:
-- **Talk:** "How can I help?" and one big talking orb: "Tap once, then speak" (holding it works too). Grace, the assistant, has a natural hands-free conversation, and while you speak the **last 3 words you said appear very big**, so you can see that Grace really hears you. Next to the big mic, a gooey "+" menu holds Scan, Type and the AI tip of the day. Prefer typing? Tap "+" then Type. Scan opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
-- **Scan a letter:** a guided flow from the Talk screen (the "+" menu, then Scan). Photograph or upload a letter or bill, or try an example, then watch it being read and see the key facts and a plain explanation. It also scans QR codes and barcodes, including GiroCode payments, with a scam check.
+A 9-step welcome (calm, skippable screens: who you are, your name, help topics, how Grace explains, tip rhythm, text size and voice, trusted person, optional free account, summary), then four tabs and one guided flow, nothing more:
+- **Talk:** "How can I help?" and one big talking orb: "Tap once, then speak" (holding it works too). Grace, the assistant, has a natural hands-free conversation, and while you speak the **last 3 words you said appear very big**, so you can see that Grace really hears you. Below the orb sits an AI tip of the day. Prefer typing? Use the bar above the tab bar. The camera opens an "Add a photo" sheet: take a photo, or pick one of 5 example photos (parcel scam SMS, "Hi Grandma" WhatsApp scam, doctor's letter, medicine box, pension letter).
+- **Scan a letter:** a guided flow from the Talk screen (the "Scan a letter" button, or the camera sheet). Photograph or upload a letter or bill, or try an example, then watch it being read and see the key facts and a plain explanation. It also scans QR codes and barcodes, including GiroCode payments, with a scam check.
 - **Answers:** the newest answer as one big visual card: a deep red scam alert, an explanation, steps or a reminder, with up to 3 numbered points. On a scam alert, **"Tell my daughter Anna"** opens a ready-written message to the trusted person (SMS, WhatsApp/share or a call), so the family knows in one tap. Every answer is read aloud and ends with a "You learned" card that names the AI skill just used. Older answers are listed below and open full screen; "Clear history" at the bottom.
 - **Learn:** "Learn with Grace", 8 everyday topics (like spotting scams, letters and forms) with 24 short lessons you can try with Grace right away, plus "My AI skills".
 - **Profile:** text size (the whole app grows, nothing gets cut off), speaking speed, language (English or German), the assistant's name, voice and personality, the trusted person (editable) and your account.
@@ -50,6 +50,10 @@ Voice input uses the browser Web Speech API (Chrome, Safari on iPhone). The micr
 ## Demo video
 <Add the link to the 2-minute demo video here.>
 
+A 91-second product demo, made with [HyperFrames](https://hyperframes.heygen.com) from real screens of the live app, is in [`video/`](video/script.md) (script, style notes and how to rebuild it).
+Rendered files (team Google Drive): `Content/Grace-Hackathon/grace-demo-9x16.mp4` (1080x1920, for phones) and `Content/Grace-Hackathon/grace-demo-16x9.mp4` (1920x1080).
+Public link: <Add the Drive or YouTube link here.>
+
 ## Team
 | Name | Role in this project |
 |---|---|
@@ -65,10 +69,11 @@ Voice input uses the browser Web Speech API (Chrome, Safari on iPhone). The micr
 - [Google Gen AI SDK](https://github.com/googleapis/js-genai) (Apache-2.0) and the Gemini Live API for the real-time voice.
 - [Orbs / micro-intent](https://github.com/Orb-agent/micro-intent), our team's earlier hackathon project: the PCM capture worklet, the barge-in and reconnect patterns, and the voice rules for older adults are adapted from it.
 - [voice-glow](https://www.npmjs.com/package/voice-glow) (MIT) for the voice-reactive glow around the input.
-- [liquid-gooey](https://www.npmjs.com/package/liquid-gooey) (MIT) for the gooey "+" menu next to the mic on the Talk tab.
+- [bot-avatars](https://www.npmjs.com/package/bot-avatars) (MIT, [libraries.dev](https://libraries.dev/bots.html)) for the animated avatar of each assistant personality.
 - [Supabase](https://supabase.com) (`@supabase/ssr`, `@supabase/supabase-js`, MIT) for accounts and saving answers.
 - [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (OFL) and [Fraunces](https://fonts.google.com/specimen/Fraunces) (OFL) via Google Fonts.
 - [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) (MIT) reads QR codes and barcodes in "Scan a letter" when the browser has no built-in BarcodeDetector.
 - Browser Web Speech API (SpeechRecognition and speechSynthesis).
+- Demo video: [HyperFrames](https://github.com/heygen-com/hyperframes) and [GSAP](https://gsap.com); voiceover by [ElevenLabs](https://elevenlabs.io); music and whooshes are synthesized in `video/tools/make_audio.py` (no third-party audio).
 - Sample images in `public/samples/` are fictional mocks made for this demo; no real personal data.
 - The "Scan a letter" flow is inspired by the Dribbble shot [Onboarding flow (Upload your bill)](https://dribbble.com/shots/27784869) by Eugen Esanu (patterns only, no assets copied).

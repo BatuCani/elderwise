@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import { AnswerView, TypeIcon } from "@/components/AnswerView";
 import { AnswerSkeleton, CARD_TEXT, ClearHistory, EmptyAnswers, friendlyTime, SpeakButtons, todayKey } from "@/components/cards";
@@ -29,6 +30,12 @@ export default function AnswersPage() {
     <>
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-5 pb-40 pt-8">
         <h1 className="font-serif text-4xl font-medium text-ink">{t.tabAnswers}</h1>
+        <Link
+          href="/practice"
+          className="flex min-h-14 items-center justify-center rounded-full bg-moss px-6 py-2 text-center text-lg font-bold leading-snug text-white"
+        >
+          Practice what you learned
+        </Link>
         {pending && <AnswerSkeleton label={t.thinking} />}
         {!latest ? (
           !pending && <EmptyAnswers t={t} lang={profile.lang} />

@@ -25,7 +25,7 @@ export default function LearnPage() {
 
   const quick: { href: string; label: string; icon: ReactNode }[] = [
     { href: "/answers", label: L.quick.answers, icon: <ListIcon className="h-7 w-7" /> },
-    { href: "/profile", label: L.quick.skills, icon: <CheckIcon className="h-7 w-7" /> },
+    { href: "/profile#skills", label: L.quick.skills, icon: <CheckIcon className="h-7 w-7" /> },
     { href: "/", label: L.quick.ask, icon: <ChatIcon className="h-7 w-7" /> },
     { href: "/scan", label: L.quick.scan, icon: <CameraIcon className="h-7 w-7" /> },
   ];
@@ -62,11 +62,12 @@ export default function LearnPage() {
 
       {!q && (
         <nav aria-label={L.title} className="grid grid-cols-2 gap-3">
-          {quick.map((item) => (
+          {quick.map((item, i) => (
             <Link
               key={item.href}
               href={item.href}
-              className="glass flex min-h-20 flex-col justify-between gap-2 rounded-[22px] p-4 text-ink"
+              style={{ animationDelay: `${i * 40}ms` }}
+              className="tile-in glass flex min-h-20 flex-col justify-between gap-2 rounded-[22px] p-4 text-ink"
             >
               <span className="text-moss">{item.icon}</span>
               <span className="text-lg font-bold leading-tight">{item.label}</span>
@@ -80,18 +81,19 @@ export default function LearnPage() {
         {topics.length === 0 ? (
           <p className="text-lg leading-snug text-ink">{L.noResults}</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {topics.map((t) => (
+          <div className="tile-grid gap-3">
+            {topics.map((t, i) => (
               <Link
                 key={t.id}
                 href={`/learn/${t.id}`}
-                className="glass relative flex min-h-44 flex-col justify-between gap-3 rounded-[24px] border-2 border-white/80 p-4 text-ink"
+                style={{ animationDelay: `${(i + quick.length) * 40}ms` }}
+                className="tile-in glass relative flex min-h-44 flex-col justify-between gap-3 rounded-[24px] border-2 border-white/80 p-4 text-ink"
               >
                 <span className="absolute right-3 top-3 rounded-full bg-white/80 px-2.5 py-1 text-sm font-bold text-moss">
                   {L.lessons(t.lessons.length)}
                 </span>
                 <TopicArt id={t.id} className="mt-6 h-16 w-16" />
-                <span className="text-lg font-bold leading-tight">{t.title[lang]}</span>
+                <span className="tile-title text-lg font-bold leading-tight">{t.title[lang]}</span>
               </Link>
             ))}
           </div>

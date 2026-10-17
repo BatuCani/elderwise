@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { BotAvatar, type BotAvatarProps } from "bot-avatars";
 import { PERSONALITIES, SPEEDS, updateAssistant, useAssistant, VOICES, type Personality, type VoiceId } from "@/lib/assistant";
 import { updateProfile, useProfile } from "@/lib/profile";
 import { LOCALE } from "@/lib/speech";
 import { SpeakerIcon } from "./icons";
+import { CARD, Section } from "./profile/ui";
 
 // "Your assistant" on the Profile tab: name, voice, personality and speaking speed of the voice agent.
 // Patterns from Grok's voice settings (voice row that opens a list, round personality tiles)
@@ -43,30 +45,35 @@ const svg = {
   "aria-hidden": true,
 };
 
-const PERSONALITY_ICONS: Record<Personality, ReactNode> = {
-  patient: (
-    <svg {...svg} className="h-8 w-8">
-      <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
-    </svg>
-  ),
-  cheerful: (
-    <svg {...svg} className="h-8 w-8">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-    </svg>
-  ),
-  short: (
-    <svg {...svg} className="h-8 w-8">
-      <path d="M5 9h14M5 15h8" />
-    </svg>
-  ),
-  storyteller: (
-    <svg {...svg} className="h-8 w-8">
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" />
-      <path d="M4 20.5V5.5M8 7h8M8 11h6" />
-    </svg>
-  ),
+// Each personality has its own animated bot (bot-avatars, MIT). Different seeds keep them from blinking in unison.
+const PERSONALITY_AVATARS: Record<Personality, BotAvatarProps> = {
+  patient: { type: "flower", face: "mouth", color: "#3F5A3A", seed: 0.1 },
+  cheerful: { type: "star", hat: "party", seed: 0.35 },
+  short: { type: "pebble", glasses: "round", seed: 0.6 },
+  storyteller: { type: "cloud", hat: "beret", seed: 0.85 },
 };
+
+export function PersonalityAvatar({
+  personality,
+  size,
+  working = false,
+  label,
+}: {
+  personality: Personality;
+  size: number;
+  working?: boolean;
+  label: string;
+}) {
+  return (
+    <BotAvatar
+      {...PERSONALITY_AVATARS[personality]}
+      shading="fabric"
+      size={size}
+      state={working ? "working" : "default"}
+      aria-label={label}
+    />
+  );
+}
 
 const Check = ({ className }: { className?: string }) => (
   <svg {...svg} strokeWidth={3} className={className}>
@@ -101,6 +108,13 @@ export function AssistantSettings() {
   const L = TEXT[profile.lang];
   const [voicesOpen, setVoicesOpen] = useState(false);
   const [draftName, setDraftName] = useState<string | null>(null);
+  // The personality just picked hops and laughs for a moment.
+  const [cheering, setCheering] = useState<Personality | null>(null);
+  useEffect(() => {
+    if (!cheering) return;
+    const t = setTimeout(() => setCheering(null), 1500);
+    return () => clearTimeout(t);
+  }, [cheering]);
   const current = VOICES.find((v) => v.id === assistant.voice) ?? VOICES[0];
   // The chip closest to the saved speed is the selected one (the Speaking speed slider may sit in between).
   const nearest = SPEEDS.reduce((a, b) => (Math.abs(b - profile.speechRate) < Math.abs(a - profile.speechRate) ? b : a));
@@ -118,26 +132,30 @@ export function AssistantSettings() {
   }
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-bold text-muted">{L.title}</h2>
-      <div className="glass flex flex-col gap-7 rounded-[24px] p-5">
+    <Section title={L.title}>
+      <div className={`${CARD} flex flex-col gap-6 p-5`}>
         {/* Name */}
         <div className="flex flex-col gap-2">
           <label htmlFor="assistant-name" className="text-lg font-bold text-ink">
             {L.name}
           </label>
-          <input
-            id="assistant-name"
-            value={draftName ?? assistant.name}
-            maxLength={30}
-            autoComplete="off"
-            onChange={(e) => setDraftName(e.target.value)}
-            onBlur={saveName}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") e.currentTarget.blur();
-            }}
-            className="min-h-14 w-full rounded-2xl border-2 border-white/80 bg-white/70 px-4 font-serif text-2xl text-ink outline-none focus:border-moss"
-          />
+          <div className="flex items-center gap-3">
+            <span className="shrink-0">
+              <PersonalityAvatar personality={assistant.personality} size={36} label={assistant.name} />
+            </span>
+            <input
+              id="assistant-name"
+              value={draftName ?? assistant.name}
+              maxLength={30}
+              autoComplete="off"
+              onChange={(e) => setDraftName(e.target.value)}
+              onBlur={saveName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+              }}
+              className="min-h-14 w-full rounded-2xl border-2 border-[#e6e1d6] bg-paper/60 px-4 font-serif text-2xl text-ink outline-none focus:border-moss"
+            />
+          </div>
         </div>
 
         {/* Voice: one row that opens the list */}
@@ -148,7 +166,7 @@ export function AssistantSettings() {
             aria-expanded={voicesOpen}
             aria-controls="assistant-voices"
             onClick={() => setVoicesOpen((o) => !o)}
-            className="flex min-h-16 w-full items-center gap-4 rounded-2xl bg-white/70 px-4 py-3 text-left"
+            className="flex min-h-16 w-full items-center gap-4 rounded-2xl border border-[#e6e1d6] bg-paper/60 px-4 py-3 text-left"
           >
             <SpeakerIcon className="h-7 w-7 shrink-0 text-moss" />
             <span className="min-w-0 flex-1">
@@ -162,7 +180,7 @@ export function AssistantSettings() {
               {VOICES.map((v) => {
                 const selected = v.id === assistant.voice;
                 return (
-                  <li key={v.id} className={`flex items-center gap-2 rounded-2xl p-2 ${selected ? "bg-white" : "bg-white/40"}`}>
+                  <li key={v.id} className={`flex items-center gap-2 rounded-2xl p-2 ${selected ? "bg-learn-bg" : "bg-paper/60"}`}>
                     <button
                       type="button"
                       aria-pressed={selected}
@@ -211,15 +229,19 @@ export function AssistantSettings() {
                   key={p.id}
                   type="button"
                   aria-pressed={selected}
-                  onClick={() => updateAssistant({ personality: p.id })}
+                  aria-label={p[profile.lang]}
+                  onClick={() => {
+                    updateAssistant({ personality: p.id });
+                    setCheering(p.id);
+                  }}
                   className="flex min-h-12 flex-col items-center gap-2 text-center"
                 >
                   <span
-                    className={`relative flex h-16 w-16 items-center justify-center rounded-full ${
-                      selected ? "bg-white text-moss shadow-[0_6px_18px_rgba(30,36,32,0.14)]" : "bg-white/40 text-muted"
+                    className={`relative flex h-20 w-20 items-center justify-center rounded-full ${
+                      selected ? "bg-learn-bg ring-2 ring-moss" : "bg-paper"
                     }`}
                   >
-                    {PERSONALITY_ICONS[p.id]}
+                    <PersonalityAvatar personality={p.id} size={64} working={cheering === p.id} label={p[profile.lang]} />
                     {selected && (
                       <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-moss text-white">
                         <Check className="h-4 w-4" />
@@ -246,7 +268,7 @@ export function AssistantSettings() {
                   aria-pressed={selected}
                   onClick={() => updateProfile({ speechRate: s })}
                   className={`min-h-12 min-w-16 rounded-full px-4 text-lg font-bold ${
-                    selected ? "bg-moss text-white" : "bg-white/60 text-ink"
+                    selected ? "bg-moss text-white" : "bg-paper text-ink"
                   }`}
                 >
                   {s === 1 ? "1.0" : String(s)}x
@@ -256,6 +278,6 @@ export function AssistantSettings() {
           </div>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
