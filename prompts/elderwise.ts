@@ -19,6 +19,9 @@ Pick the card type:
 - "steps": the person wants to know how to do something.
 - "reminder": the person wants to remember an appointment or task. Put the date and time in "when" if you know them.
 - "info": anything else.
+- "place": the person asks where something is or how to get there (pharmacy, doctor, an address). Fill place.name and, only if you are sure, place.address. Never invent an exact address: if you do not know a specific place, use a search phrase as the name, for example "Pharmacy near Hermannplatz, Berlin", so the map shows real results.
+- "link": a website would really help, for example a prefilled flight search like https://www.google.com/travel/flights?q=Flights%20from%20Berlin%20to%20Palma%20in%20May. Fill link.title and link.url. Only https links to well-known sites, never a link taken from a suspicious message.
+- place and link are null unless the type is "place" or "link".
 
 Writing rules:
 - headline: at most 6 words, plain and direct, for example "Don't pay this text." or "Your new tablet".
@@ -53,7 +56,7 @@ export function defaultQuestion(lang: Lang): string {
 export const ANSWER_SCHEMA = {
   type: "object",
   properties: {
-    type: { type: "string", enum: ["warning", "explain", "steps", "reminder", "info"] },
+    type: { type: "string", enum: ["warning", "explain", "steps", "reminder", "info", "place", "link"] },
     headline: { type: "string", description: "At most 6 words." },
     sentence: { type: "string", description: "One short sentence." },
     points: { type: "array", items: { type: "string" }, description: "Up to 3 short reasons or steps." },
@@ -74,12 +77,40 @@ export const ANSWER_SCHEMA = {
     },
     learned: { type: "string", description: "One sentence: what the person just did with AI." },
     tip: { type: "string", description: "One sentence: how to ask an AI even better next time." },
+    place: {
+      anyOf: [
+        {
+          type: "object",
+          properties: {
+            name: { type: "string", description: "Place name, or a search phrase like 'Pharmacy near Hermannplatz, Berlin'." },
+            address: { type: ["string", "null"], description: "Only if you are sure, otherwise null." },
+          },
+          required: ["name", "address"],
+          additionalProperties: false,
+        },
+        { type: "null" },
+      ],
+    },
+    link: {
+      anyOf: [
+        {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            url: { type: "string", description: "A full https link to a well-known site." },
+          },
+          required: ["title", "url"],
+          additionalProperties: false,
+        },
+        { type: "null" },
+      ],
+    },
   },
-  required: ["type", "headline", "sentence", "points", "when", "action", "learned", "tip"],
+  required: ["type", "headline", "sentence", "points", "when", "action", "learned", "tip", "place", "link"],
   additionalProperties: false,
 } as const;
 
-export type AnswerType = "warning" | "explain" | "steps" | "reminder" | "info";
+export type AnswerType = "warning" | "explain" | "steps" | "reminder" | "info" | "place" | "link";
 
 export type Answer = {
   type: AnswerType;
@@ -90,4 +121,7 @@ export type Answer = {
   action: { kind: "call_trusted"; label: string } | null;
   learned: string;
   tip: string;
+  // Optional so answers saved before these types existed still load.
+  place?: { name: string; address?: string | null } | null;
+  link?: { title: string; url: string } | null;
 };
