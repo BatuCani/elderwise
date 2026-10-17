@@ -1,6 +1,6 @@
 # Grace promo video
 
-A 1:45 promo of Grace, built with [HyperFrames](https://hyperframes.heygen.com) (HTML video composition).
+A 1:50 promo of Grace, built with [HyperFrames](https://hyperframes.heygen.com) (HTML video composition).
 It comes in two cuts from one timeline: 16:9 (1920x1080) and 9:16 (1080x1920).
 
 ## Style (from the reference video)
@@ -18,12 +18,13 @@ The reference is a 33-second SaaS launch reel (https://youtu.be/SgmuplXU2iY).
 ## Structure
 | Time | Part | What you see |
 |---|---|---|
-| 0:00-0:33 | Promo intro | "Show letters", "Ask out loud", "Any message", "Instantly", "Just talk" with a tap on the orb, a tunnel of Grace screens ("Letters. Scams. Doctors."), swoosh, scam check 0-100, Done + confetti, floating answer cards ("Explained simply"), the wide Learn hub, the "Tell my daughter Anna" button being tapped, "Patient with you", "Now watch it work". |
-| 0:33-1:39 | Real app test | 12 quick phone segments with a caption and a tap cursor: welcome, Talk, asking "Is this text real?", Claude's answer, the scam alert, Tell Anna, scanning a letter, the explanation, a payment QR code check, Learn, Listen for me, the assistant's voice and text size. |
-| 1:39-1:45 | Outro | "Grace. AI that is patient with you.", logo, wordmark, graceapp.vercel.app |
+| 0:00-0:38 | Promo intro | "Show letters", "Ask out loud", "Any message", "Instantly", "Just talk" with a tap on the orb, a tunnel of Grace screens ("Letters. Scams. Doctors."), swoosh, scam check 0-100, Done + confetti, floating answer cards ("Explained simply"), the wide Learn hub, the "Tell my daughter Anna" button being tapped, "Patient with you", "Pick a personality" (the four assistant bots hop in one by one and the picked Patient helper jumps), "Now watch it work". |
+| 0:38-1:44 | Real app test | 12 quick phone segments with a caption and a tap cursor: welcome, Talk, asking "Is this text real?", Claude's answer, the scam alert, Tell Anna, scanning a letter, the explanation, a payment QR code check, Learn, Listen for me, the assistant's voice and text size. |
+| 1:44-1:50 | Outro | "Grace. AI that is patient with you.", logo, wordmark, graceapp.vercel.app |
 
 The screens are real screenshots of the live app at 390x844 (phone) and 1440x900 (wide Learn hub), with the fictional demo data (Ingrid, Anna, sample letters).
 The scam alert is a real Claude answer to a typed DHL question.
+The four bots in `assets/bots` are stills of the app's own assistant avatars (bot-avatars, fabric shading, the same props as `components/AssistantSettings.tsx`), exported at 1260 px and cropped to 600 px.
 
 ## Audio
 Music only, no voiceover, like the reference.
@@ -43,4 +44,5 @@ Edit scenes, captions and screenshots in `tools/build.mjs`, styles in `style.css
 ## Credits
 - [HyperFrames](https://github.com/heygen-com/hyperframes) and [GSAP](https://gsap.com) for the composition and animation.
 - [Fraunces](https://fonts.google.com/specimen/Fraunces) and [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (both OFL) from Google Fonts.
+- [bot-avatars](https://github.com/Jakubantalik/Libraries.dev) (MIT) for the assistant bots.
 - Music and sound effects: generated in `tools/make_music.py`, no third-party audio.
