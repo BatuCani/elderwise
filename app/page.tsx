@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMicrophone, VoiceBeam } from "voice-glow";
 import { CameraIcon, CheckIcon, RetryIcon, SendIcon } from "@/components/icons";
+import { PhotoQuestions } from "@/components/PhotoQuestions";
 import { PhotoSheet } from "@/components/PhotoSheet";
 import { VoiceBars } from "@/components/VoiceBars";
 import { VoiceOrb, type OrbMood } from "@/components/VoiceOrb";
@@ -182,7 +183,6 @@ export default function Talk() {
     listeningRef.current = true;
     finishingRef.current = false;
     setQuestion("");
-    setNewPhoto(null);
     setPhase("listening");
     startRecognition();
   }
@@ -193,7 +193,7 @@ export default function Talk() {
     unlockSpeech();
     setTyped("");
     typeRef.current?.blur();
-    ask(q, null);
+    ask(q, photoRef.current);
   }
 
   function onTalk() {
@@ -294,16 +294,33 @@ export default function Talk() {
           </>
         ) : (
           <>
-            <p className="text-greeting text-muted">
-              {greeting}, {profile.name}
-            </p>
-            <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:620px)]:text-[1.4rem]">
-              {t.headline}
-            </h1>
-            {/* The orb is the talk button: tapping it does the same as the mic button did. */}
-            <div className="mt-10 [@media(max-height:620px)]:mt-5">
-              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} />
+            {/* On small phones the greeting makes room for the photo questions. */}
+            <div className={photo || thinking ? "[@media(max-height:620px)]:hidden" : ""}>
+              <p className="text-greeting text-muted">
+                {greeting}, {profile.name}
+              </p>
+              <h1 className="mt-2 font-serif text-display font-medium leading-[1.05] text-ink [@media(max-height:620px)]:text-[1.4rem]">
+                {t.headline}
+              </h1>
             </div>
+            {/* The orb is the talk button: tapping it does the same as the mic button did. */}
+            <div className={photo && !thinking ? "mt-6 [@media(max-height:620px)]:hidden" : "mt-10 [@media(max-height:620px)]:mt-3"}>
+              <VoiceOrb mood={mood} lang={profile.lang} onTap={onTalk} disabled={thinking} label={t.mic} compact={!!photo && !thinking} />
+            </div>
+            {/* Ask about a photo without speaking: pick one, then tap a ready-made question. */}
+            {!thinking && (
+            <PhotoQuestions
+              lang={profile.lang}
+              photo={photo}
+              disabled={thinking}
+              onAddPhoto={() => setSheetOpen(true)}
+              onRemove={() => setNewPhoto(null)}
+              onAsk={(q) => {
+                unlockSpeech();
+                ask(q, photoRef.current);
+              }}
+            />
+            )}
             {phase === "error" && (
               <button
                 onClick={retry}
