@@ -237,7 +237,11 @@ export default function Talk() {
       <main
         className="relative z-10 mx-auto flex w-full max-w-[480px] flex-1 flex-col items-center px-6 pt-[calc(28px+env(safe-area-inset-top))] pb-[calc(26px+4rem+6.5rem+env(safe-area-inset-bottom))] text-center"
       >
-        <p className="self-start font-serif text-wordmark font-medium text-moss">Elderwise</p>
+        <p className="flex items-center gap-2 self-start font-serif text-wordmark font-medium text-moss">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/grace-mark-moss.svg" alt="" width={28} height={28} className="h-7 w-7" />
+          Grace
+        </p>
         <div className="flex-1" />
 
         {/* Status is only announced to screen readers; the start screen shows just the greeting. */}
