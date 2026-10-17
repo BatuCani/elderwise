@@ -177,10 +177,6 @@ export default function Welcome() {
 
   function go(delta: 1 | -1) {
     saveTyped();
-    // Ask for notifications only once a tip rhythm is chosen, only where the browser supports it, and never wait for it.
-    if (delta === 1 && id === "tips" && onboarding.tips !== "ask" && typeof Notification !== "undefined" && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
-    }
     setDir(delta);
     setStep(step + delta);
   }
@@ -343,7 +339,7 @@ export default function Welcome() {
                       <BellIcon className="h-5 w-5" />
                     </span>
                     <p className="min-w-0 flex-1 text-[1rem] font-bold leading-tight text-learn">
-                      {onboarding.tips === "ask" ? w.habitAsk : w.habitAt(onboarding.tipTime)}
+                      {onboarding.tips === "ask" ? w.habitAsk : w.habitAt}
                     </p>
                   </div>
                   <div className="mt-4 grid grid-cols-7 gap-1.5" aria-hidden>
