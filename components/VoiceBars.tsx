@@ -49,14 +49,14 @@ export function VoiceBars({ stream }: { stream: MediaStream | null }) {
   }, [stream]);
 
   return (
-    <div aria-hidden className="flex h-28 items-center justify-center gap-3">
+    <div aria-hidden className="flex h-20 items-center justify-center gap-2.5">
       {SHAPE.map((_, i) => (
         <span
           key={i}
           ref={(el) => {
             barsRef.current[i] = el;
           }}
-          className="h-full w-3 origin-center rounded-full bg-ink transition-transform duration-75"
+          className="h-full w-2.5 origin-center rounded-full bg-ink transition-transform duration-75"
           style={{ transform: "scaleY(0.12)" }}
         />
       ))}

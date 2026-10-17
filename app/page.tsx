@@ -162,42 +162,57 @@ export default function Talk() {
 
   return (
     <>
-      <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col items-center px-6 pb-36 pt-8 text-center">
+      <main
+        className={`relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col items-center px-6 pt-8 text-center ${
+          listening ? "pb-[calc(26px+4rem+9rem)]" : "pb-36"
+        }`}
+      >
         <p className="self-start font-serif text-2xl font-medium text-moss">Elderwise</p>
         <div className="flex-1" />
 
         {listening ? (
           <>
-            <p aria-live="polite" className="min-h-[4.5rem] font-serif text-3xl font-medium leading-snug text-moss">
-              {question ? `“${question}”` : t.listening}
+            <p className="flex items-center gap-2 rounded-full bg-white/60 px-4 py-1.5 text-lg font-bold text-moss">
+              <span className="relative flex h-3 w-3">
+                <span className="absolute inset-0 animate-ping rounded-full bg-moss/60" />
+                <span className="relative h-3 w-3 rounded-full bg-moss" />
+              </span>
+              {t.listening}
             </p>
-            <div className="mt-6">
-              <VoiceBars stream={mic.stream} />
-            </div>
+            <p
+              aria-live="polite"
+              className={`mt-5 min-h-[7rem] font-serif text-[34px] font-medium leading-tight ${question ? "text-ink" : "text-muted/70"}`}
+            >
+              {question ? `“${question}”` : t.inputPlaceholder}
+            </p>
 
             {photo && (
-              <div className="mt-6 flex items-center gap-3 glass rounded-2xl p-2 pr-4">
+              <div className="mt-2 flex items-center gap-3 glass rounded-2xl p-2 pr-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photo} alt="" className="h-14 w-14 rounded-xl object-cover" />
                 <span className="text-lg font-bold text-ink">✓ {t.photoAdded}</span>
               </div>
             )}
 
-            <div className="mt-8 flex w-full max-w-xs flex-col gap-4">
+            <div className="mt-8 grid w-full max-w-sm grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="glass flex min-h-16 items-center justify-center gap-3 rounded-full px-6 text-xl font-bold text-ink active:scale-95"
+                className="glass flex aspect-square flex-col items-center justify-center gap-3 rounded-[32px] p-3 text-xl font-bold leading-tight text-ink transition-transform active:scale-95"
               >
-                <CameraIcon className="h-8 w-8" />
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/80 shadow-sm">
+                  <CameraIcon className="h-9 w-9" />
+                </span>
                 {t.startCamera}
               </button>
               <button
                 type="button"
                 onClick={onFinish}
-                className="flex min-h-16 items-center justify-center gap-3 rounded-full bg-moss px-6 text-xl font-bold text-white shadow-[0_12px_30px_rgba(63,90,58,0.3)] active:scale-95"
+                className="flex aspect-square flex-col items-center justify-center gap-3 rounded-[32px] bg-moss p-3 text-xl font-bold leading-tight text-white shadow-[0_14px_34px_rgba(63,90,58,0.35)] transition-transform active:scale-95"
               >
-                <CheckIcon className="h-8 w-8" />
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
+                  <CheckIcon className="h-9 w-9" />
+                </span>
                 {t.finishTalking}
               </button>
             </div>
@@ -245,20 +260,29 @@ export default function Talk() {
         }}
       />
 
+      {/* Right above the tab bar: the voice glow, and the waveform while listening. */}
       {(listening || thinking) && (
-        <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-x-5 bottom-[calc(26px+4rem+0.75rem+env(safe-area-inset-bottom))] z-10 mx-auto max-w-xl"
+        >
           <VoiceBeam
             type="mobile"
             stream={listening ? mic.stream : null}
             motion={thinking ? thinkingMotion : null}
-            level={listening && !mic.stream ? 0.4 : undefined}
+            level={listening && !mic.stream ? 0.7 : undefined}
             sensitivity={listening ? 5 : undefined}
-            reach={listening ? 1.8 : undefined}
+            reach={listening ? 1.6 : undefined}
             colorVariant="colorful"
             theme="light"
           >
-            <div className="h-[30vh] w-full" />
+            <div className="h-32 w-full rounded-[34px]" />
           </VoiceBeam>
+          {listening && (
+            <div className="absolute inset-x-0 bottom-3 z-10">
+              <VoiceBars stream={mic.stream} />
+            </div>
+          )}
         </div>
       )}
 
